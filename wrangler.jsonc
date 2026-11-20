@@ -1,0 +1,21 @@
+{
+  // Cloudflare Workers app + D1 binding for the iOSOnAnd tracker.
+  // NOTE (scaffold, wave-2 to validate on first deploy): with
+  // @cloudflare/vite-plugin the Worker entry comes from the Vite "ssr"
+  // environment build; if `wrangler deploy` complains about `main`, drop
+  // the `main` field below (the plugin supplies the entry point).
+  "name": "oneios-tracker",
+  "compatibility_date": "2026-11-20",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "@tanstack/react-start/server-entry",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "oneios-tracker",
+      "database_id": "local-only-for-now"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}

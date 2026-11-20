@@ -1,0 +1,418 @@
+{
+ "areas": [
+  {
+   "name": "Boot to Home Screen",
+   "notes": "launchd, SpringBoard, backboardd; lock screen + swipe unlock on phone",
+   "slug": "boot"
+  },
+  {
+   "name": "GPU compositing",
+   "notes": "virtio-gpu path",
+   "slug": "gpu"
+  },
+  {
+   "name": "Touch + buttons",
+   "notes": "HID via kernel event driver; --input-script on PC",
+   "slug": "touch"
+  },
+  {
+   "name": "Battery reporting",
+   "notes": "Real readings published to iOS on phone",
+   "slug": "battery"
+  },
+  {
+   "name": "Wi-Fi",
+   "notes": "Join/scan/enable; sim radio on PC",
+   "slug": "wifi"
+  },
+  {
+   "name": "Haptics",
+   "notes": "Guest-to-HAL impact path; delivery not physically verified upstream",
+   "slug": "haptics"
+  },
+  {
+   "name": "Keyboard input",
+   "notes": "Typing path; linked to the overheat issue",
+   "slug": "keyboard"
+  },
+  {
+   "name": "Audio output",
+   "notes": "MMAP start gap, lateness metric",
+   "slug": "audio"
+  },
+  {
+   "name": "Video encode (HEVC)",
+   "notes": "Guest side staged, stand-in tested; no real frame encoded yet",
+   "slug": "video-encode"
+  },
+  {
+   "name": "Camera capture",
+   "notes": "iOS-side capture device not built",
+   "slug": "camera"
+  },
+  {
+   "name": "Auto-brightness",
+   "notes": "Light sensor attaches; no readings through it yet",
+   "slug": "brightness"
+  },
+  {
+   "name": "Interrupts / Mach RPC",
+   "notes": "Host-call IPIs vs trapped faults",
+   "slug": "ipc"
+  },
+  {
+   "name": "Return to One UI",
+   "notes": "Chord + SIGKILL backstop; the way back must always work",
+   "slug": "return-to-oneui"
+  },
+  {
+   "name": "SpringBoard stability",
+   "notes": "Historical unlock-time crash, not reproduced since",
+   "slug": "stability"
+  },
+  {
+   "name": "Thermals under load",
+   "notes": "Typing-overheat path is the main open bug",
+   "slug": "thermal"
+  },
+  {
+   "name": "Kernel memory opts",
+   "notes": "Shared-region protect fast path unproven",
+   "slug": "kernel-mem"
+  },
+  {
+   "name": "Bluetooth",
+   "notes": "README silent",
+   "slug": "bluetooth"
+  },
+  {
+   "name": "Sensors (general)",
+   "notes": "README silent beyond the light sensor",
+   "slug": "sensors"
+  },
+  {
+   "name": "Cellular modem",
+   "notes": "README silent",
+   "slug": "modem"
+  },
+  {
+   "name": "Passcode",
+   "notes": "Never a goal (README known issues)",
+   "slug": "passcode"
+  },
+  {
+   "name": "Face ID",
+   "notes": "Never a goal (README known issues)",
+   "slug": "face-id"
+  },
+  {
+   "name": "Wallet",
+   "notes": "Never a goal (README known issues)",
+   "slug": "wallet"
+  },
+  {
+   "name": "Phone calls",
+   "notes": "Never a goal (README known issues)",
+   "slug": "calls"
+  },
+  {
+   "name": "SMS",
+   "notes": "Never a goal (README known issues)",
+   "slug": "sms"
+  }
+ ],
+ "claims": [],
+ "device_status": [
+  {
+   "area_slug": "boot",
+   "detail": "Lock screen, swipe unlock, apps shown (hosted 0035-0037); PC: launchd, SpringBoard, backboardd",
+   "device_slug": "s24-ultra",
+   "source": "README#what-works, docs/building.md §6",
+   "state": "works"
+  },
+  {
+   "area_slug": "gpu",
+   "detail": "40-60 fps via virtio-gpu; PC frames captured",
+   "device_slug": "s24-ultra",
+   "source": "README#what-works, docs/gpu.md",
+   "state": "works"
+  },
+  {
+   "area_slug": "touch",
+   "detail": "Yes on phone; scripts (--input-script) on PC; HID via kernel event driver",
+   "device_slug": "s24-ultra",
+   "source": "README#what-works",
+   "state": "works"
+  },
+  {
+   "area_slug": "battery",
+   "detail": "Published to iOS; stand-in tested; real readings on phone",
+   "device_slug": "s24-ultra",
+   "source": "README#what-works",
+   "state": "works"
+  },
+  {
+   "area_slug": "wifi",
+   "detail": "Joins; scan reuse 20->5/min works; result/join latency still slow; enable waits on configd (~3 min) - fix merged (oneios-wifi-up), phone proof pending",
+   "device_slug": "s24-ultra",
+   "source": "README#what-works + known issues, docs/hardware.md",
+   "state": "in-progress"
+  },
+  {
+   "area_slug": "haptics",
+   "detail": "Fix merged, phone proof pending; guest-to-HAL delivery NOT physically verified",
+   "device_slug": "s24-ultra",
+   "source": "README#what-works, docs/hardware.md §5",
+   "state": "in-progress"
+  },
+  {
+   "area_slug": "keyboard",
+   "detail": "Fix merged, phone proof pending; typing drives Preferences 100%+ (overheat path); XPC-timeout cause proven from iOS log",
+   "device_slug": "s24-ultra",
+   "source": "README#what-works + known issues",
+   "state": "in-progress"
+  },
+  {
+   "area_slug": "audio",
+   "detail": "MMAP start gap, lateness metric; landed on PC, phone proof pending",
+   "device_slug": "s24-ultra",
+   "source": "README#known-issues, docs/hardware.md",
+   "state": "in-progress"
+  },
+  {
+   "area_slug": "video-encode",
+   "detail": "Guest side staged, stand-in tested; no real frame encoded yet",
+   "device_slug": "s24-ultra",
+   "source": "README#known-issues, PR #59",
+   "state": "in-progress"
+  },
+  {
+   "area_slug": "camera",
+   "detail": "Capture device (iOS side) not built",
+   "device_slug": "s24-ultra",
+   "source": "README#known-issues, docs/hardware.md",
+   "state": "broken"
+  },
+  {
+   "area_slug": "brightness",
+   "detail": "Attaches, no readings through it yet",
+   "device_slug": "s24-ultra",
+   "source": "README#known-issues, docs/hardware.md",
+   "state": "in-progress"
+  },
+  {
+   "area_slug": "ipc",
+   "detail": "Phone column silent; PC verified: 41k host-call IPIs vs 110 trapped (oneios-perf rpc:/0081: lines)",
+   "device_slug": "s24-ultra",
+   "source": "README#what-works",
+   "state": "unknown"
+  },
+  {
+   "area_slug": "return-to-oneui",
+   "detail": "Chord + SIGKILL backstop; never touches side keys, realtime, or /sys/power",
+   "device_slug": "s24-ultra",
+   "source": "README#what-works",
+   "state": "works"
+  },
+  {
+   "area_slug": "stability",
+   "detail": "SpringBoard died once on unlock (missing process identity assertion); historical, not reproduced since",
+   "device_slug": "s24-ultra",
+   "source": "README#known-issues",
+   "state": "works"
+  },
+  {
+   "area_slug": "thermal",
+   "detail": "Typing overheats the phone (Preferences 100%+, the main bug); prime suspect hapticd XPC timeouts; preset fix merged (hosted 0078), phone proof pending",
+   "device_slug": "s24-ultra",
+   "source": "README#known-issues, docs/hardware.md §5",
+   "state": "broken"
+  },
+  {
+   "area_slug": "kernel-mem",
+   "detail": "Shared-region protect no-op count still 0; optimization unproven",
+   "device_slug": "s24-ultra",
+   "source": "README#known-issues, kernel README 0080",
+   "state": "unknown"
+  },
+  {
+   "area_slug": "bluetooth",
+   "detail": "README silent",
+   "device_slug": "s24-ultra",
+   "source": "",
+   "state": "unknown"
+  },
+  {
+   "area_slug": "sensors",
+   "detail": "README silent beyond the light sensor (see brightness)",
+   "device_slug": "s24-ultra",
+   "source": "",
+   "state": "unknown"
+  },
+  {
+   "area_slug": "modem",
+   "detail": "README silent",
+   "device_slug": "s24-ultra",
+   "source": "",
+   "state": "unknown"
+  },
+  {
+   "area_slug": "passcode",
+   "detail": "Never a goal",
+   "device_slug": "s24-ultra",
+   "source": "README#known-issues",
+   "state": "unknown"
+  },
+  {
+   "area_slug": "face-id",
+   "detail": "Never a goal",
+   "device_slug": "s24-ultra",
+   "source": "README#known-issues",
+   "state": "unknown"
+  },
+  {
+   "area_slug": "wallet",
+   "detail": "Never a goal",
+   "device_slug": "s24-ultra",
+   "source": "README#known-issues",
+   "state": "unknown"
+  },
+  {
+   "area_slug": "calls",
+   "detail": "Never a goal",
+   "device_slug": "s24-ultra",
+   "source": "README#known-issues",
+   "state": "unknown"
+  },
+  {
+   "area_slug": "sms",
+   "detail": "Never a goal",
+   "device_slug": "s24-ultra",
+   "source": "README#known-issues",
+   "state": "unknown"
+  }
+ ],
+ "devices": [
+  {
+   "best_result": "iOS 27 booted to Home Screen, sessions with return to One UI",
+   "model": "SM-S928",
+   "name": "Galaxy S24 Ultra",
+   "notes": "This repo (akshaynexus/OneiOS). Daily driver target.",
+   "repo_kind": "home",
+   "slug": "s24-ultra",
+   "soc": "SM8650",
+   "status": "in-progress"
+  },
+  {
+   "best_result": "Ported: Oryon topology fix, probe tool, metal fixes (big-only-SoC bug fixed for all)",
+   "model": "SM-S938",
+   "name": "Galaxy S25 Ultra",
+   "notes": "denis fork (mirror) + s25ver snapshot (base S25 SM-S931B pa1q layer). Fork claims SpringBoard on SM-S938B, no return/frame-rate/app-switch evidence.",
+   "repo_kind": "fork",
+   "slug": "s25-ultra",
+   "soc": "SM8750",
+   "status": "unknown"
+  },
+  {
+   "best_result": "~600 s iOS run on device (fork claim)",
+   "model": "SM-S948B",
+   "name": "Galaxy S26 Ultra",
+   "notes": "YMGPwcca/OneiOS. Root-only Framework-takeover experiment; OneOS app switch blocked; return/watchdog handback NOT verified. Model per forks.md (README says SM-S988).",
+   "repo_kind": "fork",
+   "slug": "s26-ultra",
+   "soc": "SM8850",
+   "status": "unknown"
+  },
+  {
+   "best_result": "iOS 16.5 to lock screen on device (fork claim; touch NOT working; screenshots inconsistent)",
+   "model": "SM-A566E",
+   "name": "Galaxy A56",
+   "notes": "Musicalista/OneiOS-A56. Mixes 24A446 kexts + hosted patches 0067-0073; ships ios-27.0.1-a56.toml profile + Manager APK.",
+   "repo_kind": "fork",
+   "slug": "a56",
+   "soc": "Exynos 1580",
+   "status": "unknown"
+  },
+  {
+   "slug": "a53",
+   "name": "Galaxy A53",
+   "model": "",
+   "soc": "",
+   "repo_kind": "none",
+   "status": "unknown",
+   "best_result": "",
+   "notes": "No A53 fork known (rechecked 2026-11-21). Claim this port if you start one."
+  }
+ ],
+ "_note": "device_status rows not listed here default to 'unknown'. Anything the README does not say is 'unknown' - never invented. Never-goals (passcode/face-id/wallet/calls/sms) keep state 'unknown' with the reason in detail, per the schema's 4-state vocabulary.",
+ "exported": "2026-11-21",
+ "forks": [
+  {
+   "best_result": "Fork-claimed SpringBoard sessions with a fork-built xnuhost (not re-run on main)",
+   "branch": "device/s25-ultra",
+   "device_slug": "s25-ultra",
+   "fork_only": "Its topology.c/test_bridges.c (predate the Oryon rule), ONEIOS_XNUHOST dead line, Makefile deletions, README framing; OneOS phone gates (other repo); on-device proof",
+   "ported": "Adreno 830 wait-timestamp default (0007-a830), virgl_fence_table_init, host profile, verify/ssh scripts, dropbear/zsh builders, S25 record (ported 2026-11-21)",
+   "repo": "denis0001-dev/OneiOS-S25-Ultra",
+   "url": "https://github.com/denis0001-dev/OneiOS-S25-Ultra",
+   "verified": "fork-claim"
+  },
+  {
+   "best_result": "S25 layer (probe, Oryon topology, metal patches, port record)",
+   "branch": "",
+   "device_slug": "s25-ultra",
+   "fork_only": "1080x2340 fallbacks, SM-S931 phone gates (live in the OneOS fork, not here), Adreno 830 unknowns, bare-metal/Xiaomi parts",
+   "ported": "Oryon CPU rule + E-lending (topology.c), SM8750 fixture, tools/probe/s25-probe.sh, docs/s25.md + hardware/building notes (merged 2026-11-20)",
+   "repo": "xaxaapple/s25ver",
+   "url": "https://github.com/xaxaapple/s25ver",
+   "verified": "merged"
+  },
+  {
+   "best_result": "~600 s on-device run via root-only Framework-takeover experiment",
+   "branch": "",
+   "device_slug": "s26-ultra",
+   "fork_only": "Framework-takeover experiment, S26-only GPU refactor (their tree deleted our 0076/0078/0080/0081 - do NOT take as-is)",
+   "ported": "Native haptics impact path, multi-phone hw-backend stand-in tests, Metal/Vulkan trace patches (all in port-metal-haptics, unmerged; haptics delivery NOT physically verified)",
+   "repo": "YMGPwcca/OneiOS",
+   "url": "https://github.com/YMGPwcca/OneiOS",
+   "verified": "fork-claim"
+  },
+  {
+   "best_result": "",
+   "branch": "",
+   "device_slug": null,
+   "fork_only": "",
+   "notes": "Pure upstream mirror, 0 unique commits (Nov 14); README still S24 Ultra. Stale mirror.",
+   "ported": "nothing (mirror)",
+   "repo": "mangosaretasty/PixeliOS",
+   "url": "https://github.com/mangosaretasty/PixeliOS",
+   "verified": "fork-claim"
+  },
+  {
+   "best_result": "iOS 16.5 userland UI start on A56 (lock-screen-class; fork does not claim more)",
+   "branch": "",
+   "device_slug": "a56",
+   "fork_only": "16.5/A56 specifics, Adreno-only GPU code",
+   "ported": "virtio_gpu adaptation template + golden tests, self-extracting APK bootstrap, AGX gate + mac-exec triage (doc/off-by-default); no-source corecrypto mode held for a licence call",
+   "repo": "Musicalista/OneiOS-A56",
+   "url": "https://github.com/Musicalista/OneiOS-A56",
+   "verified": "fork-claim"
+  },
+  {
+   "best_result": "",
+   "branch": "",
+   "device_slug": null,
+   "fork_only": "",
+   "notes": "Pure upstream mirror, 0 unique commits.",
+   "ported": "nothing",
+   "repo": "gageconnor/OneiOS",
+   "url": "https://github.com/gageconnor/OneiOS",
+   "verified": "fork-claim"
+  }
+ ],
+ "reddit_posts": [],
+ "sources": [
+  "OneiOS README.md (What works table, Known issues table, Devices table) as of 2026-11-21",
+  "OneiOS docs/forks.md as of 2026-11-21"
+ ]
+}

@@ -1,0 +1,10 @@
+# iOSOnAnd local dev vars — COPY to `.dev.vars` (git-ignored, NEVER commit).
+# This file must keep EMPTY values. Put real secrets only in `.dev.vars`
+# (local) or `wrangler secret put` (production).
+
+# Bootstrap admin account, created on first run if absent.
+ADMIN_EMAIL=
+ADMIN_PASSWORD=
+
+# Optional: server-side GitHub token for API enrichment (fork/reddit lookups).
+GITHUB_TOKEN=
