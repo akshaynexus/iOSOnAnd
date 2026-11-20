@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+bun.lockb
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build output
+dist/
+.output/
+.wrangler/
+
+# Env, secrets, tokens — NEVER commit these
+.env
+.env.*
+.dev.vars
+!.dev.vars.example
+*.pem
+*.key
+data/*.db
+data/*.db-*
+data/.admin_token
+data/.tokens
+**/.config/oneios-site/
+config/oneios-site/
+
+# Tokens / CLI state
+.tracker-token
+token.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+
+# Skills CLI local state (keep lockfile, ignore the rest if generated)
+# skills-lock.json is intentionally COMMITTED (reproducible skill installs)
