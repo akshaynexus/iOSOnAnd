@@ -1,47 +1,46 @@
-// POST /api/auth/login — email+password login. 200 + session cookie.
-// 401 on bad credentials (generic message, no user enumeration).
+// POST /api/auth/login — email+password login (public). 200 + session cookie.
+// 401 on bad credentials (one generic message, no user enumeration). The
+// ADMIN_EMAIL/ADMIN_PASSWORD env pair always logs in as the admin (the
+// account is created on first use). Old-parameter hashes are re-hashed.
 
 import { createFileRoute } from '@tanstack/react-router';
+import { exec } from '@/lib/db';
 import {
+  HttpError,
   createSession,
-  ensureAuthSchema,
   findUserByEmail,
-  handleError,
+  hashPassword,
   json,
-  maybeBootstrapAdmin,
+  loginBootstrapAdmin,
+  needsRehash,
   readJson,
   sessionCookieHeader,
-  toSelfUser,
+  str,
+  toSelfUserWithTrust,
   verifyPassword,
-  HttpError,
 } from '@/lib/auth';
+import { apiHandlers, type ApiCtx } from '@/lib/api';
 
-async function handlePost(req: Request): Promise<Response> {
-  await ensureAuthSchema();
-  const body = await readJson(req);
-  const email = String(body.email || '').trim().toLowerCase();
-  const password = String(body.password || '');
+async function handlePost({ request }: ApiCtx): Promise<Response> {
+  const body = await readJson(request);
+  const email = str(body, 'email', 254).toLowerCase();
+  const password = typeof body.password === 'string' ? body.password : '';
   const fail = () =>
-    new HttpError(401, 'invalid email or password', 'check both fields, or POST /api/auth/register to sign up');
-  if (!email || !password) throw fail();
-  const user = await findUserByEmail(email);
-  if (!user || !user.password_hash) throw fail();
-  if (!(await verifyPassword(password, user.password_hash))) throw fail();
-  const promoted = await maybeBootstrapAdmin(user, password);
-  const { token } = await createSession(promoted.id);
-  return json({ user: toSelfUser(promoted) }, 200, { 'set-cookie': sessionCookieHeader(token, req) });
+    new HttpError(401, 'invalid email or password', 'check both fields, or POST /api/auth/signup to sign up');
+  if (!email || !password || password.length > 256) throw fail();
+  let user = await loginBootstrapAdmin(email, password);
+  if (!user) {
+    user = await findUserByEmail(email);
+    if (!user || !user.password_hash) throw fail();
+    if (!(await verifyPassword(password, user.password_hash))) throw fail();
+    if (needsRehash(user.password_hash)) {
+      await exec('UPDATE users SET password_hash = ? WHERE id = ?', [await hashPassword(password), user.id]);
+    }
+  }
+  const { token } = await createSession(user.id);
+  return json({ user: await toSelfUserWithTrust(user) }, 200, { 'set-cookie': sessionCookieHeader(token, request) });
 }
 
 export const Route = createFileRoute('/api/auth/login')({
-  server: {
-    handlers: {
-  POST: async ({ request }: { request: Request }) => {
-    try {
-      return await handlePost(request);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-    },
-  },
+  server: { handlers: apiHandlers({ POST: handlePost }) },
 });

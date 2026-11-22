@@ -1,0 +1,223 @@
+---
+title: "Agent system"
+description: "How an AI coding agent (Claude Code, Codex and others) works with the tracker, from the prompt to a verified write."
+---
+
+The tracker is built to be written by agents. A port's maintainer hands an AI coding agent one
+prompt; the agent downloads the CLI, signs in, claims the repo, reads the repo and records what
+works, one area at a time, with a source for each claim. This page is that system end to end.
+
+## The pieces
+
+| Piece | What it is |
+|---|---|
+| The prompt | the text the maintainer gives the agent (below; the site's "Maintain a repo" button fills it in) |
+| `cli.mjs` | the agent's tool surface: one file, Node 18 or newer, no install, `GET /cli.mjs` serves it |
+| Auth | a GitHub gist-proof login, or an API key with scopes in `TRACKER_TOKEN` |
+| Repo claim | makes the agent's user the maintainer of the repo and its phone |
+| The rules | what an agent may claim, and what it must never overwrite |
+| [`SKILL.md`](https://github.com/akshaynexus/iOSOnAnd/blob/main/SKILL.md) | the same flow as a drop-in skill file for agents that load skills |
+
+## The prompt
+
+The site shows this text with the tracker URL, the repo and the phone filled in
+([Maintain a repo](/docs/maintain-a-repo) explains each step):
+
+```text
+I maintain an iOS-on-Android port and want to manage it on the iOSOnAnd tracker at {SITE}.
+Repo: {REPO or "<OWNER/REPO>"}{, phone: DEVICE}
+
+1. Get the tracker CLI (Node 18+, no install): curl -fsSLo cli.mjs {SITE}/cli.mjs
+2. Sign in with my GitHub account (needs the gh CLI, logged in): TRACKER_URL={SITE} node cli.mjs login
+3. Claim the repo: node cli.mjs repo-claim {REPO} --device {DEVICE}
+   If it prints a verification code, write that code alone to .iosonand-verify on the repo's default branch, push, run node cli.mjs repo-verify <claim id>, then delete the file.
+4. Read the repo (README, issues, recent commits) and record what works on the phone, one area at a time:
+   node cli.mjs areas
+   node cli.mjs status-set {DEVICE} <area> works|in-progress|broken --detail "<what I can show>" --source "<link>"
+   Only claim what the repo or I can show. Ask me when unsure.
+5. Attach proof when I give you screenshots or clips: node cli.mjs media-upload <file> --device {DEVICE} --area <area> --caption "..."
+6. Check the result: node cli.mjs whoami
+```
+
+## The CLI is the tool surface
+
+Every command prints JSON on stdout and messages on stderr. The agent never needs to build HTTP
+requests itself. `node cli.mjs --help` lists every command; these are the ones an agent uses:
+
+| Goal | Command |
+|---|---|
+| reach the tracker | `node cli.mjs check` (API, areas, devices, login state) |
+| sign in | `login` (gist proof), `login --email ADDR`, `login --admin` (local dev) |
+| who am I, what may I write | `whoami`: `is_admin`, `maintains` (devices), `maintains_repos`, `token_scopes` |
+| own a repo | `repo-claim OWNER/REPO [--device D]`, `repo-verify ID`, `repo-add OWNER/REPO --device D` |
+| read | `areas`, `status-get --device D [--area A]`, `fork-list`, `media-list`, `lineage` |
+| write a status | `status-set D AREA STATE --detail "..." --source "..."` |
+| attach proof | `media-upload FILE --device D [--area A] [--caption T]` |
+| repo facts | `fork-sync --repo OWNER/REPO --best-result T`, `repo-support`, `repo-lineage` |
+| keys | `keys`, `keys-create`, `keys-revoke`, `keys-rotate` |
+| offline | `queue ...`, `flush` |
+
+The tracker URL is, in order, `--url URL`, `TRACKER_URL`, or `http://localhost:3000`. The token is,
+in order, `--token ion_...`, `TRACKER_TOKEN`, then the file the CLI saved at login
+(`~/.config/iosonand/tokens.json`, one token per tracker URL, mode 0600).
+
+## Auth for agents
+
+Two ways, both ending in a bearer token the CLI sends:
+
+1. **Gist-proof login** (an agent on the maintainer's machine, with `gh` logged in):
+   `node cli.mjs login`. The CLI asks the tracker for a one-time nonce, puts it in a secret gist,
+   the tracker checks the gist's owner, and the CLI saves the token and deletes the gist. The
+   account is bound to that GitHub login, which is what makes the owner check of a repo claim work.
+2. **An API key** (CI, a remote agent, or to give an agent less than everything): the maintainer
+   creates one with only the scopes the job needs and passes it as `TRACKER_TOKEN`:
+
+   ```sh
+   node cli.mjs keys-create --name "status agent" --scopes status:write,media:write --expires-days 30
+   TRACKER_TOKEN=ion_... node cli.mjs status-set s25 wifi works --detail "..." --source "..."
+   ```
+
+   A key never exceeds its owner's rights, a scope miss is 403 `token scope` with
+   `needs <scope>`, an expired key is 401. See [API keys](/docs/api-keys).
+
+## Claiming the repo
+
+`repo-claim` makes the agent's user the maintainer of the repo and of its phone. When the user's
+GitHub login is the repo's owner, it is approved at once. Otherwise the tracker hands out a code;
+the agent writes it alone to `.iosonand-verify` on the default branch, pushes, runs `repo-verify`,
+and deletes the file again. A repo the tracker does not list yet needs `--device`; `repo-add`
+also sets its branch and best result. [Maintain a repo](/docs/maintain-a-repo) has the details.
+
+## The honesty rules
+
+These are the rules an agent must follow. The server enforces the ones it can; the rest are on the
+agent.
+
+- **Claim only what the repo or the maintainer can show.** Every `status-set` gives `--detail`
+  (what was seen) and `--source` (a file, log, commit, issue or post). Ask the maintainer when
+  unsure. `unknown` is the right state when nothing is proven.
+- **Claims are not verification.** A fork's own statement is `fork-claim`. `reproduced`
+  (someone reproduced it on hardware) and `merged` (the code is in OneiOS `main`) are set by an
+  admin only; the server refuses them from a maintainer with 403.
+- **Never overwrite an authoritative row.** Read before writing: a row whose detail comes from the
+  port's maintainer (for OneiOS, rows marked `(OneiOS maintainer, ...)`) or from a newer, better
+  source stays as it is. A Reddit claim does not replace a maintainer's row.
+- **Stay in scope.** Write only the devices and repos you maintain (`whoami`). Areas marked
+  `oneios` (`return-to-oneui`, `ipc`, `kernel-mem`) apply only to OneiOS-based ports; for any other
+  port the server answers 400 `area not applicable` and the site shows N/A.
+- **Proof files are temporary.** Delete `.iosonand-verify` after `repo-verify`.
+
+## Check before you write (idempotency)
+
+Writes are upserts, so repeating one is harmless, but an agent should still read first:
+
+```sh
+node cli.mjs whoami                                  # may I write this device?
+node cli.mjs areas                                   # the exact slugs and their scope
+node cli.mjs status-get --device s25 --area wifi     # what is there now, and its source
+node cli.mjs status-set s25 wifi works --detail "joins WPA2, DHCP lease, Safari loads" --source "https://github.com/OWNER/REPO/issues/12"
+node cli.mjs status-get --device s25 --area wifi     # read it back
+```
+
+- `status-set` replaces one cell; sending the same values twice changes nothing but `updated`.
+- `fork-sync` changes only the fields sent; `repo-claim` returns the same pending claim (and code)
+  when called again; `repo-support` and `repo-lineage` upsert one row.
+- The CLI checks the state word and the area slug against the server before it sends anything.
+
+## Errors and exit codes
+
+Every error from the API is JSON with an `error` and usually a `hint` that says what to do next.
+The CLI prints both:
+
+```text
+error: PUT http://localhost:3001/api/status/walk-8436/ipc -> 400 area not applicable
+  hint: ipc only applies to OneiOS-based ports
+```
+
+| Exit | Meaning |
+|---|---|
+| 0 | ok |
+| 1 | the server refused (401, 403, 404, 409, 413, 415, 422 ...) or a validation error; read the hint |
+| 2 | usage error (a missing argument) |
+
+An agent should act on the hint, not retry blindly: 401 means log in or fix `TRACKER_TOKEN`, 403
+`token scope` means a key with that scope, 403 `not a maintainer` means claim the repo or device,
+409 means the row exists (read it), 422 on `repo-verify` means the proof file is missing or wrong.
+
+## When the tracker is unreachable
+
+```sh
+node cli.mjs queue status-set s25 wifi works --detail "..." --source "..."
+node cli.mjs flush            # later; sends in order, keeps the lines that fail
+```
+
+`queue` appends the write to `./TRACKER_QUEUE.md` (or `$TRACKER_QUEUE`) without sending it.
+`flush` sends the queued writes in order, removes the ones that succeed and stops at the first
+"cannot reach" error. When a write fails because the tracker is down, the CLI prints the exact
+`queue` command to run.
+
+## A real session
+
+This transcript ran against a local tracker on 2026-11-23 (`TRACKER_URL=http://localhost:3001`)
+with a test account whose GitHub login was `walkdemo8436` and a test phone `walk-8436`. Output is
+shortened to the lines that matter; nothing else is changed.
+
+```text
+$ node cli.mjs login --email walk-8436@example.test
+  "ok": true,
+  "method": "email",
+  "is_admin": false,
+
+$ node cli.mjs repo-add walkdemo8436/ios-walk --device walk-8436 --branch main --best-result "boots to the lock screen"
+Approved (owner): you maintain walkdemo8436/ios-walk and walk-8436.
+  "status": 200,
+    "method": "owner",
+    "status": "approved",
+
+$ node cli.mjs whoami
+  "maintains": [ "walk-8436" ],
+  "maintains_repos": [ "walkdemo8436/ios-walk" ],
+
+$ node cli.mjs keys-create --name agent --scopes status:write --expires-days 30
+Store the token now; it is never shown again. Use it with TRACKER_TOKEN=<token> node cli.mjs ...
+{"token":"ion_6WeliSLs...","meta":{"id":71,"scopes":["status:write"],"expires":"2026-12-22T20:14:28.573Z"}}
+
+$ TRACKER_TOKEN=ion_... node cli.mjs status-set walk-8436 touch works --detail "taps and swipes reach SpringBoard" --source "https://github.com/walkdemo8436/ios-walk#readme"
+  "ok": true,
+  "state": "works",
+
+$ TRACKER_TOKEN=ion_... node cli.mjs media-upload proof.png --device walk-8436 --area touch
+error: POST http://localhost:3001/api/media -> 403 token scope
+  hint: needs media:write
+
+$ node cli.mjs keys-create --name uploads --scopes media:write
+$ TRACKER_TOKEN=ion_... node cli.mjs media-upload proof.png --device walk-8436 --area touch --caption "touch test"
+{"id":14,"url":"http://localhost:3001/media/walk-8436/2026-11-22-aBaN9f5lwUncMuHN.png","content_type":"image/png","bytes":9606,"width":256,"height":256}
+
+$ node cli.mjs repo-claim someone-else8436/ios-walk-2 --device walk-8436
+Claim #17 is pending (until 2026-11-23T20:14:29.444Z). To prove you can push to someone-else8436/ios-walk-2:
+  printf '%s\n' 'iosonand-verify-iq-I89TCD-LKZ6NEgFR1QJyc' > .iosonand-verify && git add .iosonand-verify && git commit -m "iOSOnAnd verification" && git push
+  node ./cli.mjs repo-verify 17
+then delete .iosonand-verify again.
+
+$ node cli.mjs repo-verify 17
+error: POST http://localhost:3001/api/repos/claim/17/verify -> 422 verification file not found or wrong
+  hint: no .iosonand-verify on the default branch of someone-else8436/ios-walk-2: write the claim's code alone to it, push, then retry
+
+$ node cli.mjs status-set walk-8436 ipc works --detail x --source y
+error: PUT http://localhost:3001/api/status/walk-8436/ipc -> 400 area not applicable
+  hint: ipc only applies to OneiOS-based ports
+```
+
+What it shows: the owner check approved the first repo at once; the status key could write
+statuses but not upload; the second key could upload; a repo owned by someone else needed the
+proof file (not pushed here, so 422); and an OneiOS-only area was refused for a non-OneiOS port.
+The test rows were removed afterwards.
+
+## SKILL.md, the drop-in skill
+
+[`SKILL.md`](https://github.com/akshaynexus/iOSOnAnd/blob/main/SKILL.md) holds this flow as a skill
+file (front matter `name: iosonand-tracker`). Copy it into the agent's skills folder of a port's
+repo, or paste it into the agent's instructions; the agent then knows the commands and the rules
+without this page. Keep it and `cli.mjs` from the same tracker version (`GET /cli.mjs` serves the
+matching CLI).

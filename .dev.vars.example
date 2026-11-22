@@ -1,8 +1,10 @@
-# iOSOnAnd local dev vars — COPY to `.dev.vars` (git-ignored, NEVER commit).
-# This file must keep EMPTY values. Put real secrets only in `.dev.vars`
-# (local) or `wrangler secret put` (production).
+# iOSOnAnd local dev vars. `bun run dev` (or `bun run setup`) copies this file
+# to `.dev.vars` when that file is missing and fills ADMIN_EMAIL and a random
+# ADMIN_PASSWORD. `.dev.vars` is git-ignored. Keep the values in THIS file
+# empty. Production secrets go in `wrangler secret put NAME`.
 
-# Bootstrap admin account, created on first run if absent.
+# Bootstrap admin. Logging in with exactly these values creates the account
+# if needed and makes it an admin.
 ADMIN_EMAIL=
 ADMIN_PASSWORD=
 

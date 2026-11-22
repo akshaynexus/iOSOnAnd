@@ -1,72 +1,48 @@
-// /api/posts — GET reddit-post list, POST add (auth). 409 on duplicate url.
+// /api/posts — GET the updates list (public; ?limit= default 100, max 500,
+// ?offset=; -> {posts, total, limit, offset, next}), POST add a reddit link (admin,
+// or a maintainer of any device). url must be https://(www.|old.)reddit.com/r/...
+// or https://redd.it/<id>; it is stored in canonical form (www., no query).
+// 409 on a duplicate url.
 
 import { createFileRoute } from '@tanstack/react-router';
-import { queryAll, queryFirst } from '@/lib/db';
-import {
-  HttpError,
-  actorName,
-  handleError,
-  insertReturningId,
-  json,
-  readJson,
-  requireUser,
-} from '@/lib/auth';
+import { queryFirst } from '@/lib/db';
+import { HttpError, actorName, json, paged, pageParams, readJson, requirePoster, str } from '@/lib/auth';
+import { apiHandlers, type ApiCtx } from '@/lib/api';
+import { postFields } from '@/lib/posts';
 import { appendChangelog } from '@/lib/changelog';
 import type { RedditPost } from '@/lib/types';
 
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
+async function handleGet({ request }: ApiCtx): Promise<Response> {
+  const page = pageParams(new URL(request.url).searchParams, 100, 500);
+  const { rows, page: info } = await paged<RedditPost>('SELECT * FROM reddit_posts ORDER BY id DESC', 'SELECT COUNT(*) AS n FROM reddit_posts', [], page);
+  return json({ posts: rows, ...info });
 }
 
-async function handleGet(req: Request): Promise<Response> {
-  const limit = Math.min(Math.max(Number(new URL(req.url).searchParams.get('limit')) || 100, 1), 200);
-  const posts = await queryAll<RedditPost>(`SELECT * FROM reddit_posts ORDER BY id DESC LIMIT ${limit}`);
-  return json({ posts });
-}
-
-async function handlePost(req: Request): Promise<Response> {
-  const user = await requireUser(req);
-  const body = await readJson(req);
-  const title = String(body.title || '').trim();
-  const url = String(body.url || body.link || '').trim();
-  if (!title) throw new HttpError(400, 'title required', 'send {"title","url"} plus optional published/note');
-  if (!/^https?:\/\//.test(url)) throw new HttpError(400, 'bad url', 'url must start with http(s)://');
-  const published = body.published ? String(body.published) : today();
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(published)) {
-    throw new HttpError(400, 'bad published', 'use YYYY-MM-DD');
-  }
-  if (await queryFirst('SELECT id FROM reddit_posts WHERE url = ?', [url])) {
+async function handlePost({ request }: ApiCtx): Promise<Response> {
+  const user = await requirePoster(request);
+  const body = await readJson(request);
+  if (body.url === undefined && body.link !== undefined) body.url = body.link;
+  const f = postFields(body, true);
+  if (await queryFirst('SELECT id FROM reddit_posts WHERE url = ?', [f.url])) {
     throw new HttpError(409, 'post already tracked', 'that url is already in the updates list');
   }
-  const id = await insertReturningId(
-    'INSERT INTO reddit_posts (title, url, published, note) VALUES (?, ?, ?, ?)',
-    [title, url, published, String(body.note || '')],
+  const row = await queryFirst<RedditPost>(
+    'INSERT INTO reddit_posts (title, url, published, note, image_url, image_width, image_height) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING *',
+    [
+      f.title,
+      f.url,
+      f.published || new Date().toISOString().slice(0, 10),
+      str(body, 'note', 1000),
+      f.image_url ?? '',
+      f.image_width ?? null,
+      f.image_height ?? null,
+    ],
   );
-  const row = id
-    ? await queryFirst<RedditPost>('SELECT * FROM reddit_posts WHERE id = ?', [id])
-    : await queryFirst<RedditPost>('SELECT * FROM reddit_posts ORDER BY id DESC LIMIT 1');
   if (!row) throw new HttpError(500, 'post creation failed', 'retry');
-  await appendChangelog(actorName(user), `post added: ${title.slice(0, 80)}`);
+  await appendChangelog(actorName(user), `post added: ${f.title!.slice(0, 80)}`);
   return json({ post: row }, 201);
 }
 
 export const Route = createFileRoute('/api/posts')({
-  server: {
-    handlers: {
-  GET: async ({ request }: { request: Request }) => {
-    try {
-      return await handleGet(request);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-  POST: async ({ request }: { request: Request }) => {
-    try {
-      return await handlePost(request);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-    },
-  },
+  server: { handlers: apiHandlers({ GET: handleGet, POST: handlePost }) },
 });

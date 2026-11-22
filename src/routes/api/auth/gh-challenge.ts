@@ -4,11 +4,11 @@
 // GitHub account. -> {nonce, expires, instructions}.
 
 import { createFileRoute } from '@tanstack/react-router';
+import { apiHandlers } from '@/lib/api';
 import {
   HttpError,
   createChallenge,
   getCurrentUser,
-  handleError,
   json,
   readJson,
 } from '@/lib/auth';
@@ -55,15 +55,5 @@ async function handlePost(req: Request): Promise<Response> {
 }
 
 export const Route = createFileRoute('/api/auth/gh-challenge')({
-  server: {
-    handlers: {
-  POST: async ({ request }: { request: Request }) => {
-    try {
-      return await handlePost(request);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-    },
-  },
+  server: { handlers: apiHandlers({ POST: ({ request }) => handlePost(request) }) },
 });

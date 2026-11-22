@@ -2,6 +2,10 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
+/* Fumadocs UI (/docs): shadcn.css maps its --color-fd-* tokens onto the
+   tokens below, so the docs use the same neutral palette, light and dark. */
+@import "fumadocs-ui/css/shadcn.css";
+@import "fumadocs-ui/css/preset.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -39,6 +43,17 @@
     --color-card: var(--card);
     --color-foreground: var(--foreground);
     --color-background: var(--background);
+    --color-brand: var(--brand);
+    --color-works: var(--works);
+    --color-works-soft: var(--works-soft);
+    --color-works-fg: var(--works-fg);
+    --color-progress: var(--progress);
+    --color-progress-soft: var(--progress-soft);
+    --color-progress-fg: var(--progress-fg);
+    --color-broken: var(--broken);
+    --color-broken-soft: var(--broken-soft);
+    --color-broken-fg: var(--broken-fg);
+    --color-unknown: var(--unknown);
     --radius-sm: calc(var(--radius) * 0.6);
     --radius-md: calc(var(--radius) * 0.8);
     --radius-lg: var(--radius);
@@ -49,82 +64,280 @@
 }
 
 :root {
+    /* Neutral greys, one accent (--brand) for links, focus and the active tab. */
     --background: oklch(1 0 0);
-    --foreground: oklch(0.153 0.006 107.1);
+    --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
-    --card-foreground: oklch(0.153 0.006 107.1);
+    --card-foreground: oklch(0.145 0 0);
     --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.153 0.006 107.1);
-    --primary: oklch(0.228 0.013 107.4);
-    --primary-foreground: oklch(0.988 0.003 106.5);
-    --secondary: oklch(0.966 0.005 106.5);
-    --secondary-foreground: oklch(0.228 0.013 107.4);
-    --muted: oklch(0.966 0.005 106.5);
-    --muted-foreground: oklch(0.58 0.031 107.3);
-    --accent: oklch(0.966 0.005 106.5);
-    --accent-foreground: oklch(0.228 0.013 107.4);
+    --popover-foreground: oklch(0.145 0 0);
+    --primary: oklch(0.205 0 0);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.5 0 0);
+    --accent: oklch(0.97 0 0);
+    --accent-foreground: oklch(0.205 0 0);
     --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.93 0.007 106.5);
-    --input: oklch(0.93 0.007 106.5);
-    --ring: oklch(0.737 0.021 106.9);
-    --chart-1: oklch(0.88 0.011 106.6);
-    --chart-2: oklch(0.58 0.031 107.3);
-    --chart-3: oklch(0.466 0.025 107.3);
-    --chart-4: oklch(0.394 0.023 107.4);
-    --chart-5: oklch(0.286 0.016 107.4);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.988 0.003 106.5);
-    --sidebar-foreground: oklch(0.153 0.006 107.1);
-    --sidebar-primary: oklch(0.228 0.013 107.4);
-    --sidebar-primary-foreground: oklch(0.988 0.003 106.5);
-    --sidebar-accent: oklch(0.966 0.005 106.5);
-    --sidebar-accent-foreground: oklch(0.228 0.013 107.4);
-    --sidebar-border: oklch(0.93 0.007 106.5);
-    --sidebar-ring: oklch(0.737 0.021 106.9);
+    --border: oklch(0.922 0 0);
+    --input: oklch(0.885 0 0);
+    --ring: oklch(0.546 0.215 262.9 / 0.6);
+    --brand: oklch(0.546 0.215 262.9);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --radius: 0.5rem;
+    /* Area states. -soft fills a cell, -fg is its icon and text (AA on -soft),
+       the plain token fills bar segments. */
+    --works: oklch(0.627 0.17 149.2);
+    --works-soft: oklch(0.955 0.045 156.7);
+    --works-fg: oklch(0.448 0.119 151.3);
+    --progress: oklch(0.769 0.165 70.1);
+    --progress-soft: oklch(0.962 0.059 95.6);
+    --progress-fg: oklch(0.473 0.137 46.2);
+    --broken: oklch(0.577 0.215 27.3);
+    --broken-soft: oklch(0.936 0.032 17.7);
+    --broken-fg: oklch(0.444 0.177 26.9);
+    --unknown: oklch(0.922 0 0);
+    --sidebar: oklch(0.985 0 0);
+    --sidebar-foreground: oklch(0.145 0 0);
+    --sidebar-primary: oklch(0.205 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent-foreground: oklch(0.205 0 0);
+    --sidebar-border: oklch(0.922 0 0);
+    --sidebar-ring: oklch(0.708 0 0);
 }
 
 .dark {
-    --background: oklch(0.153 0.006 107.1);
-    --foreground: oklch(0.988 0.003 106.5);
-    --card: oklch(0.228 0.013 107.4);
-    --card-foreground: oklch(0.988 0.003 106.5);
-    --popover: oklch(0.228 0.013 107.4);
-    --popover-foreground: oklch(0.988 0.003 106.5);
-    --primary: oklch(0.93 0.007 106.5);
-    --primary-foreground: oklch(0.228 0.013 107.4);
-    --secondary: oklch(0.286 0.016 107.4);
-    --secondary-foreground: oklch(0.988 0.003 106.5);
-    --muted: oklch(0.286 0.016 107.4);
-    --muted-foreground: oklch(0.737 0.021 106.9);
-    --accent: oklch(0.286 0.016 107.4);
-    --accent-foreground: oklch(0.988 0.003 106.5);
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.175 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --popover: oklch(0.205 0 0);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.922 0 0);
+    --primary-foreground: oklch(0.205 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.225 0 0);
+    --muted-foreground: oklch(0.715 0 0);
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
     --destructive: oklch(0.704 0.191 22.216);
     --border: oklch(1 0 0 / 10%);
     --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.58 0.031 107.3);
-    --chart-1: oklch(0.88 0.011 106.6);
-    --chart-2: oklch(0.58 0.031 107.3);
-    --chart-3: oklch(0.466 0.025 107.3);
-    --chart-4: oklch(0.394 0.023 107.4);
-    --chart-5: oklch(0.286 0.016 107.4);
-    --sidebar: oklch(0.228 0.013 107.4);
-    --sidebar-foreground: oklch(0.988 0.003 106.5);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.988 0.003 106.5);
-    --sidebar-accent: oklch(0.286 0.016 107.4);
-    --sidebar-accent-foreground: oklch(0.988 0.003 106.5);
+    --ring: oklch(0.707 0.165 254.6 / 0.6);
+    --brand: oklch(0.707 0.165 254.6);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --works: oklch(0.696 0.17 149.6);
+    --works-soft: oklch(0.29 0.06 152);
+    --works-fg: oklch(0.871 0.136 154.4);
+    --progress: oklch(0.795 0.17 73);
+    --progress-soft: oklch(0.31 0.06 70);
+    --progress-fg: oklch(0.879 0.153 91.6);
+    --broken: oklch(0.637 0.208 25.3);
+    --broken-soft: oklch(0.3 0.08 25);
+    --broken-fg: oklch(0.808 0.114 19.6);
+    --unknown: oklch(0.3 0 0);
+    --sidebar: oklch(0.205 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.707 0.165 254.6);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.58 0.031 107.3);
+    --sidebar-ring: oklch(0.556 0 0);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    }
-  body {
-    @apply bg-background text-foreground;
-    }
+  }
   html {
     @apply font-sans;
-    }
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-background text-sm text-foreground antialiased;
+    font-feature-settings: "ss01", "cv11";
+  }
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* /docs sits under the app's sticky top bar (h-16, src/components/Page.tsx):
+   Fumadocs offsets its sticky sidebar and table of contents by this height. */
+.docs-shell {
+  --fd-banner-height: 4rem;
+}
+
+/* The top bar: the page background with a hairline under it. */
+.site-header {
+  background: var(--background);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Before hydration PillNav has not measured yet; never let it widen the page. */
+.site-nav {
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+/* SpecularButton as the app's primary action: the app's font and focus ring. */
+.primary-action {
+  font-family: var(--font-sans);
+  white-space: nowrap;
+}
+.primary-action:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Device cards (src/components/DeviceCard.tsx) on the React Bits ReflectiveCard. */
+.reflective-card[data-theme="dark"] {
+  --rc-track: rgba(255, 255, 255, 0.1);
+}
+.reflective-card[data-theme="light"] {
+  --rc-track: rgba(24, 24, 27, 0.09);
+}
+.device-card__chip,
+.device-card__state {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 5px;
+  height: 20px;
+  margin: 0;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--rc-tile);
+  box-shadow: inset 0 0 0 1px var(--rc-tile-edge), inset 0 1px 0 var(--rc-tile-highlight);
+  color: var(--rc-ink);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+.device-card .reflective-card__header.device-card__top {
+  justify-content: space-between;
+  font-size: 11px;
+  line-height: 20px;
+}
+.device-card .reflective-card__dot {
+  width: 6px;
+  height: 6px;
+}
+
+/* The repo family tree (src/components/LineageTree.tsx): plain nested lists with hairline guides. */
+.lineage-list {
+  margin: 2px 0 0 5px;
+  padding-left: 12px;
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.lineage-item {
+  position: relative;
+  min-width: 0;
+}
+.lineage-item::before {
+  content: "";
+  position: absolute;
+  top: 0.65em;
+  left: -12px;
+  width: 8px;
+  border-top: 1px solid var(--border);
+}
+
+/* Owner-requested motion (src/components/motion.tsx). Transform and opacity
+   only; all of it off under prefers-reduced-motion (the block at the end). */
+.reveal {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.reveal[data-seen] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 280ms ease-out var(--reveal-delay, 0ms),
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms);
+}
+/* Progress bar segments grow in on first view. */
+.grow-seg {
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+[data-seen] > .grow-seg {
+  transform: none;
+  transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1) var(--seg-delay, 0ms);
+}
+@keyframes ui-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.tab-fade {
+  animation: ui-fade-in 180ms ease-out both;
+}
+.fade-group {
+  animation: ui-fade-in 300ms ease-out both;
+  animation-delay: var(--group-delay, 0ms);
+}
+@keyframes ui-shimmer {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--muted) 0%, color-mix(in oklch, var(--muted), var(--foreground) 6%) 50%, var(--muted) 100%);
+  background-size: 200% 100%;
+  animation: ui-shimmer 1.4s linear infinite;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 160ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal[data-seen],
+  .grow-seg,
+  [data-seen] > .grow-seg {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .tab-fade,
+  .fade-group,
+  .skeleton {
+    animation: none;
+  }
+}
+/* The SpecularButton in a table row: the same button, one step smaller. */
+.specular-button.primary-action--row {
+  padding: 6px 12px;
+  font-size: 0.8125rem;
 }

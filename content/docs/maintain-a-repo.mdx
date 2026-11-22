@@ -1,0 +1,100 @@
+---
+title: "Maintain a repo"
+description: "Claim your port's repo on the tracker, prove you own it, and what you may change afterwards."
+---
+
+A repo's maintainer keeps its entry on the tracker true: the statuses of its phone, the repo's
+best result, the devices it supports, what it is based on, and proof uploads. The usual way is to
+hand an AI coding agent the prompt below and let it do the steps; you can also run them yourself.
+
+## The prompt for your agent
+
+On the site, the "Maintain a repo" button fills in the tracker URL, your repo and your phone.
+The text is:
+
+```text
+I maintain an iOS-on-Android port and want to manage it on the iOSOnAnd tracker at {SITE}.
+Repo: {REPO or "<OWNER/REPO>"}{, phone: DEVICE}
+
+1. Get the tracker CLI (Node 18+, no install): curl -fsSLo cli.mjs {SITE}/cli.mjs
+2. Sign in with my GitHub account (needs the gh CLI, logged in): TRACKER_URL={SITE} node cli.mjs login
+3. Claim the repo: node cli.mjs repo-claim {REPO} --device {DEVICE}
+   If it prints a verification code, write that code alone to .iosonand-verify on the repo's default branch, push, run node cli.mjs repo-verify <claim id>, then delete the file.
+4. Read the repo (README, issues, recent commits) and record what works on the phone, one area at a time:
+   node cli.mjs areas
+   node cli.mjs status-set {DEVICE} <area> works|in-progress|broken --detail "<what I can show>" --source "<link>"
+   Only claim what the repo or I can show. Ask me when unsure.
+5. Attach proof when I give you screenshots or clips: node cli.mjs media-upload <file> --device {DEVICE} --area <area> --caption "..."
+6. Check the result: node cli.mjs whoami
+```
+
+[Agent system](/docs/agents) explains what the agent does with it and the rules it follows.
+
+## The flow
+
+1. **Sign in.** `node cli.mjs login` proves your GitHub account with a secret gist (the `gh` CLI
+   must be logged in); the CLI deletes the gist afterwards. Your tracker account is now bound to
+   that GitHub login.
+2. **Claim.** `node cli.mjs repo-claim OWNER/REPO --device <slug>` sends
+   `POST /api/repos/claim`. The repo may be given as `OWNER/REPO` or a github.com URL.
+   - The tracker does not list the repo yet: `--device` is required; the claim adds the repo as a
+     fork of that phone (`fork-claim`). `repo-add OWNER/REPO --device <slug> --branch main
+     --best-result "..."` does the same with the repo's branch and best result.
+   - Another user maintains the repo: 409, and the hint names them. They (or an admin) can step
+     down with `repo-unmaintain`.
+3. **Owner check or proof file** (below). Either way the claim ends approved.
+4. **Work.** `whoami` lists the repo under `maintains_repos` and its phone under `maintains`.
+
+## The two checks
+
+| Check | When | What the tracker does |
+|---|---|---|
+| owner | your GitHub login (proven at sign-in) equals the repo's `OWNER`, case-insensitive | approves at once: 200, method `owner` |
+| proof file | anyone else, e.g. a collaborator, or an organisation repo | 202 with a pending claim and a code; you prove push access with a file |
+
+The proof file:
+
+```sh
+node cli.mjs repo-claim OrgName/port --device s25        # prints claim #17 and its code
+printf '%s\n' 'iosonand-verify-...' > .iosonand-verify    # the code alone, on the default branch
+git add .iosonand-verify && git commit -m "iOSOnAnd verification" && git push
+node cli.mjs repo-verify 17                              # POST /api/repos/claim/17/verify
+git rm .iosonand-verify && git commit -m "remove verification" && git push
+```
+
+`repo-verify` reads `https://raw.githubusercontent.com/OWNER/REPO/HEAD/.iosonand-verify` and,
+when that is missing or different, the GitHub contents API for the same path
+(raw.githubusercontent.com caches for up to five minutes). The trimmed content must equal the
+code. A claim lasts 24 hours; asking again within that time returns the same claim and code.
+
+| Answer | Meaning |
+|---|---|
+| 200 | approved: you maintain the repo and its phone |
+| 422 | `verification file not found or wrong`: the hint says which |
+| 410 | the claim expired: run `repo-claim` again for a new code |
+| 409 | the claim is not pending any more (approved, rejected), or someone else got the repo first |
+| 502 | GitHub could not be reached; retry |
+
+An admin can also approve a pending claim without the file (`repo-claim-approve <id>`, method
+`admin`) or reject it (`repo-claim-reject <id>`). A rejected or expired claim that had added a new
+repo removes that repo again, unless someone maintains it.
+
+## What a maintainer may do
+
+After approval you are the repo's maintainer (`forks.maintainer_user_id`) and a maintainer of its
+phone (an approved device claim is added for you). You may:
+
+- set the phone's statuses (`status-set`), except the three OneiOS-only areas on a phone whose
+  port is not OneiOS-based (400 `area not applicable`);
+- update the phone's fields, such as `best_result` and `ios_version` (PATCH /api/devices/slug);
+  its photo and `base` are admin-only;
+- update the repo (`fork-sync`, PATCH /api/forks/id): branch, URL, best result, ported,
+  fork-only, notes; `verified` stays `fork-claim` (only an admin sets `reproduced` or `merged`);
+- record what the repo is based on (`repo-lineage`) and that it supports another phone as
+  `claimed` (`repo-support ... --support claimed`); `merged`, `ported` and `primary` are admin-only;
+- upload screenshots and clips for the phone (`media-upload`) and delete your own uploads;
+- add Reddit posts (`post-add`), like any maintainer;
+- create API keys for your agents with only the scopes they need ([API keys](/docs/api-keys)).
+
+To step down: `node cli.mjs repo-unmaintain OWNER/REPO` (`DELETE /api/forks/id/maintainer`). The
+device claim the repo claim gave you goes too, unless you maintain another repo of that phone.

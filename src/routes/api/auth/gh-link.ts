@@ -5,17 +5,17 @@
 // DELETE: unlink your own GitHub account.
 
 import { createFileRoute } from '@tanstack/react-router';
+import { apiHandlers } from '@/lib/api';
 import { exec } from '@/lib/db';
 import {
   HttpError,
   actorName,
   findUserByGithubId,
   getChallenge,
-  handleError,
   isExpired,
   json,
   latestChallengeFor,
-  markChallengeUsed,
+  consumeChallenge,
   nowIso,
   readJson,
   requireUser,
@@ -52,6 +52,7 @@ async function handlePost(req: Request): Promise<Response> {
     );
   }
   const proof = await verifyGistProof({ gistIdInput: gistId, githubId: ownerId, nonce: ch.nonce });
+  await consumeChallenge(ch.nonce, proof.gistId);
 
   const taken = await findUserByGithubId(ownerId);
   if (taken && taken.id !== user.id) {
@@ -67,7 +68,6 @@ async function handlePost(req: Request): Promise<Response> {
     nowIso(),
     user.id,
   ]);
-  await markChallengeUsed(ch.nonce, proof.gistId);
   const updated = { ...user, github_id: ownerId, github_login: proof.ownerLogin || null };
   await appendChangelog(actorName(updated), `linked github @${proof.ownerLogin || ownerId}`);
   return json({ user: toSelfUser(updated) });
@@ -83,22 +83,5 @@ async function handleDelete(req: Request): Promise<Response> {
 }
 
 export const Route = createFileRoute('/api/auth/gh-link')({
-  server: {
-    handlers: {
-  POST: async ({ request }: { request: Request }) => {
-    try {
-      return await handlePost(request);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-  DELETE: async ({ request }: { request: Request }) => {
-    try {
-      return await handleDelete(request);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-    },
-  },
+  server: { handlers: apiHandlers({ POST: ({ request }) => handlePost(request), DELETE: ({ request }) => handleDelete(request) }) },
 });

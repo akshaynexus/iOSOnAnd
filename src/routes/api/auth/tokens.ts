@@ -3,9 +3,9 @@
 // DELETE ?id= or {id} or {token}: revoke.
 
 import { createFileRoute } from '@tanstack/react-router';
+import { apiHandlers } from '@/lib/api';
 import {
   HttpError,
-  handleError,
   json,
   listApiTokens,
   mintApiToken,
@@ -48,29 +48,5 @@ async function handleDelete(req: Request): Promise<Response> {
 }
 
 export const Route = createFileRoute('/api/auth/tokens')({
-  server: {
-    handlers: {
-  GET: async ({ request }: { request: Request }) => {
-    try {
-      return await handleGet(request);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-  POST: async ({ request }: { request: Request }) => {
-    try {
-      return await handlePost(request);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-  DELETE: async ({ request }: { request: Request }) => {
-    try {
-      return await handleDelete(request);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-    },
-  },
+  server: { handlers: apiHandlers({ GET: ({ request }) => handleGet(request), POST: ({ request }) => handlePost(request), DELETE: ({ request }) => handleDelete(request) }) },
 });

@@ -1,142 +1,264 @@
-import { useState } from "react";
+import { memo, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Device } from "@/lib/client";
-import { ClaimBadge, StateBadge, VerifiedBadge } from "@/components/StatusBadge";
-import { AreaEditor } from "@/components/AreaEditor";
-import { AddForkDialog } from "@/components/AddForkDialog";
-import { toast } from "sonner";
+import ReflectiveCard from "@/components/reactbits/ReflectiveCard";
+import { useGlSlot } from "@/components/reactbits/glBudget";
+import { PhoneOutline } from "@/components/common";
+import { STATE_LABELS } from "@/components/StatusBadge";
+import { familyName } from "@/components/repoInfo";
+import { useSeenOnce } from "@/components/motion";
+import { makerOf, type StateCounts } from "@/lib/areas";
+import { maintainersOf, type AreaState, type Device } from "@/lib/client";
+import { cn } from "@/lib/utils";
 
-function CloneLine({ repo, branch }: { repo: string; branch: string }) {
-  const cmd = branch ? `git clone --branch ${branch} https://github.com/${repo}.git` : `git clone https://github.com/${repo}.git`;
+/** The device's photo: its own image_url, else its newest uploaded image. */
+export function devicePhoto(d: Pick<Device, "image_url" | "latest_media">): string | null {
+  if (d.image_url) return d.image_url;
+  const m = d.latest_media;
+  if (m && (m.kind === "image" || m.content_type?.startsWith("image/")) && m.url) return m.url;
+  return null;
+}
+
+const DOT: Record<AreaState, string> = {
+  works: "#22c55e",
+  "in-progress": "#f59e0b",
+  broken: "#ef4444",
+  unknown: "#a1a1aa",
+};
+
+/** works / in progress / broken as one segmented bar; unknown is the track. */
+export function SegmentBar({ counts, className }: { counts: StateCounts; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const seen = useSeenOnce(ref);
+  const total = counts.works + counts["in-progress"] + counts.broken + counts.unknown;
+  const parts: [AreaState, string][] = [
+    ["works", "bg-works"],
+    ["in-progress", "bg-progress"],
+    ["broken", "bg-broken"],
+  ];
+  const label =
+    parts
+      .filter(([s]) => counts[s] > 0)
+      .map(([s]) => `${counts[s]} ${STATE_LABELS[s].toLowerCase()}`)
+      .join(", ") || "No reports";
   return (
-    <div className="flex items-center gap-2 rounded-md bg-neutral-100 p-2 dark:bg-neutral-800">
-      <code className="flex-1 overflow-x-auto text-xs">{cmd}</code>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={async () => {
-          await navigator.clipboard.writeText(cmd);
-          toast.success("Clone command copied");
-        }}
-      >
-        Copy
-      </Button>
+    <div
+      ref={ref}
+      role="img"
+      aria-label={`${label}, of ${total} areas`}
+      title={`${label}, of ${total} areas`}
+      data-seen={seen === null ? undefined : ""}
+      className={cn("flex h-1 w-full gap-px overflow-hidden rounded-full bg-(--rc-track)", className)}
+    >
+      {total > 0
+        ? parts
+            .filter(([s]) => counts[s] > 0)
+            .map(([s, bg], i) => (
+              <span
+                key={s}
+                className={cn("grow-seg", bg)}
+                style={{ width: `${(counts[s] / total) * 100}%`, "--seg-delay": `${i * 50}ms` } as CSSProperties}
+              />
+            ))
+        : null}
     </div>
   );
 }
 
-export function DeviceCard({
-  device,
-  canEdit,
-  onChanged,
-}: {
+export interface DeviceCardData {
   device: Device;
-  canEdit: boolean;
-  onChanged: () => void;
-}) {
-  const [editing, setEditing] = useState(false);
-  const approved = device.claims.filter((c) => c.status === "approved");
-  const areaName = (slug: string) => device.area_names[slug] ?? slug;
+  counts: StateCounts;
+  mainRepo: string | null;
+  /** What the port is based on, main first; [] = no repo (repoInfo.familiesOfDevice). */
+  families: string[];
+}
 
+/**
+ * The family chip: the first family, "+N" for more (all of them on hover);
+ * "No repo" when the phone has none. `card` uses the ReflectiveCard's chip style.
+ */
+export function FamilyChip({ families, card = false }: { families: string[]; card?: boolean }) {
+  const names = families.map(familyName);
+  const muted = names.length === 0 || families[0] === "unknown";
+  const label = names.length === 0 ? "No repo" : names[0];
+  const extra = names.length > 1 ? `+${names.length - 1}` : null;
+  const title = names.length > 1 ? `Based on ${names.join(", ")}` : names.length === 1 ? `Based on ${names[0]}` : "No repo tracked";
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <CardTitle>
-            <Link to="/device/$slug" params={{ slug: device.slug }}>
-              {device.name}
-            </Link>
-          </CardTitle>
-          <span className="ml-auto">
-            <StateBadge state={device.status} />
-          </span>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          {device.model} {device.soc}
-        </p>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        <ul className="flex flex-wrap gap-2" aria-label="Area checklist">
-          {device.statuses.map((s) => (
-            <li key={s.area_slug} title={s.detail || areaName(s.area_slug)}>
-              <StateBadge state={s.state} />
-              <span className="sr-only">{areaName(s.area_slug)}</span>
-            </li>
-          ))}
-        </ul>
-        {device.best_result ? <p className="text-sm">{device.best_result}</p> : null}
-
-        <div className="flex flex-col gap-2">
-          {device.forks.map((f) => (
-            <div key={f.id} className="flex flex-col gap-2 rounded-md border p-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <a
-                  href={f.url || `https://github.com/${f.repo}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-sm font-medium underline"
-                >
-                  {f.repo}
-                </a>
-                <VerifiedBadge verified={f.verified} />
-              </div>
-              <CloneLine repo={f.repo} branch={f.branch} />
-              {f.maintainer ? (
-                <p className="text-sm text-muted-foreground">Maintainer: {f.maintainer}</p>
-              ) : null}
-            </div>
-          ))}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 text-sm">
-          {approved.length > 0 ? (
-            approved.map((c) => (
-              <span key={c.id} className="flex items-center gap-2">
-                <ClaimBadge status={c.status} />
-                <span>{c.user}</span>
-              </span>
-            ))
-          ) : (
-            <span className="text-muted-foreground">Unclaimed</span>
-          )}
-          {canEdit ? <AddForkDialog deviceSlug={device.slug} onAdded={onChanged} /> : null}
-        </div>
-
-        {device.posts.length > 0 ? (
-          <ul className="flex flex-col gap-1 text-sm">
-            {device.posts.slice(0, 3).map((p) => (
-              <li key={p.id}>
-                <a href={p.url} target="_blank" rel="noreferrer" className="underline">
-                  {p.title}
-                </a>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-
-        {canEdit ? (
-          <div className="flex flex-col gap-2">
-            <Button variant="outline" size="sm" onClick={() => setEditing((v) => !v)}>
-              {editing ? "Close editor" : "Edit areas"}
-            </Button>
-            {editing ? (
-              <div className="flex flex-col gap-2">
-                {device.statuses.map((s) => (
-                  <AreaEditor
-                    key={s.area_slug}
-                    deviceSlug={device.slug}
-                    entry={s}
-                    areaName={areaName(s.area_slug)}
-                    onSaved={onChanged}
-                  />
-                ))}
-              </div>
-            ) : null}
-          </div>
-        ) : null}
-      </CardContent>
-    </Card>
+    <span
+      title={title}
+      className={cn(
+        card
+          ? "device-card__chip"
+          : "inline-flex h-5 max-w-44 items-center gap-1 rounded-full border px-2 text-xs whitespace-nowrap",
+        muted && (card ? "text-(--rc-muted)" : "text-muted-foreground"),
+      )}
+    >
+      <span className="truncate">{label}</span>
+      {extra ? <span className={card ? "text-(--rc-muted)" : "text-muted-foreground"}>{extra}</span> : null}
+    </span>
   );
 }
+
+export type Density = "comfortable" | "compact";
+
+/** The photo, or a small light outline with the maker's name so it never reads as a broken image. */
+function Photo({ src, name, maker, compact }: { src: string | null; name: string; maker: string; compact?: boolean }) {
+  const [failed, setFailed] = useState(false);
+  if (!src || failed) {
+    return (
+      <span className="flex flex-col items-center gap-1 text-(--rc-muted) opacity-60">
+        <PhoneOutline className={compact ? "h-9 w-auto" : "h-[70px] w-auto"} />
+        {compact ? null : <span className="text-[10px] tracking-wide">{maker === "Other" ? "No photo" : maker}</span>}
+      </span>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt={name}
+      loading="lazy"
+      decoding="async"
+      draggable={false}
+      onError={() => setFailed(true)}
+      className="max-h-full max-w-full rounded-md object-contain"
+    />
+  );
+}
+
+function IosVersion({ value, compact }: { value?: string; compact?: boolean }) {
+  if (!value) {
+    return (
+      <span
+        className="device-card__chip w-fit text-(--rc-muted)"
+        title="iOS version not stated"
+        aria-label="iOS version not stated"
+      >
+        iOS ?
+      </span>
+    );
+  }
+  return (
+    <p className={cn("truncate font-semibold tracking-tight text-(--rc-ink)", compact ? "text-sm" : "text-lg leading-6")}>
+      {value}
+    </p>
+  );
+}
+
+/**
+ * One phone as a React Bits ReflectiveCard (comfortable: ~300 px tall;
+ * compact: an 88 px row). The WebGL metal runs only while the card holds a
+ * slot from glBudget (near the viewport, under the cap); otherwise the same
+ * card renders with the CSS sheen. The webcam stays off.
+ */
+export const DeviceCard = memo(function DeviceCard({
+  data,
+  theme,
+  density = "comfortable",
+}: {
+  data: DeviceCardData;
+  theme: "dark" | "light";
+  density?: Density;
+}) {
+  const { device: d, counts, mainRepo, families } = data;
+  const ref = useRef<HTMLAnchorElement>(null);
+  const live = useGlSlot(ref, "card");
+  const maintainers = maintainersOf(d);
+  const state = (d.status in STATE_LABELS ? d.status : "unknown") as AreaState;
+  const photo = devicePhoto(d);
+  const sub = [d.model, d.soc].filter(Boolean).join(" · ");
+  const compact = density === "compact";
+  const owner = maintainers.length > 0 ? maintainers.join(", ") : "Unclaimed";
+  const repoLine = mainRepo ?? "No repo";
+
+  return (
+    <Link
+      ref={ref}
+      to="/device/$slug"
+      params={{ slug: d.slug }}
+      aria-label={`${d.name}${d.ios_version ? `, ${d.ios_version}` : ""}, ${STATE_LABELS[state]}`}
+      className="device-card block rounded-[15px] outline-none focus-visible:ring-3 focus-visible:ring-ring"
+      data-density={density}
+    >
+      <ReflectiveCard
+        webgl={live}
+        webcam={false}
+        theme={theme}
+        width="100%"
+        height={compact ? 88 : 300}
+        radius={15}
+        metalness={theme === "dark" ? 0.8 : 0.15}
+        roughness={0.4}
+        blurStrength={8}
+        shine={theme === "dark" ? 0.3 : 0.25}
+        glare={0.2}
+        bevel={2}
+        tiltStrength={compact ? 3 : 6}
+        intro={false}
+        statusColor={DOT[state]}
+        style={
+          {
+            "--rc-pad": compact ? "10px 12px" : "12px",
+            "--rc-shadow":
+              theme === "dark"
+                ? "0 10px 24px -16px rgba(0, 0, 0, 0.75), 0 2px 6px -3px rgba(0, 0, 0, 0.4)"
+                : "0 10px 22px -16px rgba(24, 24, 27, 0.28), 0 2px 5px -3px rgba(24, 24, 27, 0.12)",
+          } as CSSProperties
+        }
+      >
+        {compact ? (
+          <div className="flex h-full min-w-0 items-center gap-3">
+            <span className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-[10px] bg-(--rc-track)">
+              <Photo src={photo} name={d.name} maker={makerOf(d)} compact />
+            </span>
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+              <div className="flex min-w-0 items-center gap-2">
+                <h3 className="min-w-0 flex-1 truncate text-sm font-semibold text-(--rc-ink)">{d.name}</h3>
+                <span className="reflective-card__status device-card__state">
+                  <span className="reflective-card__dot" />
+                  {STATE_LABELS[state]}
+                </span>
+              </div>
+              <div className="flex min-w-0 items-center gap-2">
+                <IosVersion value={d.ios_version} compact />
+                <FamilyChip families={families} card />
+              </div>
+              <SegmentBar counts={counts} />
+              <p className="truncate text-[11px] text-(--rc-muted)">
+                {repoLine}, {owner}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="reflective-card__header device-card__top">
+              <FamilyChip families={families} card />
+              <span className="reflective-card__status device-card__state">
+                <span className="reflective-card__dot" />
+                {STATE_LABELS[state]}
+              </span>
+            </div>
+
+            <div className="flex h-[150px] shrink-0 items-center justify-center py-2">
+              <Photo src={photo} name={d.name} maker={makerOf(d)} />
+            </div>
+
+            <div className="mt-auto flex min-w-0 flex-col gap-0.5">
+              <h3 className="truncate text-sm font-semibold text-(--rc-ink)">{d.name}</h3>
+              <IosVersion value={d.ios_version} />
+              {sub ? <p className="truncate text-xs text-(--rc-muted)">{sub}</p> : null}
+            </div>
+
+            <div className="mt-2 flex flex-col gap-1.5">
+              <SegmentBar counts={counts} />
+              <p className="truncate text-xs text-(--rc-muted)" title={`${repoLine}, ${owner}`}>
+                {mainRepo ? <span className="font-mono text-[11px]">{mainRepo}</span> : "No repo"}
+                {", "}
+                {owner}
+              </p>
+            </div>
+          </>
+        )}
+      </ReflectiveCard>
+    </Link>
+  );
+});

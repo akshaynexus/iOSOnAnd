@@ -1,59 +1,46 @@
 // POST /api/users — admin-only account creation (CLI user-add).
-// Body {email, password, is_admin?} -> 201 {user}. 403 without an admin token.
+// Body {email, password, is_admin?, display_name?} -> 201 {user}.
 
 import { createFileRoute } from '@tanstack/react-router';
 import {
   HttpError,
+  actorName,
   createUser,
-  ensureAuthSchema,
   findUserByEmail,
-  handleError,
   hashPassword,
   json,
   readJson,
   requireAdmin,
+  str,
   toSelfUser,
   validEmail,
 } from '@/lib/auth';
+import { apiHandlers, type ApiCtx } from '@/lib/api';
 import { appendChangelog } from '@/lib/changelog';
-import { actorName } from '@/lib/auth';
 
-async function handlePost(req: Request): Promise<Response> {
-  const admin = await requireAdmin(req);
-  await ensureAuthSchema();
-  const body = await readJson(req);
-  const email = String(body.email || '').trim().toLowerCase();
-  const password = String(body.password || '');
-  if (!validEmail(email)) {
-    throw new HttpError(400, 'invalid email', 'send {"email","password"} plus optional is_admin');
-  }
-  if (password.length < 10) {
-    throw new HttpError(400, 'password too short', 'use at least 10 characters');
+async function handlePost({ request }: ApiCtx): Promise<Response> {
+  const admin = await requireAdmin(request);
+  const body = await readJson(request);
+  const email = str(body, 'email', 254).toLowerCase();
+  const password = typeof body.password === 'string' ? body.password : '';
+  if (!validEmail(email)) throw new HttpError(400, 'invalid email', 'send {"email","password"} plus optional is_admin');
+  if (password.length < 10 || password.length > 256) {
+    throw new HttpError(400, 'bad password', 'use 10 to 256 characters');
   }
   if (await findUserByEmail(email)) {
     throw new HttpError(409, 'email already registered', 'that address already has an account');
   }
-  const isAdmin = body.is_admin === true || body.is_admin === 1 || body.is_admin === '1';
+  const isAdminFlag = body.is_admin === true || body.is_admin === 1 || body.is_admin === '1';
   const user = await createUser({
     email,
     passwordHash: await hashPassword(password),
-    displayName: email.split('@')[0] || 'user',
-    isAdmin,
+    displayName: str(body, 'display_name', 64) || email.split('@')[0] || 'user',
+    isAdmin: isAdminFlag,
   });
-  await appendChangelog(actorName(admin), `created account ${email}${isAdmin ? ' (admin)' : ''}`);
+  await appendChangelog(actorName(admin), `created account ${user.display_name}${isAdminFlag ? ' (admin)' : ''}`);
   return json({ user: toSelfUser(user) }, 201);
 }
 
 export const Route = createFileRoute('/api/users')({
-  server: {
-    handlers: {
-  POST: async ({ request }: { request: Request }) => {
-    try {
-      return await handlePost(request);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-    },
-  },
+  server: { handlers: apiHandlers({ POST: handlePost }) },
 });

@@ -1,33 +1,34 @@
-// POST /api/reddit/fetch — run the r/hackios fetch (CLI reddit-fetch).
-// Body {subreddit?} (default hackios). Stores unseen posts, returns
-// {added, posts}. 502 with {error, hint} when Reddit is unreachable.
+// POST /api/reddit/fetch — run the r/<subreddit> fetch (admin; CLI
+// reddit-fetch). Body {subreddit?} (default hackios). Stores unseen posts,
+// returns {added, posts}. 502 with {error, hint} when Reddit is unreachable.
 
 import { createFileRoute } from '@tanstack/react-router';
-import { queryAll, exec } from '@/lib/db';
-import { HttpError, actorName, handleError, json, readJson, requireUser } from '@/lib/auth';
+import { queryAll, queryFirst } from '@/lib/db';
+import { HttpError, actorName, json, normalizeRedditUrl, readJson, requireAdmin, str } from '@/lib/auth';
+import { apiHandlers, type ApiCtx } from '@/lib/api';
 import { appendChangelog } from '@/lib/changelog';
 import { fetchRedditCandidates } from '@/lib/reddit';
 import type { RedditPost } from '@/lib/types';
 
-async function handlePost(req: Request): Promise<Response> {
-  const user = await requireUser(req);
-  const body = await readJson(req);
-  const subreddit = body.subreddit ? String(body.subreddit) : 'hackios';
+async function handlePost({ request }: ApiCtx): Promise<Response> {
+  const user = await requireAdmin(request);
+  const body = await readJson(request);
+  const subreddit = str(body, 'subreddit', 21) || 'hackios';
+  if (!/^[A-Za-z0-9_]{1,21}$/.test(subreddit)) {
+    throw new HttpError(400, 'bad subreddit', 'letters, digits and underscore only, without r/');
+  }
   const known = new Set((await queryAll<{ url: string }>('SELECT url FROM reddit_posts')).map((r) => r.url));
   const { candidates, error } = await fetchRedditCandidates({ knownUrls: known, subreddit });
   const added: RedditPost[] = [];
   for (const c of candidates) {
-    try {
-      await exec('INSERT INTO reddit_posts (title, url, published, note) VALUES (?, ?, ?, ?)', [
-        c.title,
-        c.url,
-        c.published,
-        '',
-      ]);
-      added.push({ title: c.title, url: c.url, published: c.published } as RedditPost);
-    } catch {
-      // Lost a race with another fetch; skip the duplicate.
-    }
+    const url = normalizeRedditUrl(c.url);
+    if (!url || known.has(url)) continue;
+    known.add(url);
+    const row = await queryFirst<RedditPost>(
+      'INSERT INTO reddit_posts (title, url, published, note) VALUES (?, ?, ?, ?) ON CONFLICT(url) DO NOTHING RETURNING *',
+      [c.title.slice(0, 300), url, c.published, ''],
+    );
+    if (row) added.push(row);
   }
   await appendChangelog(actorName(user), `reddit-fetch r/${subreddit}: ${added.length} new candidate(s)`);
   if (error && added.length === 0) {
@@ -37,15 +38,5 @@ async function handlePost(req: Request): Promise<Response> {
 }
 
 export const Route = createFileRoute('/api/reddit/fetch')({
-  server: {
-    handlers: {
-  POST: async ({ request }: { request: Request }) => {
-    try {
-      return await handlePost(request);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-    },
-  },
+  server: { handlers: apiHandlers({ POST: handlePost }) },
 });

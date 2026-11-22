@@ -1,0 +1,45 @@
+---
+title: "Reddit"
+description: "How r/hackios posts and the claims in them get into the tracker, and why they stay claims."
+---
+
+Many ports are announced on r/hackios before any code or logs are public. The tracker keeps
+those posts as links on the Updates tab, and records what they say as claims, not as verified
+state.
+
+## How posts get in
+
+| Path | Who | What it does |
+|---|---|---|
+| `seed/seed.json` | the seed | `reddit_posts` rows and `device_status` rows read from r/hackios threads |
+| `node cli.mjs post-add --title "..." --link URL` | admin, or a maintainer of any device | adds one post (`POST /api/posts`) |
+| `node cli.mjs reddit-fetch [SUBREDDIT]` | admin | `POST /api/reddit/fetch`: searches the subreddit (default `hackios`) for "OneiOS", newest first, and stores posts not seen before |
+
+Rules for a post URL:
+
+- It must be `https://www.reddit.com/r/...`, `https://old.reddit.com/r/...` or
+  `https://redd.it/<id>`.
+- It is stored in one form, `https://www.reddit.com/...` without a query, so the same post is not
+  added twice. A duplicate is 409.
+
+`reddit-fetch` runs only when an admin calls it; there is no scheduled fetch. When Reddit fails
+or rate limits and nothing was added, it returns 502 with a hint to retry in a few minutes.
+Posts are links, not embeds. A post may carry a thumbnail from the post itself (`image_url`,
+`image_width`, `image_height`; an admin sets it with `node cli.mjs post-set <id> --image-url URL`).
+
+## Why they stay claims
+
+A Reddit post is the porter's own statement, usually a video or a screenshot. Nobody has rebuilt
+or rerun it. So:
+
+- A status taken from a thread has `detail` starting with `reddit claim (YYYY-MM-DD):`, the date
+  the thread was read, and `source` set to the thread's permalink. The UI shows the source link
+  next to the state.
+- A fork found through Reddit is `fork-claim` until someone reproduces it on hardware. Only an
+  admin moves it to `reproduced` or `merged`.
+- Nothing is inferred beyond what the post says. An area the post does not mention stays
+  `unknown`.
+
+To replace a claim with a verified state, a maintainer of the device writes the status with their
+own `--detail` and `--source` (a log, a commit, a session folder). See
+[Agent system](/docs/agents).

@@ -1,36 +1,30 @@
-// /api/search — GET one-box search over devices, forks, areas, posts.
+// /api/search — GET one-box search over devices, forks, areas, posts (public).
+// Devices come with statuses/forks/claims attached (same shape as /api/devices).
 import { createFileRoute } from '@tanstack/react-router';
 import { queryAll } from '@/lib/db';
-import { handleError, json } from '@/lib/auth';
+import { json } from '@/lib/auth';
+import { apiHandlers, type ApiCtx } from '@/lib/api';
+import { likeEscape, withDetails } from '@/lib/devices';
+import { FORK_SELECT, forkViews, type ForkRow } from '@/lib/forks';
+import type { Device } from '@/lib/types';
 
-async function handleGet(req: Request): Promise<Response> {
-  const q = new URL(req.url).searchParams.get('q') || '';
-  const like = `%${q}%`;
+async function handleGet({ request }: ApiCtx): Promise<Response> {
+  const q = (new URL(request.url).searchParams.get('q') || '').trim().slice(0, 100);
+  const like = `%${likeEscape(q)}%`;
+  const L = (cols: string[]) => cols.map((c) => `${c} LIKE ? ESCAPE '\\'`).join(' OR ');
   const [devices, forks, areas, posts] = await Promise.all([
-    queryAll(
-      'SELECT * FROM devices WHERE slug LIKE ? OR name LIKE ? OR model LIKE ? OR soc LIKE ? OR best_result LIKE ? ORDER BY slug',
-      [like, like, like, like, like],
-    ),
-    queryAll(
-      'SELECT * FROM forks WHERE repo LIKE ? OR branch LIKE ? OR best_result LIKE ? OR fork_only LIKE ? ORDER BY id',
-      [like, like, like, like],
-    ),
-    queryAll('SELECT * FROM areas WHERE slug LIKE ? OR name LIKE ? ORDER BY slug', [like, like]),
-    queryAll('SELECT * FROM reddit_posts WHERE title LIKE ? OR url LIKE ? ORDER BY id DESC', [like, like]),
+    queryAll<Device>(`SELECT * FROM devices WHERE ${L(['slug', 'name', 'model', 'soc', 'best_result'])} ORDER BY slug LIMIT 100`, [
+      like, like, like, like, like,
+    ]),
+    queryAll<ForkRow>(`${FORK_SELECT} WHERE ${L(['f.repo', 'f.branch', 'f.best_result', 'f.fork_only', 'f.base_project'])} ORDER BY f.id LIMIT 100`, [
+      like, like, like, like, like,
+    ]),
+    queryAll(`SELECT * FROM areas WHERE ${L(['slug', 'name'])} ORDER BY slug`, [like, like]),
+    queryAll(`SELECT * FROM reddit_posts WHERE ${L(['title', 'url'])} ORDER BY id DESC LIMIT 50`, [like, like]),
   ]);
-  return json({ q, devices, forks, areas, posts });
+  return json({ q, devices: await withDetails(devices), forks: await forkViews(forks), areas, posts });
 }
 
 export const Route = createFileRoute('/api/search')({
-  server: {
-    handlers: {
-      GET: async ({ request }: { request: Request }) => {
-        try {
-          return await handleGet(request);
-        } catch (e) {
-          return handleError(e);
-        }
-      },
-    },
-  },
+  server: { handlers: apiHandlers({ GET: handleGet }) },
 });

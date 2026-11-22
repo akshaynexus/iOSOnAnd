@@ -1,26 +1,41 @@
-// src/lib/auth.ts — Workers-safe auth for the iOSOnAnd tracker.
+// src/lib/auth.ts — Workers-safe auth and the trust model for the tracker.
 //
-// - Password hashing: WebCrypto PBKDF2-SHA256 (>=100k iterations, per-user
-//   random salt). No node:crypto — this runs on the Cloudflare Workers runtime.
-// - Sessions: random 32-byte bearer stored as sha256(token_hash) in the
-//   `sessions` table, sent as an HttpOnly cookie.
-// - API tokens: same shape in `api_tokens` (plaintext shown once at mint),
-//   sent as `Authorization: Bearer <token>`.
-// - Login challenges: single-use nonces in `login_challenges` for the
-//   gist-proof GitHub flow (see github.ts).
-// - Also hosts the shared JSON / {error, hint} HTTP helpers used by every
-//   /api route (kept here because every route already imports auth).
+// - Password hashing: WebCrypto PBKDF2-SHA256, 100 000 iterations (the most
+//   Cloudflare Workers' WebCrypto accepts; above that deriveBits throws in
+//   production), per-user 16-byte salt. Older hashes are re-hashed on login.
+// - Sessions: random 32-byte secret in an HttpOnly, SameSite=Lax cookie
+//   (Secure on https); only sha256(secret) is stored (`sessions`).
+// - API tokens: `ion_<random>`, sent as `Authorization: Bearer`; only
+//   sha256(token) is stored (`api_tokens`). Lookups are by hash, so no
+//   plaintext comparison happens at all.
+// - Login challenges: single-use, 10-minute nonces (`login_challenges`) for
+//   the gist-proof GitHub flow; consumed atomically (see consumeChallenge).
+// - Schema: owned by migrations/ only (no runtime DDL here).
 //
-// Table contract (see PLAN.md section 2):
-//   users: email UNIQUE NULLABLE, password_hash NULLABLE,
-//          github_id UNIQUE NULLABLE, github_login (+ id, display_name,
-//          contact, is_admin, created carried over)
-//   sessions: token_hash UNIQUE, user_id, created, expires
-//   login_challenges: nonce UNIQUE, github_id, gist_id, expires, used
-//   api_tokens: token_hash UNIQUE, user_id, name, prefix, created, expires, revoked
+// Trust model (the contract the UI and CLI build to):
+//   admin               users.is_admin = 1 (bootstrap: ADMIN_EMAIL/ADMIN_PASSWORD)
+//   maintainer of X     a user with an APPROVED claim on device X
+//   any logged-in user  POST /api/claims, own tokens/profile, every read
+//   admin | maintainer  of X: status writes, forks for X, fork sync for X
+//   admin | any maint.  POST /api/posts
+//   admin only          claim review, devices/areas/users create, reddit
+//                       fetch, every DELETE
+// Denials are 403 {error, hint}. Helpers: requireUser, requireAdmin,
+// requireDeviceEditor(req, slug), requirePoster(req), maintainedSlugs(id).
+//
+// API key scopes (src/lib/scopes.ts) are enforced in ONE place: requireUser.
+// Every guard above calls it, so every write route goes through it. A request
+// authenticated by a token needs scopeFor(method, path); a miss is 403
+// {error:"token scope", hint:"needs <scope>"}. An expired token is 401. A
+// session cookie is not scoped. A scope only narrows a key, it never adds
+// rights. last_used is written at most once a minute per token.
 
-import { getDb, queryAll, queryFirst, exec } from '@/lib/db';
+import { queryAll, queryFirst, exec } from '@/lib/db';
 import type { PublicUser } from '@/lib/types';
+import { SCOPES, parseScopes, scopeAllows, scopeFor, type Scope } from '@/lib/scopes';
+
+export { SCOPES, parseScopes, scopeAllows, scopeFor };
+export type { Scope };
 
 /* ------------------------------------------------------------------ */
 /* HTTP helpers shared by all /api routes                              */
@@ -29,47 +44,78 @@ import type { PublicUser } from '@/lib/types';
 export class HttpError extends Error {
   status: number;
   hint?: string;
-  constructor(status: number, error: string, hint?: string) {
+  headers?: Record<string, string>;
+  constructor(status: number, error: string, hint?: string, headers?: Record<string, string>) {
     super(error);
     this.status = status;
     this.hint = hint;
+    this.headers = headers;
   }
 }
 
 export function json(data: unknown, status = 200, headers?: Record<string, string>): Response {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { 'content-type': 'application/json; charset=utf-8', ...(headers || {}) },
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      'cache-control': 'no-store',
+      ...(headers || {}),
+    },
   });
 }
 
-export function apiError(status: number, error: string, hint?: string): Response {
+export function apiError(status: number, error: string, hint?: string, headers?: Record<string, string>): Response {
   const body: Record<string, string> = { error };
   if (hint) body.hint = hint;
-  return json(body, status);
+  return json(body, status, headers);
 }
 
 /** Map route exceptions to {error, hint} responses. Unknown bugs -> 500. */
 export function handleError(e: unknown): Response {
-  if (e instanceof HttpError) return apiError(e.status, e.message, e.hint);
+  if (e instanceof HttpError) return apiError(e.status, e.message, e.hint, e.headers);
+  const msg = e instanceof Error ? e.message : String(e);
+  // A UNIQUE index caught a race the route's own pre-check missed.
+  if (/UNIQUE constraint failed/i.test(msg)) {
+    return apiError(409, 'already exists', 'a row with the same unique key exists; GET it instead of creating it again');
+  }
   console.error('api error:', e);
   return apiError(500, 'internal error', 'retry; if it persists, report what you called');
 }
 
-/** Parse a JSON body. Empty body -> {}. Malformed JSON -> 400. */
-export async function readJson(req: Request): Promise<any> {
+const MAX_BODY_BYTES = 64 * 1024;
+
+/** Parse a JSON object body. Empty body -> {}. Malformed / non-object -> 400. */
+export async function readJson(req: Request): Promise<Record<string, any>> {
   let text = '';
   try {
     text = await req.text();
   } catch {
     throw new HttpError(400, 'unreadable request body', 'send a JSON object with Content-Type: application/json');
   }
+  if (text.length > MAX_BODY_BYTES) throw new HttpError(413, 'body too large', 'keep request bodies under 64 KB');
   if (!text.trim()) return {};
+  let v: unknown;
   try {
-    return JSON.parse(text);
+    v = JSON.parse(text);
   } catch {
     throw new HttpError(400, 'invalid JSON body', 'send a JSON object with Content-Type: application/json');
   }
+  if (!v || typeof v !== 'object' || Array.isArray(v)) {
+    throw new HttpError(400, 'body must be a JSON object', 'send {"field": value, ...}');
+  }
+  return v as Record<string, any>;
+}
+
+/** Optional string field, trimmed, length-capped. Non-strings are rejected. */
+export function str(body: Record<string, any>, key: string, max = 2000): string {
+  const v = body[key];
+  if (v === undefined || v === null) return '';
+  if (typeof v !== 'string' && typeof v !== 'number') {
+    throw new HttpError(400, `bad ${key}`, `${key} must be a string`);
+  }
+  const s = String(v).trim();
+  if (s.length > max) throw new HttpError(400, `${key} too long`, `${key} is limited to ${max} characters`);
+  return s;
 }
 
 /* ------------------------------------------------------------------ */
@@ -96,13 +142,19 @@ export function getCookie(req: Request, name: string): string | null {
   return null;
 }
 
+function isHttps(req: Request): boolean {
+  if (req.url.startsWith('https://')) return true;
+  return (req.headers.get('x-forwarded-proto') || '').toLowerCase() === 'https';
+}
+
 export function sessionCookieHeader(token: string, req: Request, maxAge = SESSION_TTL_SECONDS): string {
-  const secure = req.url.startsWith('https://') ? '; Secure' : '';
+  const secure = isHttps(req) ? '; Secure' : '';
   return `${SESSION_COOKIE}=${encodeURIComponent(token)}; HttpOnly; Path=/; SameSite=Lax; Max-Age=${maxAge}${secure}`;
 }
 
-export function clearSessionCookieHeader(): string {
-  return `${SESSION_COOKIE}=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0`;
+export function clearSessionCookieHeader(req?: Request): string {
+  const secure = req && isHttps(req) ? '; Secure' : '';
+  return `${SESSION_COOKIE}=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0${secure}`;
 }
 
 export function getBearer(req: Request): string | null {
@@ -116,7 +168,10 @@ export function getBearer(req: Request): string | null {
 /* WebCrypto primitives (no node:crypto, no Buffer)                    */
 /* ------------------------------------------------------------------ */
 
-const PBKDF2_ITERATIONS = 210_000; // OWASP floor for HMAC-SHA256; spec needs >=100k
+// Cloudflare Workers rejects PBKDF2 above 100 000 iterations ("iteration
+// counts above 100000 are not supported"), so this is the ceiling, not a
+// choice. Local workerd does not enforce it, which is how 210 000 slipped in.
+export const PBKDF2_ITERATIONS = 100_000;
 const SALT_BYTES = 16;
 
 function b64encode(bytes: Uint8Array): string {
@@ -137,13 +192,9 @@ function b64urlencode(bytes: Uint8Array): string {
 }
 
 async function pbkdf2Key(password: string, salt: Uint8Array, iterations: number): Promise<Uint8Array> {
-  const base = await crypto.subtle.importKey(
-    'raw',
-    new TextEncoder().encode(password),
-    'PBKDF2',
-    false,
-    ['deriveBits'],
-  );
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, [
+    'deriveBits',
+  ]);
   const bits = await crypto.subtle.deriveBits(
     { name: 'PBKDF2', hash: 'SHA-256', salt: salt as unknown as BufferSource, iterations },
     base,
@@ -157,6 +208,11 @@ export async function hashPassword(password: string): Promise<string> {
   const salt = crypto.getRandomValues(new Uint8Array(SALT_BYTES));
   const key = await pbkdf2Key(password, salt, PBKDF2_ITERATIONS);
   return `pbkdf2-sha256$${PBKDF2_ITERATIONS}$${b64encode(salt)}$${b64encode(key)}`;
+}
+
+/** True when a stored hash uses other parameters than hashPassword does now. */
+export function needsRehash(stored: string): boolean {
+  return stored.split('$')[1] !== String(PBKDF2_ITERATIONS);
 }
 
 export async function verifyPassword(password: string, stored: string): Promise<boolean> {
@@ -193,7 +249,7 @@ export function randomTokenString(bytes = 32): string {
 }
 
 /* ------------------------------------------------------------------ */
-/* Env / time (Workers: process.env works via nodejs_compat; local: bun) */
+/* Env / time                                                          */
 /* ------------------------------------------------------------------ */
 
 export function env(name: string): string | undefined {
@@ -250,7 +306,10 @@ export interface SessionRow {
 }
 
 export interface ApiTokenRow {
+  id: number;
   token_hash: string;
+  scopes: string | null;
+  last_used: string | null;
   user_id: number;
   name: string;
   prefix: string;
@@ -270,105 +329,6 @@ export interface ChallengeRow {
 }
 
 /* ------------------------------------------------------------------ */
-/* Schema safety net (scaffold migration is authoritative; this is a    */
-/* best-effort no-op when the new tables/columns already exist)        */
-/* ------------------------------------------------------------------ */
-
-let ensurePromise: Promise<void> | null = null;
-/** Column names seen on users at last ensure (drives token_hash-compat inserts). */
-let userColsCache: Set<string> | null = null;
-
-export function ensureAuthSchema(): Promise<void> {
-  if (!ensurePromise) {
-    ensurePromise = doEnsure().catch((e) => {
-      // Retry on next call (transient D1 hiccup); callers surface real errors.
-      ensurePromise = null;
-      console.error('ensureAuthSchema failed:', e);
-    });
-  }
-  return ensurePromise;
-}
-
-async function doEnsure(): Promise<void> {
-  await getDb(); // honor contract: resolve the binding before touching it
-  await exec(
-    `CREATE TABLE IF NOT EXISTS sessions (
-       token_hash TEXT PRIMARY KEY,
-       user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-       created TEXT NOT NULL,
-       expires TEXT
-     )`,
-  );
-  await exec(
-    `CREATE TABLE IF NOT EXISTS api_tokens (
-       token_hash TEXT PRIMARY KEY,
-       user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-       name TEXT NOT NULL DEFAULT '',
-       prefix TEXT NOT NULL DEFAULT '',
-       created TEXT NOT NULL,
-       expires TEXT,
-       revoked INTEGER NOT NULL DEFAULT 0
-     )`,
-  );
-  await exec(
-    `CREATE TABLE IF NOT EXISTS login_challenges (
-       nonce TEXT PRIMARY KEY,
-       github_id INTEGER NOT NULL,
-       github_login TEXT DEFAULT '',
-       gist_id TEXT DEFAULT '',
-       expires TEXT NOT NULL,
-       used INTEGER NOT NULL DEFAULT 0,
-       created TEXT NOT NULL
-     )`,
-  );
-  // Backfill the post-v5 auth columns when the migration has not applied yet
-  // (pure ADD COLUMNs; no-ops once migrations/0002_auth.sql has applied).
-  const have = new Set(
-    (await queryAll<{ name: string }>('PRAGMA table_info(users)')).map((c) => String(c.name)),
-  );
-  userColsCache = have;
-  for (const ddl of [
-    'ADD COLUMN email TEXT',
-    'ADD COLUMN password_hash TEXT',
-    'ADD COLUMN github_id INTEGER',
-    'ADD COLUMN github_login TEXT',
-    'ADD COLUMN github_linked_at TEXT',
-    "ADD COLUMN display_name TEXT NOT NULL DEFAULT ''",
-    "ADD COLUMN contact TEXT NOT NULL DEFAULT ''",
-    'ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0',
-    "ADD COLUMN created TEXT NOT NULL DEFAULT ''",
-  ]) {
-    const col = ddl.split(' ')[2];
-    if (!have.has(col)) {
-      await exec(`ALTER TABLE users ${ddl}`);
-      have.add(col);
-    }
-  }
-  await exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email)');
-  await exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_github_id ON users(github_id)');
-  // Same treatment for the token/challenge tables (0001 predates name/prefix/
-  // revoked and github_id/gist_id/expires).
-  const tokensHave = new Set(
-    (await queryAll<{ name: string }>('PRAGMA table_info(api_tokens)')).map((c) => String(c.name)),
-  );
-  for (const ddl of [
-    "ADD COLUMN name TEXT NOT NULL DEFAULT ''",
-    "ADD COLUMN prefix TEXT NOT NULL DEFAULT ''",
-    'ADD COLUMN revoked INTEGER NOT NULL DEFAULT 0',
-  ]) {
-    const col = ddl.split(' ')[2];
-    if (!tokensHave.has(col)) await exec(`ALTER TABLE api_tokens ${ddl}`);
-  }
-  const chHave = new Set(
-    (await queryAll<{ name: string }>('PRAGMA table_info(login_challenges)')).map((c) => String(c.name)),
-  );
-  for (const ddl of ['ADD COLUMN github_id INTEGER', "ADD COLUMN gist_id TEXT DEFAULT ''", 'ADD COLUMN expires TEXT']) {
-    const col = ddl.split(' ')[2];
-    if (!chHave.has(col)) await exec(`ALTER TABLE login_challenges ${ddl}`);
-  }
-}
-
-/* ------------------------------------------------------------------ */
 /* Users                                                               */
 /* ------------------------------------------------------------------ */
 
@@ -384,11 +344,6 @@ export async function findUserByGithubId(githubId: number): Promise<UserRow | nu
   return queryFirst<UserRow>('SELECT * FROM users WHERE github_id = ?', [githubId]);
 }
 
-export async function countUsers(): Promise<number> {
-  const row = await queryFirst<{ n: number }>('SELECT COUNT(*) AS n FROM users');
-  return row ? Number(row.n) : 0;
-}
-
 export async function createUser(opts: {
   email?: string | null;
   passwordHash?: string | null;
@@ -397,37 +352,27 @@ export async function createUser(opts: {
   githubLogin?: string | null;
   isAdmin?: boolean;
 }): Promise<UserRow> {
-  await ensureAuthSchema();
   const email = opts.email ? opts.email.toLowerCase() : null;
   // users.token_hash is a NOT NULL UNIQUE leftover of the pre-auth schema
-  // (kept for backward compat); fill a random unique placeholder when present.
-  const cols = ['email', 'password_hash', 'display_name', 'contact'];
-  const vals: unknown[] = [email, opts.passwordHash ?? null, opts.displayName, ''];
-  if (userColsCache?.has('token_hash')) {
-    cols.push('token_hash');
-    vals.push(`legacy-${randomTokenString(16)}`);
-  }
-  cols.push('github_id', 'github_login', 'github_linked_at', 'is_admin', 'created');
-  vals.push(
-    opts.githubId ?? null,
-    opts.githubLogin ?? null,
-    opts.githubId != null ? nowIso() : null,
-    opts.isAdmin ? 1 : 0,
-    nowIso(),
+  // (migrations/0001_init.sql; never read): fill a random placeholder.
+  const row = await queryFirst<UserRow>(
+    `INSERT INTO users (email, password_hash, display_name, contact, token_hash,
+                        github_id, github_login, github_linked_at, is_admin, created)
+     VALUES (?, ?, ?, '', ?, ?, ?, ?, ?, ?) RETURNING *`,
+    [
+      email,
+      opts.passwordHash ?? null,
+      opts.displayName.slice(0, 64),
+      `legacy-${randomTokenString(16)}`,
+      opts.githubId ?? null,
+      opts.githubLogin ?? null,
+      opts.githubId != null ? nowIso() : null,
+      opts.isAdmin ? 1 : 0,
+      nowIso(),
+    ],
   );
-  await exec(`INSERT INTO users (${cols.join(', ')}) VALUES (${cols.map(() => '?').join(', ')})`, vals as never[]);
-  // Re-read via a stable unique key (same connection assumptions avoided).
-  if (email) {
-    const u = await findUserByEmail(email);
-    if (u) return u;
-  }
-  if (opts.githubId != null) {
-    const u = await findUserByGithubId(opts.githubId);
-    if (u) return u;
-  }
-  const fallback = await queryFirst<UserRow>('SELECT * FROM users ORDER BY id DESC LIMIT 1');
-  if (!fallback) throw new HttpError(500, 'user creation failed', 'retry');
-  return fallback;
+  if (!row) throw new HttpError(500, 'user creation failed', 'retry');
+  return row;
 }
 
 export function toPublicUser(u: UserRow): PublicUser {
@@ -445,28 +390,71 @@ export function toSelfUser(u: UserRow): PublicUser & { email: string | null } {
   return { ...toPublicUser(u), email: u.email } as PublicUser & { email: string | null };
 }
 
+/** Self view plus the trust fields the UI gates on (maintains, maintains_repos, can_post). */
+export async function toSelfUserWithTrust(
+  u: UserRow,
+): Promise<PublicUser & { email: string | null; maintains: string[]; maintains_repos: string[]; can_post: boolean }> {
+  const [maintains, maintains_repos] = await Promise.all([maintainedSlugs(u.id), maintainedRepos(u.id)]);
+  return { ...toSelfUser(u), maintains, maintains_repos, can_post: isAdmin(u) || maintains.length > 0 };
+}
+
+/** Repos (OWNER/REPO) whose fork row names this user as maintainer, sorted. */
+export async function maintainedRepos(userId: number): Promise<string[]> {
+  const rows = await queryAll<{ repo: string }>('SELECT repo FROM forks WHERE maintainer_user_id = ? ORDER BY repo', [userId]);
+  return rows.map((r) => r.repo);
+}
+
 export function actorName(u: UserRow): string {
   if (u.github_login) return `@${u.github_login}`;
   if (u.display_name) return u.display_name;
   return `user#${u.id}`;
 }
 
-/** First-user bootstrap: ADMIN_EMAIL/ADMIN_PASSWORD env promotes user #1. */
-export async function maybeBootstrapAdmin(user: UserRow, plaintextPassword: string): Promise<UserRow> {
-  try {
-    if ((await countUsers()) !== 1) return user;
-    const adminEmail = env('ADMIN_EMAIL');
-    const adminPassword = env('ADMIN_PASSWORD');
-    if (!adminEmail || !adminPassword) return user;
-    if (!user.email || user.email.toLowerCase() !== adminEmail.toLowerCase()) return user;
-    const a = await sha256Hex(plaintextPassword);
-    const b = await sha256Hex(adminPassword);
-    if (a !== b) return user;
-    await exec('UPDATE users SET is_admin = 1 WHERE id = ?', [user.id]);
-    return { ...user, is_admin: 1 };
-  } catch {
-    return user;
+export function isAdmin(u: UserRow | null | undefined): boolean {
+  return !!u && Number(u.is_admin) === 1;
+}
+
+/* ------------------------------------------------------------------ */
+/* Bootstrap admin (ADMIN_EMAIL / ADMIN_PASSWORD env)                  */
+/* ------------------------------------------------------------------ */
+
+/** True when ADMIN_EMAIL is set and equals `email` (case-insensitive). */
+export function isBootstrapAdminEmail(email: string): boolean {
+  const adminEmail = env('ADMIN_EMAIL');
+  return !!adminEmail && adminEmail.trim().toLowerCase() === email.trim().toLowerCase();
+}
+
+/** Constant-time check of {email,password} against ADMIN_EMAIL/ADMIN_PASSWORD. */
+export async function matchesBootstrapAdmin(email: string, password: string): Promise<boolean> {
+  const adminPassword = env('ADMIN_PASSWORD');
+  if (!adminPassword || !isBootstrapAdminEmail(email)) return false;
+  const digest = (s: string) => crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  const [a, b] = await Promise.all([digest(password), digest(adminPassword)]);
+  return timingSafeEqual(new Uint8Array(a), new Uint8Array(b));
+}
+
+/**
+ * Login with the env admin pair. The env pair is authoritative: the account
+ * is created on first use, promoted, and its stored hash reset to the env
+ * password (so an account squatted on ADMIN_EMAIL cannot lock the owner out).
+ * Returns null when {email,password} is not the env admin pair.
+ *
+ * (The old rule "promote user #1 if it is the admin" never fired once any
+ * other account signed up first, which is what happened locally.)
+ */
+export async function loginBootstrapAdmin(email: string, password: string): Promise<UserRow | null> {
+  if (!(await matchesBootstrapAdmin(email, password))) return null;
+  const existing = await findUserByEmail(email);
+  if (!existing) {
+    return createUser({ email, passwordHash: await hashPassword(password), displayName: 'admin', isAdmin: true });
   }
+  const hashOk =
+    !!existing.password_hash &&
+    !needsRehash(existing.password_hash) &&
+    (await verifyPassword(password, existing.password_hash));
+  const hash = hashOk ? existing.password_hash! : await hashPassword(password);
+  await exec('UPDATE users SET is_admin = 1, password_hash = ? WHERE id = ?', [hash, existing.id]);
+  return { ...existing, is_admin: 1, password_hash: hash };
 }
 
 /* ------------------------------------------------------------------ */
@@ -474,7 +462,6 @@ export async function maybeBootstrapAdmin(user: UserRow, plaintextPassword: stri
 /* ------------------------------------------------------------------ */
 
 export async function createSession(userId: number): Promise<{ token: string; row: SessionRow }> {
-  await ensureAuthSchema();
   const token = randomTokenString(32);
   const row: SessionRow = {
     token_hash: await sha256Hex(token),
@@ -482,6 +469,8 @@ export async function createSession(userId: number): Promise<{ token: string; ro
     created: nowIso(),
     expires: expiresIso(SESSION_TTL_SECONDS * 1000),
   };
+  // Sweep expired sessions so the table does not grow forever (indexed).
+  await exec("DELETE FROM sessions WHERE expires != '' AND expires < ?", [row.created]);
   await exec('INSERT INTO sessions (token_hash, user_id, created, expires) VALUES (?, ?, ?, ?)', [
     row.token_hash,
     row.user_id,
@@ -492,30 +481,34 @@ export async function createSession(userId: number): Promise<{ token: string; ro
 }
 
 export async function destroySessionByToken(plaintext: string): Promise<void> {
-  await ensureAuthSchema();
   await exec('DELETE FROM sessions WHERE token_hash = ?', [await sha256Hex(plaintext)]);
 }
 
+/**
+ * Mint a token. `ttlMs` sets the expiry from now; `expiresAt` (an ISO time,
+ * used by rotate) wins over it. Scopes default to ['all'].
+ */
 export async function mintApiToken(
   userId: number,
   name: string,
   ttlMs?: number | null,
-): Promise<{ token: string; name: string; prefix: string; expires: string | null; id: number | null }> {
-  await ensureAuthSchema();
+  opts: { scopes?: readonly string[]; expiresAt?: string | null } = {},
+): Promise<{ token: string; name: string; prefix: string; expires: string | null; id: number | null; scopes: string[] }> {
   const token = `ion_${randomTokenString(32)}`;
   const tokenHash = await sha256Hex(token);
+  const scopes: string[] = parseScopes(opts.scopes ?? ['all']);
   const row = {
-    name: name || 'cli',
+    name: (name || 'cli').slice(0, 64),
     prefix: token.slice(0, 12),
     created: nowIso(),
-    expires: ttlMs ? expiresIso(ttlMs) : null,
+    expires: opts.expiresAt !== undefined ? opts.expiresAt || null : ttlMs ? expiresIso(ttlMs) : null,
   };
-  await exec(
-    'INSERT INTO api_tokens (token_hash, user_id, name, prefix, created, expires, revoked) VALUES (?, ?, ?, ?, ?, ?, 0)',
-    [tokenHash, userId, row.name, row.prefix, row.created, row.expires],
+  const ins = await queryFirst<{ id: number }>(
+    `INSERT INTO api_tokens (token_hash, user_id, name, prefix, created, expires, revoked, scopes)
+     VALUES (?, ?, ?, ?, ?, ?, 0, ?) RETURNING rowid AS id`,
+    [tokenHash, userId, row.name, row.prefix, row.created, row.expires, scopes.join(',')],
   );
-  const meta = await getTokenMeta(tokenHash);
-  return { token, name: row.name, prefix: row.prefix, expires: row.expires, id: meta?.id ?? null };
+  return { token, name: row.name, prefix: row.prefix, expires: row.expires, id: ins?.id ?? null, scopes };
 }
 
 export interface TokenMeta {
@@ -524,111 +517,266 @@ export interface TokenMeta {
   prefix: string;
   created: string;
   expires: string | null;
+  scopes: string[];
+  last_used: string | null;
+  revoked: boolean;
 }
 
-/** Public metadata for one api_tokens row (never the hash). rowid works whether or not the migration declared an id column. */
+const TOKEN_META_COLS = 'rowid AS id, name, prefix, created, expires, scopes, last_used, revoked';
+type TokenMetaRow = Omit<TokenMeta, 'scopes' | 'revoked'> & { scopes: string | null; revoked: number };
+
+function toTokenMeta(r: TokenMetaRow): TokenMeta {
+  return {
+    id: r.id,
+    name: r.name,
+    prefix: r.prefix,
+    created: r.created,
+    expires: r.expires || null,
+    scopes: tokenScopes(r.scopes),
+    last_used: r.last_used || null,
+    revoked: Number(r.revoked) === 1,
+  };
+}
+
+/** Stored scopes ("a,b") as a list; empty or NULL is ['all'] (pre-0004 tokens). */
+export function tokenScopes(stored: string | null | undefined): string[] {
+  const list = String(stored ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+  return list.length ? list : ['all'];
+}
+
+/** Public metadata for one api_tokens row (never the hash). */
 export async function getTokenMeta(tokenHash: string): Promise<TokenMeta | null> {
-  await ensureAuthSchema();
-  return queryFirst<TokenMeta>(
-    'SELECT rowid AS id, name, prefix, created, expires FROM api_tokens WHERE token_hash = ?',
-    [tokenHash],
-  );
+  const r = await queryFirst<TokenMetaRow>(`SELECT ${TOKEN_META_COLS} FROM api_tokens WHERE token_hash = ?`, [tokenHash]);
+  return r ? toTokenMeta(r) : null;
 }
 
-/** Client-facing token record shape (last_used is not tracked; always null). */
-export function tokenRecord(m: TokenMeta): {
-  id: number;
-  name: string;
-  prefix: string;
-  created: string;
-  expires: string | null;
-  last_used: null;
-} {
-  return { id: m.id, name: m.name, prefix: m.prefix, created: m.created, expires: m.expires, last_used: null };
+export async function getTokenMetaById(userId: number, id: number): Promise<TokenMeta | null> {
+  const r = await queryFirst<TokenMetaRow>(`SELECT ${TOKEN_META_COLS} FROM api_tokens WHERE user_id = ? AND rowid = ?`, [userId, id]);
+  return r ? toTokenMeta(r) : null;
 }
 
-export async function listApiTokens(
-  userId: number,
-): Promise<Array<{ id: number; name: string; prefix: string; created: string; expires: string | null }>> {
-  await ensureAuthSchema();
-  // rowid works regardless of whether the migration declared an id column.
-  return queryAll(
-    'SELECT rowid AS id, name, prefix, created, expires FROM api_tokens WHERE user_id = ? AND revoked = 0 ORDER BY rowid DESC',
+/** Client-facing token record (the contract's token meta; never the hash). */
+export function tokenRecord(m: TokenMeta): TokenMeta {
+  return { ...m };
+}
+
+/** Active tokens (GET /api/auth/tokens). */
+export async function listApiTokens(userId: number): Promise<TokenMeta[]> {
+  const rows = await queryAll<TokenMetaRow>(
+    `SELECT ${TOKEN_META_COLS} FROM api_tokens WHERE user_id = ? AND revoked = 0 ORDER BY rowid DESC LIMIT 500`,
     [userId],
   );
+  return rows.map(toTokenMeta);
+}
+
+/** Every token, revoked ones too, newest first (GET /api/tokens). */
+export async function listAllApiTokens(
+  userId: number,
+  limit: number,
+  offset: number,
+): Promise<{ tokens: TokenMeta[]; total: number }> {
+  const [rows, n] = await Promise.all([
+    queryAll<TokenMetaRow>(`SELECT ${TOKEN_META_COLS} FROM api_tokens WHERE user_id = ? ORDER BY rowid DESC LIMIT ? OFFSET ?`, [
+      userId,
+      limit,
+      offset,
+    ]),
+    queryFirst<{ n: number }>('SELECT COUNT(*) AS n FROM api_tokens WHERE user_id = ?', [userId]),
+  ]);
+  return { tokens: rows.map(toTokenMeta), total: Number(n?.n ?? 0) };
+}
+
+/**
+ * Rotate: revoke token `id` (atomically, so two rotations cannot both win)
+ * and mint a new one with the same name, scopes and expiry.
+ */
+export async function rotateApiToken(userId: number, id: number): Promise<{ token: string; meta: TokenMeta }> {
+  const old = await getTokenMetaById(userId, id);
+  if (!old) throw new HttpError(404, 'token not found', 'GET /api/tokens lists your keys');
+  if (old.revoked) throw new HttpError(409, 'token revoked', 'a revoked key cannot be rotated; POST /api/tokens for a new one');
+  if (isExpired(old.expires)) throw new HttpError(409, 'token expired', 'an expired key cannot be rotated; POST /api/tokens for a new one');
+  const gone = await queryFirst<{ id: number }>(
+    'UPDATE api_tokens SET revoked = 1 WHERE user_id = ? AND rowid = ? AND revoked = 0 RETURNING rowid AS id',
+    [userId, id],
+  );
+  if (!gone) throw new HttpError(409, 'token revoked', 'another request rotated or revoked it first');
+  const t = await mintApiToken(userId, old.name, null, { scopes: old.scopes, expiresAt: old.expires });
+  const meta = await getTokenMeta(await sha256Hex(t.token));
+  if (!meta) throw new HttpError(500, 'token creation failed', 'retry');
+  return { token: t.token, meta };
 }
 
 export async function revokeApiToken(userId: number, id?: number, plaintext?: string): Promise<boolean> {
-  await ensureAuthSchema();
+  let row: { id: number } | null = null;
   if (plaintext) {
-    const h = await sha256Hex(plaintext);
-    await exec('UPDATE api_tokens SET revoked = 1 WHERE user_id = ? AND token_hash = ? AND revoked = 0', [
-      userId,
-      h,
-    ]);
-    const check = await queryFirst<{ n: number }>(
-      'SELECT COUNT(*) AS n FROM api_tokens WHERE user_id = ? AND token_hash = ? AND revoked = 1',
-      [userId, h],
+    row = await queryFirst<{ id: number }>(
+      'UPDATE api_tokens SET revoked = 1 WHERE user_id = ? AND token_hash = ? AND revoked = 0 RETURNING rowid AS id',
+      [userId, await sha256Hex(plaintext)],
     );
-    return Number(check?.n) > 0;
-  }
-  if (id != null) {
-    await exec('UPDATE api_tokens SET revoked = 1 WHERE user_id = ? AND rowid = ? AND revoked = 0', [userId, id]);
-    const check = await queryFirst<{ n: number }>(
-      'SELECT COUNT(*) AS n FROM api_tokens WHERE user_id = ? AND rowid = ? AND revoked = 1',
+  } else if (id != null) {
+    row = await queryFirst<{ id: number }>(
+      'UPDATE api_tokens SET revoked = 1 WHERE user_id = ? AND rowid = ? AND revoked = 0 RETURNING rowid AS id',
       [userId, id],
     );
-    return Number(check?.n) > 0;
   }
-  return false;
+  return !!row;
 }
 
 /* ------------------------------------------------------------------ */
 /* Request identity                                                    */
 /* ------------------------------------------------------------------ */
 
-/** Session cookie first, then Bearer API token. Null when anonymous. */
-export async function getCurrentUser(req: Request): Promise<UserRow | null> {
-  await ensureAuthSchema();
+export interface AuthInfo {
+  user: UserRow | null;
+  via: 'session' | 'token' | null;
+  /** The token's scopes when via === 'token'. */
+  scopes: string[] | null;
+  tokenId: number | null;
+  /** Why a sent bearer token was refused (expired, revoked, unknown). */
+  error: HttpError | null;
+}
+
+const AUTH_CACHE = new WeakMap<Request, Promise<AuthInfo>>();
+const LAST_USED_EVERY_MS = 60_000;
+
+async function resolveAuth(req: Request): Promise<AuthInfo> {
+  const none: AuthInfo = { user: null, via: null, scopes: null, tokenId: null, error: null };
   const cookieTok = getCookie(req, SESSION_COOKIE);
   if (cookieTok) {
-    const s = await queryFirst<SessionRow>('SELECT * FROM sessions WHERE token_hash = ?', [
-      await sha256Hex(cookieTok),
-    ]);
+    const s = await queryFirst<SessionRow>('SELECT * FROM sessions WHERE token_hash = ?', [await sha256Hex(cookieTok)]);
     if (s && !isExpired(s.expires)) {
       const u = await findUserById(s.user_id);
-      if (u) return u;
+      if (u) return { ...none, user: u, via: 'session' };
     }
   }
   const bearer = getBearer(req);
-  if (bearer) {
-    const t = await queryFirst<ApiTokenRow>('SELECT * FROM api_tokens WHERE token_hash = ?', [
-      await sha256Hex(bearer),
-    ]);
-    if (t && Number(t.revoked) === 0 && !isExpired(t.expires)) {
-      const u = await findUserById(t.user_id);
-      if (u) return u;
+  if (!bearer) return none;
+  const t = await queryFirst<ApiTokenRow>('SELECT rowid AS id, * FROM api_tokens WHERE token_hash = ?', [await sha256Hex(bearer)]);
+  const refuse = (error: string, hint: string): AuthInfo => ({ ...none, error: new HttpError(401, error, hint) });
+  if (!t || Number(t.revoked) !== 0) {
+    return refuse('invalid token', 'the key is unknown or revoked: log in again (node cli.mjs login) or create a key');
+  }
+  if (isExpired(t.expires)) {
+    return refuse('token expired', 'the key expired: create a new one (POST /api/tokens, node cli.mjs keys-create)');
+  }
+  const u = await findUserById(t.user_id);
+  if (!u) return refuse('invalid token', 'the owning account is gone; log in again');
+  // Throttled: at most one write per token per minute, never one per request.
+  const now = Date.now();
+  const last = t.last_used ? Date.parse(t.last_used) : NaN;
+  if (!Number.isFinite(last) || now - last > LAST_USED_EVERY_MS) {
+    try {
+      await exec('UPDATE api_tokens SET last_used = ? WHERE rowid = ? AND (last_used IS NULL OR last_used < ?)', [
+        new Date(now).toISOString(),
+        t.id,
+        new Date(now - LAST_USED_EVERY_MS).toISOString(),
+      ]);
+    } catch (e) {
+      console.error('last_used update failed:', e);
     }
   }
-  return null;
+  return { user: u, via: 'token', scopes: tokenScopes(t.scopes), tokenId: t.id, error: null };
 }
 
+/** Who made this request (resolved once per Request object). */
+export function authInfo(req: Request): Promise<AuthInfo> {
+  let p = AUTH_CACHE.get(req);
+  if (!p) {
+    p = resolveAuth(req);
+    AUTH_CACHE.set(req, p);
+  }
+  return p;
+}
+
+/** Session cookie first, then Bearer API token. Null when anonymous. Not scope-checked. */
+export async function getCurrentUser(req: Request): Promise<UserRow | null> {
+  return (await authInfo(req)).user;
+}
+
+/**
+ * The login guard, and the one place token scopes are enforced: a request
+ * made with a token needs scopeFor(method, path) (src/lib/scopes.ts).
+ */
 export async function requireUser(req: Request): Promise<UserRow> {
-  const u = await getCurrentUser(req);
-  if (!u) {
+  const a = await authInfo(req);
+  if (!a.user) {
+    if (a.error) throw a.error;
     throw new HttpError(
       401,
       'auth required',
       'POST /api/auth/login with {email,password}, or send Authorization: Bearer <api-token>',
     );
   }
-  return u;
+  if (a.via === 'token') {
+    const need = scopeFor(req.method, new URL(req.url).pathname);
+    if (!scopeAllows(a.scopes ?? [], need)) throw new HttpError(403, 'token scope', `needs ${need}`);
+  }
+  return a.user;
 }
 
 export async function requireAdmin(req: Request): Promise<UserRow> {
   const u = await requireUser(req);
-  if (!u.is_admin) throw new HttpError(403, 'admin required', 'this action needs a tracker admin');
+  if (!isAdmin(u)) throw new HttpError(403, 'admin required', 'only a tracker admin can do this');
   return u;
+}
+
+/* ------------------------------------------------------------------ */
+/* Trust model: maintainers = approved claims                          */
+/* ------------------------------------------------------------------ */
+
+/** Device slugs the user maintains (approved claims), sorted. */
+export async function maintainedSlugs(userId: number): Promise<string[]> {
+  const rows = await queryAll<{ device_slug: string }>(
+    "SELECT DISTINCT device_slug FROM claims WHERE user_id = ? AND status = 'approved' ORDER BY device_slug",
+    [userId],
+  );
+  return rows.map((r) => r.device_slug);
+}
+
+export async function isMaintainer(userId: number, deviceSlug: string): Promise<boolean> {
+  return !!(await queryFirst(
+    "SELECT 1 AS ok FROM claims WHERE user_id = ? AND device_slug = ? AND status = 'approved' LIMIT 1",
+    [userId, deviceSlug],
+  ));
+}
+
+export async function canEditDevice(u: UserRow, deviceSlug: string | null): Promise<boolean> {
+  if (isAdmin(u)) return true;
+  if (!deviceSlug) return false;
+  return isMaintainer(u.id, deviceSlug);
+}
+
+function claimHint(deviceSlug: string): string {
+  return `claim this device: POST /api/claims {"device":"${deviceSlug}"}; an admin approves it, then you maintain it`;
+}
+
+/**
+ * Admin, or a maintainer of `deviceSlug`. 401 anonymous, 404 unknown device,
+ * 403 otherwise. `deviceSlug` null (a fork with no device) is admin-only.
+ */
+export async function requireDeviceEditor(req: Request, deviceSlug: string | null): Promise<UserRow> {
+  const u = await requireUser(req);
+  if (deviceSlug !== null && !(await queryFirst('SELECT slug FROM devices WHERE slug = ?', [deviceSlug]))) {
+    throw new HttpError(404, 'unknown device', 'GET /api/devices?q= to search known devices');
+  }
+  if (await canEditDevice(u, deviceSlug)) return u;
+  if (deviceSlug === null) {
+    throw new HttpError(403, 'admin required', 'forks without a device are admin-only; set device_slug to a device you maintain');
+  }
+  throw new HttpError(403, `not a maintainer of ${deviceSlug}`, claimHint(deviceSlug));
+}
+
+/** Admin, or a maintainer of any device (posting updates / reddit links). */
+export async function requirePoster(req: Request): Promise<UserRow> {
+  const u = await requireUser(req);
+  if (isAdmin(u)) return u;
+  const any = await queryFirst("SELECT 1 AS ok FROM claims WHERE user_id = ? AND status = 'approved' LIMIT 1", [u.id]);
+  if (any) return u;
+  throw new HttpError(
+    403,
+    'maintainers only',
+    'posting updates needs an approved claim on any device: POST /api/claims {"device":"<slug>"}; an admin approves it',
+  );
 }
 
 /* ------------------------------------------------------------------ */
@@ -638,7 +786,6 @@ export async function requireAdmin(req: Request): Promise<UserRow> {
 export const CHALLENGE_TTL_MS = 10 * 60 * 1000;
 
 export async function createChallenge(githubId: number, githubLogin?: string | null): Promise<ChallengeRow> {
-  await ensureAuthSchema();
   const row: ChallengeRow = {
     nonce: `ion-${randomTokenString(18)}`,
     github_id: githubId,
@@ -648,6 +795,8 @@ export async function createChallenge(githubId: number, githubLogin?: string | n
     used: 0,
     created: nowIso(),
   };
+  // Sweep stale challenges (expired or used over a day ago); indexed on expires.
+  await exec('DELETE FROM login_challenges WHERE expires < ?', [new Date(Date.now() - 86400000).toISOString()]);
   await exec(
     'INSERT INTO login_challenges (nonce, github_id, github_login, gist_id, expires, used, created) VALUES (?, ?, ?, ?, ?, 0, ?)',
     [row.nonce, row.github_id, row.github_login ?? '', '', row.expires, row.created],
@@ -656,40 +805,145 @@ export async function createChallenge(githubId: number, githubLogin?: string | n
 }
 
 export async function getChallenge(nonce: string): Promise<ChallengeRow | null> {
-  await ensureAuthSchema();
   return queryFirst<ChallengeRow>('SELECT * FROM login_challenges WHERE nonce = ?', [nonce]);
 }
 
 export async function latestChallengeFor(githubId: number): Promise<ChallengeRow | null> {
-  await ensureAuthSchema();
   return queryFirst<ChallengeRow>(
-    'SELECT * FROM login_challenges WHERE github_id = ? AND used = 0 ORDER BY rowid DESC LIMIT 1',
-    [githubId],
+    'SELECT * FROM login_challenges WHERE github_id = ? AND used = 0 AND expires > ? ORDER BY rowid DESC LIMIT 1',
+    [githubId, nowIso()],
   );
 }
 
-export async function markChallengeUsed(nonce: string, gistId?: string): Promise<void> {
-  await exec('UPDATE login_challenges SET used = 1, gist_id = ? WHERE nonce = ?', [gistId ?? '', nonce]);
+/**
+ * Atomically mark a challenge used. Throws 410 when another request consumed
+ * it first (or it expired meanwhile), so one nonce proves exactly one login.
+ */
+export async function consumeChallenge(nonce: string, gistId?: string): Promise<void> {
+  const r = await queryFirst<{ nonce: string }>(
+    'UPDATE login_challenges SET used = 1, gist_id = ? WHERE nonce = ? AND used = 0 AND expires > ? RETURNING nonce',
+    [gistId ?? '', nonce, nowIso()],
+  );
+  if (!r) {
+    throw new HttpError(410, 'challenge already used or expired', 'POST /api/auth/gh-challenge for a fresh nonce and retry');
+  }
 }
 
 /* ------------------------------------------------------------------ */
-/* Small validators                                                    */
+/* Validators                                                          */
 /* ------------------------------------------------------------------ */
+
 export const STATES = ['works', 'broken', 'in-progress', 'unknown'] as const;
+export const CLAIM_STATUSES = ['pending', 'approved', 'rejected'] as const;
+export const VERIFIED = ['fork-claim', 'reproduced', 'merged'] as const;
+export const REPO_KINDS = ['home', 'fork', 'snapshot', 'mirror', 'none'] as const;
+export const BASES = ['oneios', 'other'] as const;
+export const AREA_SCOPES = ['all', 'oneios'] as const;
+export const FORK_KINDS = ['upstream', 'fork', 'standalone'] as const;
+export const SUPPORT_LEVELS = ['primary', 'merged', 'ported', 'claimed'] as const;
+export const REPO_CLAIM_STATUSES = ['pending', 'approved', 'rejected', 'expired'] as const;
+export const REPO_CLAIM_METHODS = ['owner', 'proof-file', 'admin'] as const;
+
+/** ?limit= and ?offset= of a list endpoint. limit 1..max (default `def`), offset >= 0. */
+export function pageParams(sp: URLSearchParams, def = 100, max = 500): { limit: number; offset: number } {
+  const rawL = sp.get('limit');
+  const rawO = sp.get('offset');
+  const limit = rawL === null || rawL === '' ? def : Number(rawL);
+  const offset = rawO === null || rawO === '' ? 0 : Number(rawO);
+  if (!Number.isInteger(limit) || limit < 1) throw new HttpError(400, 'bad limit', `limit must be an integer from 1 to ${max}`);
+  if (!Number.isInteger(offset) || offset < 0) throw new HttpError(400, 'bad offset', 'offset must be an integer >= 0');
+  return { limit: Math.min(limit, max), offset };
+}
+
+/** The page fields every list response carries next to its array. */
+export function pageInfo(
+  total: number,
+  limit: number,
+  offset: number,
+  count: number,
+): { total: number; limit: number; offset: number; next: number | null } {
+  return { total, limit, offset, next: offset + count < total ? offset + count : null };
+}
+
+export function oneOf<T extends string>(list: readonly T[], v: string, field: string): T {
+  if (!(list as readonly string[]).includes(v)) {
+    throw new HttpError(400, `bad ${field}`, `${field} must be one of: ${list.join(' | ')}`);
+  }
+  return v as T;
+}
 
 export function validEmail(e: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+  return e.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 }
 
 export function validSlug(s: string): boolean {
   return /^[a-z0-9][a-z0-9-]{0,63}$/.test(s);
 }
 
+/** GitHub-style OWNER/REPO. */
+export function validRepo(s: string): boolean {
+  return /^[A-Za-z0-9-]{1,39}\/[A-Za-z0-9._-]{1,100}$/.test(s);
+}
+
+export function validHttpUrl(s: string): boolean {
+  try {
+    const u = new URL(s);
+    return (u.protocol === 'https:' || u.protocol === 'http:') && !!u.hostname;
+  } catch {
+    return false;
+  }
+}
+
 /**
- * INSERT then return the new row id. Uses RETURNING (supported by D1/SQLite);
- * falls back to the latest row when the helper layer cannot return it.
+ * Reddit post URL check + canonical form. Accepts
+ * https://(www.|old.)reddit.com/r/<sub>/... and https://redd.it/<id>; old.
+ * becomes www., query/fragment and trailing slash are dropped (so the same
+ * post cannot be tracked twice under two spellings). Null when not reddit.
  */
+export function normalizeRedditUrl(raw: string): string | null {
+  let u: URL;
+  try {
+    u = new URL(raw.trim());
+  } catch {
+    return null;
+  }
+  if (u.protocol !== 'https:' || u.username || u.password || u.port) return null;
+  const host = u.hostname.toLowerCase();
+  const path = u.pathname.replace(/\/+$/, '');
+  if (host === 'redd.it') {
+    return /^\/[A-Za-z0-9]{1,16}$/.test(path) ? `https://redd.it${path}` : null;
+  }
+  if (host !== 'reddit.com' && host !== 'www.reddit.com' && host !== 'old.reddit.com') return null;
+  if (!/^\/r\/[A-Za-z0-9_]{1,21}(\/[^\s]*)?$/.test(path)) return null;
+  return `https://www.reddit.com${path}`;
+}
+
+/** Strict YYYY-MM-DD that is a real calendar date. */
+export function validDate(s: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  const d = new Date(`${s}T00:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
+}
+
+/** INSERT ... RETURNING id; null when nothing came back. */
 export async function insertReturningId(sql: string, params: unknown[]): Promise<number | null> {
-  const r = await queryFirst<{ id: number }>(`${sql} RETURNING id`, params as never[]).catch(() => null);
+  const r = await queryFirst<{ id: number }>(`${sql} RETURNING id`, params);
   return r && typeof r.id === 'number' ? r.id : null;
+}
+
+/**
+ * One page of a list: `sql` without LIMIT (LIMIT ? OFFSET ? is appended) and
+ * `countSql` counting the same rows, both taking `params`.
+ */
+export async function paged<T>(
+  sql: string,
+  countSql: string,
+  params: unknown[],
+  p: { limit: number; offset: number },
+): Promise<{ rows: T[]; page: { total: number; limit: number; offset: number; next: number | null } }> {
+  const [rows, n] = await Promise.all([
+    queryAll<T>(`${sql} LIMIT ? OFFSET ?`, [...params, p.limit, p.offset]),
+    queryFirst<{ n: number }>(countSql, params),
+  ]);
+  return { rows, page: pageInfo(Number(n?.n ?? 0), p.limit, p.offset, rows.length) };
 }

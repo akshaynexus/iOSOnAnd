@@ -5,6 +5,7 @@
 // tracker token plus a session cookie. 410 when the challenge is stale.
 
 import { createFileRoute } from '@tanstack/react-router';
+import { apiHandlers } from '@/lib/api';
 import {
   HttpError,
   actorName,
@@ -12,11 +13,10 @@ import {
   createUser,
   findUserByGithubId,
   getChallenge,
-  handleError,
   isExpired,
   json,
   latestChallengeFor,
-  markChallengeUsed,
+  consumeChallenge,
   mintApiToken,
   readJson,
   sessionCookieHeader,
@@ -76,7 +76,7 @@ async function handlePost(req: Request): Promise<Response> {
   }
 
   const proof = await verifyGistProof({ gistIdInput: gistInput, githubId, nonce: ch.nonce });
-  await markChallengeUsed(ch.nonce, proof.gistId);
+  await consumeChallenge(ch.nonce, proof.gistId);
 
   let user = await findUserByGithubId(githubId);
   let isNew = false;
@@ -109,15 +109,5 @@ async function handlePost(req: Request): Promise<Response> {
 }
 
 export const Route = createFileRoute('/api/auth/gh-verify')({
-  server: {
-    handlers: {
-  POST: async ({ request }: { request: Request }) => {
-    try {
-      return await handlePost(request);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-    },
-  },
+  server: { handlers: apiHandlers({ POST: ({ request }) => handlePost(request) }) },
 });

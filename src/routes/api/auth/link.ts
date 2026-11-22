@@ -4,6 +4,7 @@
 // 401 bad credentials, 409 when the github_id is linked to another user.
 
 import { createFileRoute } from '@tanstack/react-router';
+import { apiHandlers } from '@/lib/api';
 import { exec } from '@/lib/db';
 import {
   HttpError,
@@ -11,11 +12,10 @@ import {
   findUserByEmail,
   findUserByGithubId,
   getChallenge,
-  handleError,
   isExpired,
   json,
   latestChallengeFor,
-  markChallengeUsed,
+  consumeChallenge,
   nowIso,
   readJson,
   toSelfUser,
@@ -72,6 +72,7 @@ async function handlePost(req: Request): Promise<Response> {
     );
   }
   const proof = await verifyGistProof({ gistIdInput: gistInput, githubId, nonce: ch.nonce });
+  await consumeChallenge(ch.nonce, proof.gistId);
 
   const taken = await findUserByGithubId(githubId);
   if (taken && taken.id !== user.id) {
@@ -87,7 +88,6 @@ async function handlePost(req: Request): Promise<Response> {
     nowIso(),
     user.id,
   ]);
-  await markChallengeUsed(ch.nonce, proof.gistId);
   const updated = {
     ...user,
     github_id: githubId,
@@ -98,15 +98,5 @@ async function handlePost(req: Request): Promise<Response> {
 }
 
 export const Route = createFileRoute('/api/auth/link')({
-  server: {
-    handlers: {
-  POST: async ({ request }: { request: Request }) => {
-    try {
-      return await handlePost(request);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-    },
-  },
+  server: { handlers: apiHandlers({ POST: ({ request }) => handlePost(request) }) },
 });

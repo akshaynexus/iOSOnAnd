@@ -6,13 +6,13 @@
 // Response always includes login/github_login/email when known.
 
 import { createFileRoute } from '@tanstack/react-router';
+import { apiHandlers } from '@/lib/api';
 import { queryFirst } from '@/lib/db';
 import {
   HttpError,
   actorName,
   createUser,
   findUserByGithubId,
-  handleError,
   isExpired,
   json,
   mintApiToken,
@@ -25,11 +25,9 @@ import { fetchGitHubUser } from '@/lib/github';
 import { appendChangelog } from '@/lib/changelog';
 
 async function resolveToken(req: Request): Promise<string> {
-  const fromQuery = new URL(req.url).searchParams.get('token');
-  if (fromQuery) return fromQuery.trim();
   const body = await readJson(req);
   if (typeof body.token === 'string' && body.token.trim()) return body.token.trim();
-  throw new HttpError(400, 'token required', 'send {"token"} or ?token= with a tracker token or `gh auth token` value');
+  throw new HttpError(400, 'token required', 'send {"token"} with a tracker token or `gh auth token` value');
 }
 
 async function handle(req: Request): Promise<Response> {
@@ -72,22 +70,5 @@ async function handle(req: Request): Promise<Response> {
 }
 
 export const Route = createFileRoute('/api/auth/token-check')({
-  server: {
-    handlers: {
-  GET: async ({ request }: { request: Request }) => {
-    try {
-      return await handle(request);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-  POST: async ({ request }: { request: Request }) => {
-    try {
-      return await handle(request);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-    },
-  },
+  server: { handlers: apiHandlers({ POST: ({ request }) => handle(request) }) },
 });

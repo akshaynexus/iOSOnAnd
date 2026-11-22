@@ -1,0 +1,15 @@
+{
+  "title": "iOSOnAnd",
+  "pages": [
+    "index",
+    "agents",
+    "maintain-a-repo",
+    "api-keys",
+    "api",
+    "permissions",
+    "data-model",
+    "uploads",
+    "getting-started",
+    "reddit"
+  ]
+}

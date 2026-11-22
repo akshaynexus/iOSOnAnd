@@ -1,27 +1,57 @@
-import { HeadContent, Outlet, Scripts, createRootRoute } from "@tanstack/react-router";
+import { HeadContent, Link, Outlet, Scripts, createRootRoute } from "@tanstack/react-router";
+import { ThemeProvider } from "next-themes";
+import { AuthProvider } from "@/components/auth";
+import { Page } from "@/components/Page";
+import { Toaster } from "@/components/ui/sonner";
 import "../styles.css";
 
 export const Route = createRootRoute({
   head: () => ({
+    links: [{ rel: "icon", href: "/favicon.svg", type: "image/svg+xml" }],
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "iOSOnAnd — iOS on Android hardware tracker" },
+      { title: "iOSOnAnd: iOS on Android status" },
+      {
+        name: "description",
+        content: "Per-device, per-area status of iOS 27 running next to One UI on rooted Galaxy phones (OneiOS and its forks).",
+      },
     ],
   }),
   component: RootComponent,
+  notFoundComponent: NotFound,
 });
 
 function RootComponent() {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
       <body>
-        <Outlet />
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <AuthProvider>
+            <Page>
+              <Outlet />
+            </Page>
+            <Toaster />
+          </AuthProvider>
+        </ThemeProvider>
         <Scripts />
       </body>
     </html>
+  );
+}
+
+function NotFound() {
+  return (
+    <div className="flex flex-col gap-4">
+      <h1 className="text-2xl font-semibold">Page not found</h1>
+      <p>
+        <Link to="/" className="underline">
+          Back to all devices
+        </Link>
+      </p>
+    </div>
   );
 }

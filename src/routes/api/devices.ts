@@ -1,40 +1,46 @@
-// /api/devices — GET list (?q= searches slug/name/model/SoC), POST create (auth).
-// 409 on duplicate slug.
+// /api/devices — GET list (?q= searches slug/name/model/SoC/notes, ?state=,
+// ?base=, ?family= (a label in its families), ?limit= (default and max 500),
+// ?offset=; public; each device carries families/family,
+// statuses, forks, claims, maintainers, supported_by and media, read in a
+// fixed number of queries; -> {devices, total, limit, offset, next}), POST
+// create (admin). 409 on duplicate slug.
 
 import { createFileRoute } from '@tanstack/react-router';
-import { queryAll, queryFirst, exec } from '@/lib/db';
+import { queryAll, queryFirst } from '@/lib/db';
 import {
+  BASES,
   HttpError,
+  REPO_KINDS,
   STATES,
   actorName,
-  handleError,
   json,
   nowIso,
+  oneOf,
+  paged,
+  pageInfo,
+  pageParams,
   readJson,
-  requireUser,
+  requireAdmin,
+  str,
   validSlug,
 } from '@/lib/auth';
+import { apiHandlers, type ApiCtx } from '@/lib/api';
+import { DEVICE_TEXT, deviceField, likeEscape, withDetails } from '@/lib/devices';
 import { appendChangelog } from '@/lib/changelog';
 import type { Device } from '@/lib/types';
 
-export const REPO_KINDS = ['home', 'fork', 'snapshot', 'mirror', 'none'];
-
-function likeEscape(s: string): string {
-  return s.replace(/[\\%_]/g, (c) => `\\${c}`);
-}
-
-async function handleGet(req: Request): Promise<Response> {
-  const sp = new URL(req.url).searchParams;
+async function handleGet({ request }: ApiCtx): Promise<Response> {
+  const sp = new URL(request.url).searchParams;
   const q = sp.get('q')?.trim() || '';
   const state = sp.get('state')?.trim() || null;
-  if (state && !(STATES as readonly string[]).includes(state)) {
-    throw new HttpError(400, 'bad state', `state must be one of: ${STATES.join(' | ')}`);
-  }
-  const limit = Math.min(Math.max(Number(sp.get('limit')) || 100, 1), 500);
+  if (state) oneOf(STATES, state, 'state');
+  const base = sp.get('base')?.trim() || null;
+  if (base) oneOf(BASES, base, 'base');
+  const page = pageParams(sp, 500, 500);
   const where: string[] = [];
-  const vals: string[] = [];
+  const vals: unknown[] = [];
   if (q) {
-    const like = `%${likeEscape(q)}%`;
+    const like = `%${likeEscape(q.slice(0, 100))}%`;
     where.push(
       `(slug LIKE ? ESCAPE '\\' OR name LIKE ? ESCAPE '\\' OR model LIKE ? ESCAPE '\\' OR soc LIKE ? ESCAPE '\\' OR notes LIKE ? ESCAPE '\\')`,
     );
@@ -44,70 +50,59 @@ async function handleGet(req: Request): Promise<Response> {
     where.push('status = ?');
     vals.push(state);
   }
-  const devices = await queryAll<Device>(
-    `SELECT * FROM devices ${where.length ? `WHERE ${where.join(' AND ')}` : ''} ORDER BY slug LIMIT ${limit}`,
-    vals,
-  );
-  return json({ devices });
+  if (base) {
+    where.push('base = ?');
+    vals.push(base);
+  }
+  const w = where.length ? `WHERE ${where.join(' AND ')}` : '';
+  const family = sp.get('family')?.trim() || null;
+  if (family) {
+    // families is derived (src/lib/forks.ts deviceFamilies), so this filter
+    // runs on the detailed rows; there are a few hundred devices at most.
+    const all = await withDetails(await queryAll<Device>(`SELECT * FROM devices ${w} ORDER BY slug`, vals));
+    const hit = all.filter((d) => d.families.some((f) => f.toLowerCase() === family.toLowerCase()));
+    const rows = hit.slice(page.offset, page.offset + page.limit);
+    return json({ devices: rows, ...pageInfo(hit.length, page.limit, page.offset, rows.length) });
+  }
+  const { rows, page: info } = await paged<Device>(`SELECT * FROM devices ${w} ORDER BY slug`, `SELECT COUNT(*) AS n FROM devices ${w}`, vals, page);
+  return json({ devices: await withDetails(rows), ...info });
 }
 
-async function handlePost(req: Request): Promise<Response> {
-  const user = await requireUser(req);
-  const body = await readJson(req);
-  const slug = String(body.slug || '').trim().toLowerCase();
-  const name = String(body.name || '').trim();
+async function handlePost({ request }: ApiCtx): Promise<Response> {
+  const user = await requireAdmin(request);
+  const body = await readJson(request);
+  const slug = str(body, 'slug', 64).toLowerCase();
+  const name = str(body, 'name', 120);
   if (!validSlug(slug)) {
     throw new HttpError(400, 'bad slug', 'use lowercase letters, digits and dashes, e.g. "s24-ultra"');
   }
   if (!name) throw new HttpError(400, 'name required', 'send {"slug","name"} plus optional model/soc/repo_kind/status');
-  const status = body.status ? String(body.status) : 'unknown';
-  if (!(STATES as readonly string[]).includes(status)) {
-    throw new HttpError(400, 'bad status', `state must be one of: ${STATES.join(' | ')}`);
-  }
-  const repoKind = body.repo_kind ? String(body.repo_kind) : 'home';
-  if (!REPO_KINDS.includes(repoKind)) {
-    throw new HttpError(400, 'bad repo_kind', `must be one of: ${REPO_KINDS.join(' | ')}`);
-  }
+  const status = oneOf(STATES, str(body, 'status', 32) || 'unknown', 'status');
+  const repoKind = oneOf(REPO_KINDS, str(body, 'repo_kind', 32) || 'home', 'repo_kind');
   if (await queryFirst('SELECT slug FROM devices WHERE slug = ?', [slug])) {
     throw new HttpError(409, 'device exists', `PATCH /api/devices/${slug} to update it`);
   }
-  await exec(
-    `INSERT INTO devices (slug, name, model, soc, repo_kind, status, best_result, notes, updated)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  const extra = Object.keys(DEVICE_TEXT).filter((k) => body[k] !== undefined);
+  const row = await queryFirst<Device>(
+    `INSERT INTO devices (slug, name, model, soc, repo_kind, status, best_result, notes, updated${extra.map((k) => `, ${k}`).join('')})
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?${extra.map(() => ', ?').join('')}) RETURNING *`,
     [
       slug,
       name,
-      String(body.model || ''),
-      String(body.soc || ''),
+      str(body, 'model', 64),
+      str(body, 'soc', 64),
       repoKind,
       status,
-      String(body.best_result || ''),
-      String(body.notes || ''),
+      str(body, 'best_result', 2000),
+      str(body, 'notes', 4000),
       nowIso(),
+      ...extra.map((k) => deviceField(body, k)),
     ],
   );
-  const row = await queryFirst<Device>('SELECT * FROM devices WHERE slug = ?', [slug]);
   await appendChangelog(actorName(user), `device ${slug} added`);
   return json({ device: row }, 201);
 }
 
 export const Route = createFileRoute('/api/devices')({
-  server: {
-    handlers: {
-  GET: async ({ request }: { request: Request }) => {
-    try {
-      return await handleGet(request);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-  POST: async ({ request }: { request: Request }) => {
-    try {
-      return await handlePost(request);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-    },
-  },
+  server: { handlers: apiHandlers({ GET: handleGet, POST: handlePost }) },
 });

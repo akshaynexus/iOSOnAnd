@@ -1,0 +1,162 @@
+---
+title: "API"
+description: "Auth, conventions, errors and pagination, and every resource group with curl examples."
+---
+
+Everything the site and the CLI do goes through this JSON API. The full spec, with a request you
+can send from each operation, is at [/api-reference](/api-reference) (OpenAPI 3.1 at
+[/api/openapi.json](/api/openapi.json); the compact list with each endpoint's auth level is
+[/api/docs](/api/docs)). This page explains how it fits together.
+
+```sh
+BASE=http://localhost:3000            # or the deployed tracker
+TOKEN=ion_...                         # node cli.mjs login, or an API key
+```
+
+## Auth
+
+| Way | Send | Use |
+|---|---|---|
+| session cookie | `iosonand_session` (set by `/api/auth/login`, `/signup`, `/gh-verify`) | the site |
+| bearer token | `Authorization: Bearer ion_...` | the CLI, agents, scripts |
+
+A bearer token is either the login token (`node cli.mjs login`, scope `all`) or an
+[API key](/docs/api-keys) with scopes. Each operation's `x-auth` (who may call it: `public`,
+`login`, `maintainer`, `repo`, `uploader`, `poster`, `admin`) and `x-scope` (what a key needs)
+are in the spec. [Permissions](/docs/permissions) has the trust model.
+
+## Conventions
+
+- **JSON** in and out (`Content-Type: application/json`), except uploads (multipart) and the
+  files at `/media/<key>`. A JSON body is at most 64 KB.
+- **Errors** are always `{"error": "...", "hint": "..."}`; the hint says what to do next.
+- **Writes are logged**: every write adds a changelog row.
+- **CSRF**: a write with an `Origin` from another site is 403. A write with the session cookie
+  must also send `Content-Type: application/json` or the header `X-Requested-With: iosonand` (the
+  site sends it on uploads); a cross-site page cannot set either without a CORS preflight, which
+  this API never allows. When `Sec-Fetch-Site` is sent it must be `same-origin` or `same-site`.
+  Bearer-token requests are not affected.
+- **Pagination**: every list takes `?limit=` and `?offset=` and answers
+  `{"<items>": [...], "total": N, "limit": L, "offset": O, "next": O2}`. `next` is the offset of
+  the next page, `null` on the last one. Defaults: devices, areas and forks 500 (max 500), posts
+  100, claims 200, repo claims and keys 100, media and changelog 50 (max 500 each), statuses 2000
+  (max 5000).
+
+| Status | Meaning |
+|---|---|
+| 400 | bad input: a missing field, a bad slug, state, URL or JSON; also `area not applicable` |
+| 401 | not logged in, or the token is unknown, revoked (`invalid token`) or expired (`token expired`) |
+| 403 | not allowed: not a maintainer, admin only, `token scope` (hint `needs <scope>`), or a cross-site write |
+| 404 | no such device, area, repo, claim, upload, key or user; also any unknown `/api` path |
+| 405 | the path exists, the method does not (the `Allow` header lists the methods) |
+| 409 | the row exists (duplicate slug, repo, post URL or claim), the claim is not pending, the repo has another maintainer |
+| 410 | a gist challenge or a repo claim expired |
+| 411 / 413 / 415 | uploads: no Content-Length / too large / not multipart or a wrong file type |
+| 422 | a gist proof or a repo's `.iosonand-verify` does not prove the claim |
+| 502 | GitHub or Reddit did not answer |
+
+## Devices
+
+```sh
+curl "$BASE/api/devices?limit=20"                       # with statuses, forks, supported_by, families, media
+curl "$BASE/api/devices?family=HackiOS&base=other"
+curl "$BASE/api/devices/s24-ultra"                      # one device, plus its recent posts
+curl -X PATCH "$BASE/api/devices/s25" -H "authorization: Bearer $TOKEN" \
+  -H 'content-type: application/json' -d '{"ios_version":"iOS 27","best_result":"boots to SpringBoard"}'
+```
+
+A device has `base` (`oneios` or `other`, for the N/A rule), `ios_version`, a photo
+(`image_url`, `image_credit`, `image_license`, `image_source_url`), `supported_by` (every repo
+that supports it), `families` and `family` (the base project of those repos), `latest_media` and
+`media_count`. Maintainers PATCH most fields; `base` and the photo are admin-only (`device-set`).
+
+## Areas and statuses
+
+```sh
+curl "$BASE/api/areas"                                   # each with scope: all | oneios
+curl "$BASE/api/status?device=s24-ultra"
+curl -X PUT "$BASE/api/status/s24-ultra/wifi" -H "authorization: Bearer $TOKEN" \
+  -H 'content-type: application/json' \
+  -d '{"state":"works","detail":"joins WPA2, captive portal opens","source":"https://github.com/akshaynexus/OneiOS/blob/main/docs/hardware.md"}'
+```
+
+States: `works`, `in-progress`, `broken`, `unknown`. A write checks, in order: 401, 404 device,
+403 (not a maintainer, or a key without `status:write`), 404 area, 400 `area not applicable` (an
+area with scope `oneios` on a device whose base is not `oneios`), 400 bad state.
+
+## Repos (forks)
+
+```sh
+curl "$BASE/api/forks?kind=upstream"                     # akshaynexus/OneiOS first
+curl "$BASE/api/forks?device=s25"                        # repos of s25, or that support it
+curl "$BASE/api/forks?base_project=ios-sweet"
+curl "$BASE/api/lineage"                                 # nodes and "based on" edges
+curl -X POST "$BASE/api/forks/sync" -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' \
+  -d '{"repo":"OWNER/REPO","device_slug":"s25","best_result":"boots to the lock screen"}'
+```
+
+A repo has `kind` (`upstream`, `fork`, `standalone`), `verified`, `maintainer`, `supports` (the
+devices it supports: `primary`, `merged`, `ported` or `claimed`, with `via`, the repo the work came
+from) and `based_on` (`fork-of`, `derived-from`, `ported-from`, `uses`), plus the family label
+`base_project`. Rows: `POST /api/forks/{id}/devices` and `POST /api/forks/{id}/lineage` (CLI
+`repo-support`, `repo-lineage`). The repo name is unique.
+
+## Repo claims
+
+```sh
+curl -X POST "$BASE/api/repos/claim" -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' \
+  -d '{"repo":"OWNER/REPO","device":"s25"}'               # 200 approved (owner) or 202 pending with a nonce
+curl -X POST "$BASE/api/repos/claim/17/verify" -H "authorization: Bearer $TOKEN"
+curl "$BASE/api/repos/claims?status=pending" -H "authorization: Bearer $TOKEN"
+```
+
+See [Maintain a repo](/docs/maintain-a-repo).
+
+## Device claims
+
+```sh
+curl -X POST "$BASE/api/claims" -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' \
+  -d '{"device":"a53","note":"I am starting an A53 port"}'
+```
+
+An admin approves (`POST /api/claims/{id}/approve`). A repo claim adds this for you.
+
+## Media
+
+```sh
+curl -H "authorization: Bearer $TOKEN" -F device=s25 -F area=touch -F file=@touch.png "$BASE/api/media"
+curl "$BASE/api/media?device=s25"
+curl -H 'range: bytes=0-1023' "$BASE/media/s25/2026-11-23-abc.mp4" -o first-kb.bin
+```
+
+See [Uploads](/docs/uploads).
+
+## Posts
+
+```sh
+curl "$BASE/api/posts?limit=50&offset=50"
+curl -X POST "$BASE/api/posts" -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' \
+  -d '{"title":"iOS 27 on the S25","url":"https://www.reddit.com/r/hackios/comments/abc/x","image_url":"https://i.redd.it/abc.jpeg"}'
+```
+
+Posts carry `image_url`, `image_width`, `image_height` (a thumbnail from the post). See
+[Reddit](/docs/reddit).
+
+## Keys
+
+```sh
+curl -X POST "$BASE/api/tokens" -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' \
+  -d '{"name":"CI","scopes":["status:write"],"expires_in_days":90}'
+curl "$BASE/api/tokens" -H "authorization: Bearer $TOKEN"
+curl -X POST "$BASE/api/tokens/71/rotate" -H "authorization: Bearer $TOKEN"
+```
+
+See [API keys](/docs/api-keys).
+
+## Changelog and search
+
+```sh
+curl "$BASE/api/changelog?limit=20"
+curl "$BASE/api/search?q=sweet"                          # devices, forks, areas, posts
+curl "$BASE/api/auth/me" -H "authorization: Bearer $TOKEN"   # maintains, maintains_repos, token_scopes
+```

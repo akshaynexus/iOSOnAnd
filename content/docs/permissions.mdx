@@ -1,0 +1,87 @@
+---
+title: "Permissions"
+description: "Who may read and write what, how a user becomes a maintainer, API key scopes, and what 401, 403 and 409 mean."
+---
+
+Reads are public. Every write needs a login: a session cookie from `/login`, or
+`Authorization: Bearer <token>` with a tracker token from `node cli.mjs login` or an
+[API key](/docs/api-keys).
+
+## Log in
+
+- People sign up and log in at `/signup` and `/login` with an email and a password (10 to 256
+  characters). Logging in with exactly `ADMIN_EMAIL` and `ADMIN_PASSWORD` (`.dev.vars` locally,
+  wrangler secrets in production) creates that account if needed and makes it an admin.
+- Link GitHub on `/profile`: the page asks for the URL of a secret gist that holds a one-time
+  nonce. A GitHub account that is already linked to another user returns 409; unlink it there
+  first. The linked GitHub login is what the [repo owner check](/docs/maintain-a-repo) compares.
+- Agents log in with `cli.mjs`; see [Agent system](/docs/agents#auth-for-agents).
+
+## Trust levels
+
+Each endpoint has one of these levels. `GET /api/docs` and the
+[API reference](/api-reference) (`x-auth` on each operation) list the level of every endpoint.
+
+| Level | Who | Can |
+|---|---|---|
+| public | anyone | read everything; log in, sign up, run the gist proof |
+| login | any logged-in user | claim a device or a repo, withdraw your own claim, manage your keys, link or unlink GitHub |
+| maintainer | admin, or a maintainer of that device | set its statuses, update the device, add, sync and update its forks, upload media for it |
+| repo | admin, or the maintainer of that repo | update the repo, add `claimed` support rows and lineage, step down |
+| uploader | admin, or who uploaded it | delete an upload |
+| poster | admin, or a maintainer of any device | add Reddit posts |
+| admin | `users.is_admin = 1` | everything, plus review claims, add devices, areas and users, delete rows, set `reproduced` or `merged`, `kind`, `base`, photos, `merged`/`ported`/`primary` support, run the Reddit fetch |
+
+You maintain a device when you hold an approved claim on it. There are two ways to get one:
+
+1. **Claim the repo** ([Maintain a repo](/docs/maintain-a-repo)): approved at once when your GitHub
+   login owns the repo, or after a proof file (or an admin) otherwise. The approval also makes you
+   a maintainer of the repo's phone.
+2. **Claim the device**: `node cli.mjs claim-add <slug> --note "..."` (`POST /api/claims`); an
+   admin approves it (`claim-approve`). Use this when there is no repo yet.
+
+Rules on top of the levels:
+
+- A fork with no device is admin-only, except for its repo maintainer.
+- A maintainer files forks as `fork-claim`. Only an admin sets `reproduced` or `merged`.
+- An area with scope `oneios` (`return-to-oneui`, `ipc`, `kernel-mem`) only takes writes for a
+  device whose `base` is `oneios`; anything else is 400 `area not applicable`.
+
+`GET /api/auth/me` (CLI: `whoami`) returns `maintains` (device slugs), `maintains_repos`,
+`can_post`, `is_admin` and, with a key, `token_scopes`.
+
+## API key scopes
+
+A key may carry `all`, `read`, `status:write`, `fork:write`, `post:write` or `media:write`. The
+scope only narrows the key; your level above still decides. A scope miss is 403
+`{"error":"token scope","hint":"needs <scope>"}`; an expired key is 401. The check runs in one
+place, `requireUser` in `src/lib/auth.ts`, for every write. [API keys](/docs/api-keys) lists which
+paths need which scope.
+
+## Refused requests
+
+Every error is JSON `{error, hint}`. The CLI prints both.
+
+| Status | Meaning | Example `error` | Example `hint` |
+|---|---|---|---|
+| 401 | not logged in | `auth required` | `POST /api/auth/login with {email,password}, or send Authorization: Bearer <api-token>` |
+| 401 | bad key | `invalid token`, `token expired` | log in again, or create a new key |
+| 403 | logged in, not allowed | `not a maintainer of s24-ultra` | `claim this device: POST /api/claims {"device":"s24-ultra"}; ...` |
+| 403 | key scope | `token scope` | `needs media:write` |
+| 403 | admin-only action | `admin required` | `only a tracker admin can do this` |
+| 403 | posting without a claim | `maintainers only` | `posting updates needs an approved claim on any device: ...` |
+| 400 | OneiOS-only area | `area not applicable` | `ipc only applies to OneiOS-based ports` |
+| 409 | duplicate claim | `claim already pending` | `claim #12 waits for an admin; DELETE /api/claims/12 to withdraw it` |
+| 409 | repo taken | `repo already maintained` | who maintains it and how they step down |
+| 409 | duplicate row | `device exists`, `fork already tracked`, `post already tracked` | which endpoint updates it instead |
+| 409 | GitHub account taken | `github already linked` | unlink it from the other user first |
+
+A status write checks in this order: 401 anonymous, 404 unknown device, 403 not an editor of that
+device (or a key without `status:write`), 404 unknown area, 400 area not applicable, 400 bad state.
+
+## Cookie writes and CSRF
+
+A write with an `Origin` from another site is refused with 403. A write with the session cookie
+must also send `Content-Type: application/json` or the header `X-Requested-With: iosonand` (the
+site sends it on uploads); when `Sec-Fetch-Site` is present it must be `same-origin` or
+`same-site`. Bearer-token clients such as the CLI are not affected.

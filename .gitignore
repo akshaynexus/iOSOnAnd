@@ -38,3 +38,6 @@ Thumbs.db
 
 # Skills CLI local state (keep lockfile, ignore the rest if generated)
 # skills-lock.json is intentionally COMMITTED (reproducible skill installs)
+
+# Offline write queue from `node cli.mjs queue` (local, not shared)
+TRACKER_QUEUE.md

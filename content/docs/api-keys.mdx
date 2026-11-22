@@ -1,0 +1,83 @@
+---
+title: "API keys"
+description: "Scoped, expiring tracker tokens for agents and scripts; how scopes are enforced, rotated and revoked."
+---
+
+An API key is a tracker token (`ion_...`) you create for an agent, CI job or script. It acts as
+you, but only for what its scopes allow, and it can expire. Send it as
+`Authorization: Bearer ion_...`; the CLI takes it from `TRACKER_TOKEN` or `--token`.
+
+## Scopes
+
+| Scope | Allows |
+|---|---|
+| `all` | everything you may do, including keys, claims and account changes (the login token has this) |
+| `read` | only reads that need a login, such as `GET /api/auth/me` and `GET /api/tokens` |
+| `status:write` | status cells and device fields: `PUT/POST /api/status...`, `PATCH /api/devices/{slug}` |
+| `fork:write` | repos: `/api/forks...` (sync, support rows, lineage, maintainer) and `/api/repos...` (claims) |
+| `post:write` | `/api/posts...` and `/api/reddit/fetch` |
+| `media:write` | `/api/media...`: uploads and their deletion |
+
+Every scope includes reading. Anything not listed (keys, device claims, users, device create and
+delete, areas) needs `all`.
+
+**A key never exceeds its owner.** The scope only narrows what the key may be used for; your trust
+level still decides. A `status:write` key of a user who maintains `s25` can write `s25` statuses,
+not another phone's (403 `not a maintainer`), and an `all` key of a plain user still gets 403
+`admin required` on admin routes.
+
+## How it is enforced
+
+There is one check, in one place: `requireUser` in `src/lib/auth.ts`. Every write route goes
+through it (directly, or through the admin, maintainer and poster guards). For a request made
+with a key, it computes the scope the request needs from its method and path
+(`scopeFor` in `src/lib/scopes.ts`) and refuses a key that lacks it:
+
+```json
+{ "error": "token scope", "hint": "needs media:write" }
+```
+
+That is a 403. The same rule documents each operation as `x-scope` in
+[/api/openapi.json](/api/openapi.json), and a test checks that the documented and the enforced
+scope agree. A session cookie (the site) is not scoped.
+
+| Key state | Answer |
+|---|---|
+| unknown or revoked | 401 `invalid token` |
+| expired | 401 `token expired` |
+| missing the scope | 403 `token scope`, hint `needs <scope>` |
+
+## Create, list, rotate, revoke
+
+```sh
+node cli.mjs keys-create --name "CI statuses" --scopes status:write,media:write --expires-days 90
+node cli.mjs keys                       # id, name, prefix, scopes, created, last_used, expires, revoked
+node cli.mjs keys-rotate 71             # a new secret, same name, scopes and expiry; the old one stops
+node cli.mjs keys-revoke 71
+```
+
+| API | Body / answer |
+|---|---|
+| `POST /api/tokens` | `{name, scopes: ["status:write", ...], expires_in_days: 30 or 90 or 365 or null}`; 201 `{token, meta}`. The secret is shown once |
+| `GET /api/tokens` | `{tokens: [{id, name, prefix, scopes, created, last_used, expires, revoked}], total, limit, offset, next}`, never the secret |
+| `POST /api/tokens/{id}/rotate` | 201 `{token, meta}`; 409 when the key is revoked or expired |
+| `DELETE /api/tokens/{id}` | `{ok: true, meta}` |
+
+- `expires_in_days` absent or `null` means never. The older `expires_days` (any number of days)
+  still works.
+- `last_used` is updated when the key is used, at most once a minute per key, so a busy agent does
+  not write on every request.
+- Only the SHA-256 of a key is stored. The first 12 characters (`prefix`) identify it in lists.
+- Creating, rotating and revoking keys needs a session or an `all` key, so a scoped key cannot
+  mint itself more rights.
+
+## Using one from the CLI
+
+```sh
+export TRACKER_URL=https://tracker.example
+export TRACKER_TOKEN=ion_...                 # or: node cli.mjs --token ion_... <command>
+node cli.mjs whoami                          # token_scopes shows what the key may do
+node cli.mjs status-set s25 wifi works --detail "..." --source "..."
+```
+
+`whoami` shows `token_from` (where the CLI found the token) and `token_scopes`.

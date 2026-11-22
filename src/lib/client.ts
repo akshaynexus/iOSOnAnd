@@ -1,55 +1,115 @@
 /**
- * src/lib/client.ts — typed fetch wrappers for every /api/* endpoint.
+ * src/lib/client.ts: typed fetch wrappers for the /api/* endpoints the UI
+ * uses, plus the two SSR loaders (server functions) the pages read from.
  *
- * Assumed API surface (PLAN.md sections 2-4 plus schema.sql; backend agent
- * owns the routes, this file only calls them):
+ * Writes follow the permission contract:
+ *   claim a device          any logged-in user      POST /api/claims
+ *   edit an area status     admin or maintainer     PUT  /api/status/:device/:area
+ *   add / edit a fork       admin or maintainer     POST /api/forks, PATCH /api/forks/:id
+ *   add an update post      admin or any maintainer POST /api/posts
+ *   approve / reject claims admin                   POST /api/claims/:id/approve|reject
  *
- *   GET    /api/docs                        live endpoint list
- *   GET    /api/areas                       24 checklist areas
- *   GET    /api/devices?q=&state=           device list (filters ?q= ?state=)
- *   GET    /api/search?q=                   name/model/SoC/repo text search
- *   GET    /api/devices/:slug               full device detail
- *   PUT    /api/status                      {device_slug, area_slug, state, detail?, source?}
- *   GET    /api/forks?device=               fork list (filter ?device=)
- *   POST   /api/forks                       add a fork
- *   GET    /api/posts                       r/hackios + related posts
- *   POST   /api/posts                       {title, url, note?}
- *   GET    /api/claims?device=&status=      claims (filters ?device= ?status=)
- *   POST   /api/claims                      {device_slug, note?}
- *   PATCH  /api/claims/:id                  {status} (admin)
- *   GET    /api/changelog                   write feed
- *   POST   /api/auth/signup                 {email, password, display_name?}
- *   POST   /api/auth/login                  {email, password}
- *   POST   /api/auth/logout
- *   GET    /api/auth/me                     current session user (401 logged out)
- *   POST   /api/auth/gh-challenge           {nonce} for gist-proof linking
- *   POST   /api/auth/gh-verify              {gist_url}
- *   POST   /api/auth/unlink                 unlink GitHub (409 stays server-side)
- *   GET    /api/tokens                      my tracker tokens
- *   POST   /api/tokens                      {name?} -> secret shown once
- *   DELETE /api/tokens/:id                  revoke
- *
- * Auth: login/signup set a server cookie session (credentials: same-origin).
- * Every wrapper also accepts { token } for future CLI use, sent as
- * `Authorization: Bearer <token>`. Errors are { error, hint } JSON.
+ * Auth: login/signup set a cookie session (credentials: same-origin). Every
+ * wrapper also takes { token }, sent as `Authorization: Bearer <token>`.
+ * Errors are { error, hint } JSON and surface as ApiRequestError.
  */
+
+import { createServerFn } from "@tanstack/react-start";
 
 export type AreaState = "works" | "in-progress" | "broken" | "unknown";
 export type Verified = "fork-claim" | "reproduced" | "merged";
 export type ClaimStatus = "pending" | "approved" | "rejected";
 
+export const STATES: AreaState[] = ["works", "in-progress", "broken", "unknown"];
+export const VERIFIED: Verified[] = ["fork-claim", "reproduced", "merged"];
+
 export interface Area {
   slug: string;
   name: string;
   notes: string;
+  /** 'oneios': only applies to OneiOS-based ports (v2). Missing = 'all'. */
+  scope?: "all" | "oneios" | string;
+}
+
+/** A user as the API embeds it in forks, media and claims. */
+export interface UserRef {
+  id: number;
+  display_name: string;
+  github_login: string | null;
+}
+
+export type RepoKind = "upstream" | "fork" | "standalone";
+export type SupportLevel = "primary" | "merged" | "ported" | "claimed";
+
+/** A phone a repo supports (fork.supports). */
+export interface RepoSupport {
+  device_slug: string;
+  device_name?: string;
+  support: SupportLevel | string;
+  via: string | null;
+  note: string;
+}
+
+/** A repo that supports a device (device.supported_by), upstream first. */
+export interface SupportedBy {
+  repo: string;
+  kind: RepoKind | string;
+  /** The repo family (lineage), when the API sends it. */
+  base_project?: string;
+  support: SupportLevel | string;
+  via: string | null;
+  note: string;
+}
+
+export type LineageRelation = "fork-of" | "derived-from" | "ported-from" | "uses";
+
+export interface BasedOn {
+  base: string;
+  base_repo_url: string | null;
+  relation: LineageRelation | string;
+  note: string;
+}
+
+export const RELATION_LABELS: Record<string, string> = {
+  "fork-of": "Fork of",
+  "derived-from": "Derived from",
+  "ported-from": "Ported from",
+  uses: "Uses",
+};
+
+export interface Lineage {
+  nodes: { repo: string; base_project: string; device_slug: string | null }[];
+  edges: { from: string; to: string; relation: string }[];
+}
+
+export function getLineage(opts?: CallOptions): Promise<Lineage> {
+  return req("/api/lineage", undefined, opts);
+}
+
+export interface Media {
+  id: number;
+  device_slug: string;
+  fork_id: number | null;
+  area_slug: string | null;
+  url: string;
+  content_type: string;
+  kind: "image" | "video";
+  bytes: number;
+  width: number | null;
+  height: number | null;
+  caption: string;
+  user: UserRef | null;
+  created: string;
 }
 
 export interface DeviceStatusEntry {
+  device_slug: string;
   area_slug: string;
   state: AreaState;
   detail: string;
   source: string;
   updated: string;
+  area_name?: string;
 }
 
 export interface Fork {
@@ -62,14 +122,39 @@ export interface Fork {
   ported: string;
   fork_only: string;
   verified: Verified;
-  maintainer: string;
+  /** v2: the user who maintains the repo; older responses send nothing (or a label). */
+  maintainer?: UserRef | string | null;
+  maintainer_since?: string | null;
+  maintainer_user_id?: number | null;
+  /** v2: 'upstream' (a project's main repo), 'fork' or 'standalone'. Missing = 'fork'. */
+  kind?: RepoKind | string;
+  /** v2: every phone this repo supports, with how. */
+  supports?: RepoSupport[];
+  /** v2 lineage: the family label ('OneiOS', 'ios-sweet', 'HackiOS', 'custom', ...). */
+  base_project?: string;
+  /** v2 lineage: what the repo is built on. */
+  based_on?: BasedOn[];
   notes: string;
   updated: string;
+}
+
+/** "@login" or the display name of a fork's maintainer, or null. */
+export function forkMaintainer(f: Pick<Fork, "maintainer">): string | null {
+  const m = f.maintainer;
+  if (!m) return null;
+  if (typeof m === "string") return m;
+  return m.github_login ? `@${m.github_login}` : m.display_name || null;
+}
+
+export function forkKind(f: Pick<Fork, "kind">): RepoKind {
+  return f.kind === "upstream" || f.kind === "standalone" ? f.kind : "fork";
 }
 
 export interface Claim {
   id: number;
   device_slug: string;
+  /** Present when the API sends it; older responses only carry the label. */
+  user_id?: number;
   user: string;
   note: string;
   status: ClaimStatus;
@@ -84,7 +169,8 @@ export interface Post {
   note: string;
 }
 
-export interface Device {
+/** A device row as /api/devices lists it. */
+export interface DeviceRow {
   slug: string;
   name: string;
   model: string;
@@ -94,11 +180,36 @@ export interface Device {
   best_result: string;
   notes: string;
   updated: string;
+  /** v2 fields; absent until migration 0004 is applied. */
+  base?: "oneios" | "other" | string;
+  ios_version?: string;
+  image_url?: string;
+  image_credit?: string;
+  image_license?: string;
+  image_source_url?: string;
+  latest_media?: Media | null;
+  media_count?: number;
+  supported_by?: SupportedBy[];
+  /** v2: the families (base_project) of the repos that support the device, first = main. */
+  families?: string[];
+  /** v2: families[0], '' with no repo, 'unknown' when no repo has lineage. */
+  family?: string;
+}
+
+/** A device with its nested rows, as /api/devices/:slug returns it. */
+export interface Device extends DeviceRow {
   area_names: Record<string, string>;
   statuses: DeviceStatusEntry[];
   forks: Fork[];
   claims: Claim[];
-  posts: Post[];
+  /** Labels of approved maintainers, when the API sends them. */
+  maintainers?: string[];
+}
+
+/** Approved maintainers: the API's list, else the approved claims. */
+export function maintainersOf(device: Pick<Device, "claims" | "maintainers">): string[] {
+  if (Array.isArray(device.maintainers)) return device.maintainers;
+  return device.claims.filter((c) => c.status === "approved").map((c) => c.user);
 }
 
 export interface ChangelogEntry {
@@ -117,12 +228,29 @@ export interface User {
   created: string;
 }
 
+export interface Me {
+  user: User;
+  /** Device slugs this user maintains (approved claims). Missing = none. */
+  maintains: string[];
+  /** May add update posts (admin or any maintainer), when the API says so. */
+  can_post?: boolean;
+  /** v2: repos (OWNER/REPO) this user maintains. */
+  maintains_repos: string[];
+}
+
+export const TOKEN_SCOPES = ["all", "read", "status:write", "fork:write", "post:write", "media:write"] as const;
+export type TokenScope = (typeof TOKEN_SCOPES)[number];
+
 export interface ApiTokenRecord {
   id: number;
   name: string;
   prefix: string;
   created: string;
   last_used: string | null;
+  /** v2 fields; older responses leave them out. */
+  scopes?: string[];
+  expires?: string | null;
+  revoked?: boolean | number | string | null;
 }
 
 export interface ApiErrorBody {
@@ -134,28 +262,41 @@ export class ApiRequestError extends Error {
   status: number;
   hint?: string;
   constructor(status: number, body: ApiErrorBody) {
-    super(body.error);
+    super(typeof body.error === "string" && body.error ? body.error : `Request failed (${status})`);
     this.status = status;
-    this.hint = body.hint;
+    this.hint = typeof body.hint === "string" ? body.hint : undefined;
   }
 }
 
 export interface CallOptions {
-  /** Tracker token for future CLI use. Sent as `Authorization: Bearer`. */
+  /** Tracker token for CLI-style calls. Sent as `Authorization: Bearer`. */
   token?: string;
 }
 
 async function req<T>(path: string, init?: RequestInit, opts?: CallOptions): Promise<T> {
   const headers = new Headers(init?.headers);
-  if (init?.body !== undefined) headers.set("Content-Type", "application/json");
+  // Cookie-authenticated writes must be JSON (the API's CSRF check), body or not.
+  const method = (init?.method ?? "GET").toUpperCase();
+  if (init?.body !== undefined || (method !== "GET" && method !== "HEAD")) {
+    headers.set("Content-Type", "application/json");
+  }
   if (opts?.token) headers.set("Authorization", `Bearer ${opts.token}`);
-  const res = await fetch(path, { ...init, headers, credentials: "same-origin" });
+  headers.set("X-Requested-With", "iosonand");
+  let res: Response;
+  try {
+    res = await fetch(path, { ...init, headers, credentials: "same-origin" });
+  } catch {
+    throw new ApiRequestError(0, { error: "Network error", hint: "Check your connection and try again." });
+  }
   if (!res.ok) {
-    let body: ApiErrorBody = { error: res.statusText };
+    let body: ApiErrorBody = { error: res.statusText || `Request failed (${res.status})` };
     try {
-      body = (await res.json()) as ApiErrorBody;
+      const parsed = (await res.json()) as Partial<ApiErrorBody> | null;
+      if (parsed && typeof parsed === "object" && typeof parsed.error === "string") {
+        body = { error: parsed.error, hint: parsed.hint };
+      }
     } catch {
-      /* keep default */
+      /* not JSON: keep the status text */
     }
     throw new ApiRequestError(res.status, body);
   }
@@ -163,82 +304,198 @@ async function req<T>(path: string, init?: RequestInit, opts?: CallOptions): Pro
   return (await res.json()) as T;
 }
 
-function qs(params: Record<string, string | undefined>): string {
-  const out = new URLSearchParams();
-  for (const [k, v] of Object.entries(params)) if (v) out.set(k, v);
-  const s = out.toString();
-  return s ? `?${s}` : "";
+/** Split an error into a toast title and an optional hint. */
+export function errorParts(err: unknown): { message: string; hint?: string } {
+  if (err instanceof ApiRequestError) return { message: err.message, hint: err.hint };
+  if (err instanceof Error && err.message) return { message: err.message };
+  return { message: "Request failed" };
 }
 
-/* Reads */
-
-export function getAreas(opts?: CallOptions): Promise<{ areas: Area[] }> {
-  return req("/api/areas", undefined, opts);
+export function errorMessage(err: unknown): string {
+  const { message, hint } = errorParts(err);
+  return hint ? `${message}: ${hint}` : message;
 }
 
-export function listDevices(
-  filters?: { q?: string; state?: string },
-  opts?: CallOptions,
-): Promise<{ devices: Device[] }> {
-  return req(`/api/devices${qs({ q: filters?.q, state: filters?.state })}`, undefined, opts);
+/* SSR loaders. They run in the Worker (during SSR, or by RPC on client
+ * navigation) and call the API route handlers in-process, so the pages get
+ * exactly the shapes the API serves. Only public GETs go through here. */
+
+type Handler = (ctx: { request: Request; params: Record<string, string> }) => Promise<Response>;
+type Result<T> = { ok: true; data: T } | { ok: false; status: number };
+
+async function serverGet<T>(
+  mod: Promise<{ Route: unknown }>,
+  path: string,
+  params: Record<string, string> = {},
+): Promise<Result<T>> {
+  const { Route } = await mod;
+  const handler = (Route as { options: { server?: { handlers?: { GET?: Handler } } } }).options.server
+    ?.handlers?.GET;
+  if (!handler) throw new Error(`no GET handler for ${path}`);
+  const res = await handler({ request: new Request(new URL(path, "http://internal")), params });
+  if (!res.ok) return { ok: false, status: res.status };
+  return { ok: true, data: (await res.json()) as T };
 }
 
-export function searchDevices(q: string, opts?: CallOptions): Promise<{ devices: Device[] }> {
-  return req(`/api/search${qs({ q })}`, undefined, opts);
+/**
+ * Every row of a paged list endpoint: asks for big pages and follows
+ * total/next until the list is complete (at most 20 pages).
+ */
+async function serverGetAll<T>(
+  mod: Promise<{ Route: unknown }>,
+  path: string,
+  key: string,
+  limit = 500,
+): Promise<Result<{ items: T[]; total?: number }>> {
+  const items: T[] = [];
+  const seen = new Set<unknown>();
+  let offset = 0;
+  let total: number | undefined;
+  for (let i = 0; i < 20; i++) {
+    const sep = path.includes("?") ? "&" : "?";
+    const r = await serverGet<Record<string, unknown>>(mod, `${path}${sep}limit=${limit}&offset=${offset}`);
+    if (!r.ok) return r;
+    const rows = Array.isArray(r.data[key]) ? (r.data[key] as T[]) : [];
+    let fresh = 0;
+    for (const row of rows) {
+      const id = (row as { id?: unknown; slug?: unknown }).id ?? (row as { slug?: unknown }).slug ?? row;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      items.push(row);
+      fresh++;
+    }
+    if (typeof r.data.total === "number") total = r.data.total;
+    const next = nextOffset(r.data, offset, rows.length, limit);
+    if (next === null || fresh === 0) break;
+    offset = next;
+  }
+  return { ok: true, data: { items, total } };
 }
 
-export function getDevice(slug: string, opts?: CallOptions): Promise<{ device: Device }> {
-  return req(`/api/devices/${encodeURIComponent(slug)}`, undefined, opts);
+/** The first page of a feed, with its total and next offset. */
+async function serverPage<T>(
+  mod: Promise<{ Route: unknown }>,
+  path: string,
+  key: string,
+  limit: number,
+): Promise<Result<Page<T>>> {
+  const sep = path.includes("?") ? "&" : "?";
+  const r = await serverGet<Record<string, unknown>>(mod, `${path}${sep}limit=${limit}&offset=0`);
+  if (!r.ok) return r;
+  const items = Array.isArray(r.data[key]) ? (r.data[key] as T[]) : [];
+  return {
+    ok: true,
+    data: {
+      items,
+      total: typeof r.data.total === "number" ? r.data.total : undefined,
+      next: nextOffset(r.data, 0, items.length, limit),
+    },
+  };
 }
 
-export function listForks(
-  filters?: { device?: string },
-  opts?: CallOptions,
-): Promise<{ forks: Fork[] }> {
-  return req(`/api/forks${qs({ device: filters?.device })}`, undefined, opts);
+function must<T>(r: Result<T>, what: string): T {
+  if (!r.ok) throw new Error(`Loading ${what} failed (${r.status})`);
+  return r.data;
 }
 
-export function listPosts(opts?: CallOptions): Promise<{ posts: Post[] }> {
-  return req("/api/posts", undefined, opts);
+export interface Dashboard {
+  areas: Area[];
+  devices: Device[];
+  forks: Fork[];
+  /** The first page of each feed; the feeds load the rest on demand. */
+  posts: Post[];
+  postsTotal?: number;
+  postsNext: number | null;
+  changelog: ChangelogEntry[];
+  changelogTotal?: number;
+  changelogNext: number | null;
 }
+
+export const FEED_PAGE = 50;
+
+export const loadDashboard = createServerFn({ method: "GET" }).handler(async (): Promise<Dashboard> => {
+  // /api/devices already nests each device's statuses, forks, claims and
+  // maintainers; /api/forks adds the forks no device is assigned to.
+  const [areas, devices, forks, posts, changelog] = await Promise.all([
+    serverGet<{ areas: Area[] }>(import("@/routes/api/areas"), "/api/areas"),
+    serverGetAll<Device>(import("@/routes/api/devices"), "/api/devices", "devices"),
+    serverGetAll<Fork>(import("@/routes/api/forks"), "/api/forks", "forks"),
+    serverPage<Post>(import("@/routes/api/posts"), "/api/posts", "posts", FEED_PAGE),
+    serverPage<ChangelogEntry>(import("@/routes/api/changelog"), "/api/changelog", "changelog", FEED_PAGE),
+  ]);
+  const p = must(posts, "posts");
+  const c = must(changelog, "changelog");
+  return {
+    areas: must(areas, "areas").areas,
+    devices: must(devices, "devices").items.map((d) => ({
+      ...d,
+      statuses: d.statuses ?? [],
+      forks: d.forks ?? [],
+      claims: d.claims ?? [],
+    })),
+    forks: must(forks, "forks").items,
+    posts: p.items,
+    postsTotal: p.total,
+    postsNext: p.next,
+    changelog: c.items,
+    changelogTotal: c.total,
+    changelogNext: c.next,
+  };
+});
+
+export const loadDevice = createServerFn({ method: "GET" })
+  .validator((slug: unknown) => String(slug))
+  .handler(async ({ data: slug }): Promise<{ device: Device | null; areas: Area[] }> => {
+    const [res, areas] = await Promise.all([
+      serverGet<{ device: Device }>(
+        import("@/routes/api/devices.$slug"),
+        `/api/devices/${encodeURIComponent(slug)}`,
+        { slug },
+      ),
+      serverGet<{ areas: Area[] }>(import("@/routes/api/areas"), "/api/areas"),
+    ]);
+    if (!res.ok) {
+      if (res.status === 404) return { device: null, areas: [] };
+      throw new Error(`Loading device ${slug} failed (${res.status})`);
+    }
+    return { device: res.data.device, areas: must(areas, "areas").areas };
+  });
+
+/* Reads (client) */
 
 export function listClaims(
-  filters?: { device?: string; status?: string },
+  filters?: { device?: string; status?: ClaimStatus },
   opts?: CallOptions,
 ): Promise<{ claims: Claim[] }> {
+  const q = new URLSearchParams();
+  if (filters?.device) q.set("device", filters.device);
+  if (filters?.status) q.set("status", filters.status);
+  const s = q.toString();
+  return req(`/api/claims${s ? `?${s}` : ""}`, undefined, opts);
+}
+
+/* Writes */
+
+export function setStatus(
+  device: string,
+  area: string,
+  update: { state: AreaState; detail?: string; source?: string },
+  opts?: CallOptions,
+): Promise<{ status: DeviceStatusEntry }> {
   return req(
-    `/api/claims${qs({ device: filters?.device, status: filters?.status })}`,
-    undefined,
+    `/api/status/${encodeURIComponent(device)}/${encodeURIComponent(area)}`,
+    { method: "PUT", body: JSON.stringify(update) },
     opts,
   );
 }
 
-export function getChangelog(opts?: CallOptions): Promise<{ changelog: ChangelogEntry[] }> {
-  return req("/api/changelog", undefined, opts);
-}
-
-/* Writes (editors) */
-
-export interface StatusUpdate {
-  device_slug: string;
-  area_slug: string;
-  state: AreaState;
-  detail?: string;
-  source?: string;
-}
-
-export function setStatus(update: StatusUpdate, opts?: CallOptions): Promise<{ ok: true }> {
-  return req("/api/status", { method: "PUT", body: JSON.stringify(update) }, opts);
-}
-
 export interface ForkInput {
   device_slug?: string | null;
-  repo: string;
+  repo?: string;
   branch?: string;
   url?: string;
   best_result?: string;
-  ported?: string;
-  fork_only?: string;
+  verified?: Verified;
   notes?: string;
 }
 
@@ -246,8 +503,12 @@ export function addFork(input: ForkInput, opts?: CallOptions): Promise<{ fork: F
   return req("/api/forks", { method: "POST", body: JSON.stringify(input) }, opts);
 }
 
+export function updateFork(id: number, input: ForkInput, opts?: CallOptions): Promise<{ fork: Fork }> {
+  return req(`/api/forks/${id}`, { method: "PATCH", body: JSON.stringify(input) }, opts);
+}
+
 export function addPost(
-  input: { title: string; url: string; note?: string },
+  input: { title: string; url: string; published?: string; note?: string },
   opts?: CallOptions,
 ): Promise<{ post: Post }> {
   return req("/api/posts", { method: "POST", body: JSON.stringify(input) }, opts);
@@ -260,19 +521,19 @@ export function addClaim(
   return req("/api/claims", { method: "POST", body: JSON.stringify(input) }, opts);
 }
 
-export function reviewClaim(
-  id: number,
-  status: ClaimStatus,
-  opts?: CallOptions,
-): Promise<{ claim: Claim }> {
-  return req(
-    `/api/claims/${id}`,
-    { method: "PATCH", body: JSON.stringify({ status }) },
-    opts,
-  );
+export function withdrawClaim(id: number, opts?: CallOptions): Promise<{ deleted: number }> {
+  return req(`/api/claims/${id}`, { method: "DELETE" }, opts);
 }
 
-/* Auth (cookie session; login stores the session server-side) */
+export function reviewClaim(
+  id: number,
+  decision: "approve" | "reject",
+  opts?: CallOptions,
+): Promise<{ claim: Claim }> {
+  return req(`/api/claims/${id}/${decision}`, { method: "POST" }, opts);
+}
+
+/* Auth (cookie session) */
 
 export function signup(
   input: { email: string; password: string; display_name?: string },
@@ -292,22 +553,35 @@ export function logout(opts?: CallOptions): Promise<{ ok: true }> {
   return req("/api/auth/logout", { method: "POST" }, opts);
 }
 
-export function me(opts?: CallOptions): Promise<{ user: User }> {
-  return req("/api/auth/me", undefined, opts);
+function strings(v: unknown): string[] {
+  return Array.isArray(v) ? v.filter((s): s is string => typeof s === "string") : [];
 }
 
-/* GitHub linking (gist-proof nonce flow) */
-
-export function ghChallenge(opts?: CallOptions): Promise<{ nonce: string }> {
-  return req("/api/auth/gh-challenge", { method: "POST" }, opts);
-}
-
-export function ghVerify(gist_url: string, opts?: CallOptions): Promise<{ user: User }> {
-  return req(
-    "/api/auth/gh-verify",
-    { method: "POST", body: JSON.stringify({ gist_url }) },
+export async function me(opts?: CallOptions): Promise<Me> {
+  const res = await req<{ user: User; maintains?: unknown; can_post?: unknown; maintains_repos?: unknown }>(
+    "/api/auth/me",
+    undefined,
     opts,
   );
+  return {
+    user: res.user,
+    maintains: strings(res.maintains),
+    can_post: typeof res.can_post === "boolean" ? res.can_post : undefined,
+    maintains_repos: strings(res.maintains_repos),
+  };
+}
+
+/* GitHub linking for a logged-in user: challenge, secret gist, link. */
+
+export function ghChallenge(
+  github_login: string,
+  opts?: CallOptions,
+): Promise<{ nonce: string; expires: string }> {
+  return req("/api/auth/gh-challenge", { method: "POST", body: JSON.stringify({ github_login }) }, opts);
+}
+
+export function ghLink(gist_url: string, nonce: string, opts?: CallOptions): Promise<{ user: User }> {
+  return req("/api/auth/gh-link", { method: "POST", body: JSON.stringify({ gist_url, nonce }) }, opts);
 }
 
 export function unlinkGithub(opts?: CallOptions): Promise<{ user: User }> {
@@ -320,13 +594,27 @@ export function listTokens(opts?: CallOptions): Promise<{ tokens: ApiTokenRecord
   return req("/api/tokens", undefined, opts);
 }
 
+export interface MintedToken {
+  token: string;
+  meta?: ApiTokenRecord;
+  /** Older responses call it record. */
+  record?: ApiTokenRecord;
+}
+
 export function mintToken(
-  name?: string,
+  input: { name?: string; scopes?: string[]; expires_in_days?: number | null },
   opts?: CallOptions,
-): Promise<{ token: string; record: ApiTokenRecord }> {
+): Promise<MintedToken> {
   return req(
     "/api/tokens",
-    { method: "POST", body: JSON.stringify({ name: name ?? "" }) },
+    {
+      method: "POST",
+      body: JSON.stringify({
+        name: input.name ?? "",
+        scopes: input.scopes ?? ["all"],
+        expires_in_days: input.expires_in_days ?? null,
+      }),
+    },
     opts,
   );
 }
@@ -335,7 +623,175 @@ export function revokeToken(id: number, opts?: CallOptions): Promise<{ ok: true 
   return req(`/api/tokens/${id}`, { method: "DELETE" }, opts);
 }
 
-export function errorMessage(err: unknown): string {
-  if (err instanceof ApiRequestError) return err.hint ? `${err.message} (${err.hint})` : err.message;
-  return err instanceof Error ? err.message : "Request failed";
+export function rotateToken(id: number, opts?: CallOptions): Promise<MintedToken> {
+  return req(`/api/tokens/${id}/rotate`, { method: "POST" }, opts);
+}
+
+/* Repo ownership (v2) */
+
+export type RepoClaimStatus = "pending" | "approved" | "rejected" | "expired";
+
+export interface RepoClaim {
+  id: number;
+  user_id?: number;
+  user?: UserRef | string | null;
+  repo: string;
+  fork_id?: number | null;
+  device_slug?: string | null;
+  method?: "owner" | "proof-file" | "admin" | string;
+  nonce?: string;
+  path?: string;
+  status: RepoClaimStatus | string;
+  created?: string;
+  expires?: string | null;
+  decided?: string | null;
+  note?: string;
+}
+
+export function claimRepo(
+  input: { repo: string; device?: string; note?: string },
+  opts?: CallOptions,
+): Promise<{ claim: RepoClaim; fork?: Fork; already?: boolean; already_pending?: boolean }> {
+  return req("/api/repos/claim", { method: "POST", body: JSON.stringify(input) }, opts);
+}
+
+export function verifyRepoClaim(id: number, opts?: CallOptions): Promise<{ claim: RepoClaim; fork?: Fork }> {
+  return req(`/api/repos/claim/${id}/verify`, { method: "POST" }, opts);
+}
+
+export function listRepoClaims(status?: RepoClaimStatus, opts?: CallOptions): Promise<{ claims: RepoClaim[] }> {
+  return req(`/api/repos/claims${status ? `?status=${status}` : ""}`, undefined, opts);
+}
+
+export function reviewRepoClaim(
+  id: number,
+  decision: "approve" | "reject",
+  opts?: CallOptions,
+): Promise<{ claim: RepoClaim }> {
+  return req(`/api/repos/claims/${id}/${decision}`, { method: "POST" }, opts);
+}
+
+/* Media (v2) */
+
+export function listMedia(
+  filters: { device?: string; fork_id?: number; area?: string; limit?: number },
+  opts?: CallOptions,
+): Promise<{ media: Media[] }> {
+  const q = new URLSearchParams();
+  if (filters.device) q.set("device", filters.device);
+  if (filters.fork_id) q.set("fork_id", String(filters.fork_id));
+  if (filters.area) q.set("area", filters.area);
+  if (filters.limit) q.set("limit", String(filters.limit));
+  return req(`/api/media?${q}`, undefined, opts);
+}
+
+export function deleteMedia(id: number, opts?: CallOptions): Promise<unknown> {
+  return req(`/api/media/${id}`, { method: "DELETE" }, opts);
+}
+
+/**
+ * Upload one file with progress (XMLHttpRequest, since fetch has no upload
+ * progress). Multipart: file, device, fork_id?, area?, caption?.
+ */
+export function uploadMedia(
+  input: { file: Blob; filename: string; device: string; fork_id?: number | null; area?: string | null; caption?: string },
+  onProgress: (fraction: number) => void,
+  signal?: AbortSignal,
+): Promise<{ media: Media }> {
+  return new Promise((resolve, reject) => {
+    const form = new FormData();
+    // Text fields first: the API streams the body and reads them before the file.
+    form.append("device", input.device);
+    if (input.fork_id) form.append("fork_id", String(input.fork_id));
+    if (input.area) form.append("area", input.area);
+    if (input.caption) form.append("caption", input.caption);
+    form.append("file", input.file, input.filename);
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/media");
+    xhr.withCredentials = true;
+    // A custom header a cross-site form cannot send; the API accepts cookie multipart writes with it.
+    xhr.setRequestHeader("X-Requested-With", "iosonand");
+    xhr.responseType = "text";
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress(e.loaded / e.total);
+    };
+    xhr.onload = () => {
+      let body: unknown = null;
+      try {
+        body = JSON.parse(xhr.responseText);
+      } catch {
+        /* not JSON */
+      }
+      if (xhr.status >= 200 && xhr.status < 300 && body && typeof body === "object") {
+        resolve(body as { media: Media });
+      } else {
+        const b = (body ?? {}) as Partial<ApiErrorBody>;
+        reject(
+          new ApiRequestError(xhr.status, {
+            error: typeof b.error === "string" ? b.error : `Upload failed (${xhr.status})`,
+            hint: typeof b.hint === "string" ? b.hint : undefined,
+          }),
+        );
+      }
+    };
+    xhr.onerror = () => reject(new ApiRequestError(0, { error: "Network error", hint: "Check your connection and try again." }));
+    xhr.onabort = () => reject(new ApiRequestError(0, { error: "Upload cancelled" }));
+    signal?.addEventListener("abort", () => xhr.abort());
+    xhr.send(form);
+  });
+}
+
+/* Paged feeds. The API pages with limit/offset and may add total and next;
+ * an older API ignores offset, so pages are merged by id and paging stops
+ * when a page brings nothing new. */
+
+export interface Page<T> {
+  items: T[];
+  total?: number;
+  /** Offset of the next page, or null when this was the last one. */
+  next: number | null;
+}
+
+function nextOffset(body: Record<string, unknown>, offset: number, got: number, limit: number): number | null {
+  const next = body.next;
+  if (next === null) return null;
+  if (typeof next === "number") return next;
+  if (typeof next === "string") {
+    const n = Number(new URL(next, "http://x").searchParams.get("offset"));
+    return Number.isFinite(n) && n > 0 ? n : null;
+  }
+  const total = typeof body.total === "number" ? body.total : undefined;
+  if (total !== undefined) return offset + got < total ? offset + got : null;
+  return got >= limit ? offset + got : null;
+}
+
+async function page<T>(path: string, key: string, offset: number, limit: number): Promise<Page<T>> {
+  const sep = path.includes("?") ? "&" : "?";
+  const body = await req<Record<string, unknown>>(`${path}${sep}limit=${limit}&offset=${offset}`);
+  const items = Array.isArray(body[key]) ? (body[key] as T[]) : [];
+  return {
+    items,
+    total: typeof body.total === "number" ? body.total : undefined,
+    next: nextOffset(body, offset, items.length, limit),
+  };
+}
+
+export function listPostsPage(offset: number, limit = 50): Promise<Page<Post>> {
+  return page<Post>("/api/posts", "posts", offset, limit);
+}
+
+export function listChangelogPage(offset: number, limit = 50): Promise<Page<ChangelogEntry>> {
+  return page<ChangelogEntry>("/api/changelog", "changelog", offset, limit);
+}
+
+/** The label the API shows for a user on claims (display name, @login, user#id). */
+export function claimLabelFor(user: User): string {
+  if (user.display_name) return user.display_name;
+  if (user.github_login) return `@${user.github_login}`;
+  return `user#${user.id}`;
+}
+
+/** True when the claim belongs to this user (by id when the API sends it, else by label). */
+export function isOwnClaim(claim: Claim, user: User): boolean {
+  return claim.user_id !== undefined ? claim.user_id === user.id : claim.user === claimLabelFor(user);
 }

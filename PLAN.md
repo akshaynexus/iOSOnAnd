@@ -1,5 +1,13 @@
 # iOSOnAnd — Build Plan (v7 scaffold)
 
+> **Status 2026-11-21 (wave 2).** Done: one-command local run (`bun install
+> && bun run dev` creates `.dev.vars`, applies D1 migrations, seeds an empty
+> DB), D1 migrations via `migrations_dir`, CLI with `--url`, email and
+> `--admin` login, claims, `whoami`, offline `queue`/`flush` (§6), pinned
+> dependency versions. Stubbed: Cloudflare deploy (no account used,
+> `database_id` is a placeholder), password-reset email, Reddit embeds, cron
+> auto-fetch, skill auto-distribution. README.md lists what exists.
+
 > Read-first plan. Nothing gets built until approved.
 >
 > - v2–v5: email+password, rich API, gh gist-proof agent login, account

@@ -1,57 +1,41 @@
-// /api/areas — GET the 24-area checklist, POST add one (auth).
+// /api/areas — GET the checklist areas (public; each has scope all | oneios;
+// ?limit= default and max 500, ?offset=), POST add one {slug, name, notes?,
+// scope?} (admin).
 
 import { createFileRoute } from '@tanstack/react-router';
-import { queryAll, queryFirst, exec } from '@/lib/db';
-import {
-  HttpError,
-  actorName,
-  handleError,
-  json,
-  readJson,
-  requireUser,
-  validSlug,
-} from '@/lib/auth';
+import { queryFirst } from '@/lib/db';
+import { AREA_SCOPES, HttpError, actorName, json, oneOf, paged, pageParams, readJson, requireAdmin, str, validSlug } from '@/lib/auth';
+import { apiHandlers, type ApiCtx } from '@/lib/api';
 import { appendChangelog } from '@/lib/changelog';
 import type { Area } from '@/lib/types';
 
-async function handleGet(): Promise<Response> {
-  const areas = await queryAll<Area>('SELECT * FROM areas ORDER BY slug');
-  return json({ areas });
+async function handleGet({ request }: ApiCtx): Promise<Response> {
+  const page = pageParams(new URL(request.url).searchParams, 500, 500);
+  const { rows, page: info } = await paged<Area>('SELECT * FROM areas ORDER BY slug', 'SELECT COUNT(*) AS n FROM areas', [], page);
+  return json({ areas: rows, ...info });
 }
 
-async function handlePost(req: Request): Promise<Response> {
-  const user = await requireUser(req);
-  const body = await readJson(req);
-  const slug = String(body.slug || '').trim().toLowerCase();
-  const name = String(body.name || '').trim();
+async function handlePost({ request }: ApiCtx): Promise<Response> {
+  const user = await requireAdmin(request);
+  const body = await readJson(request);
+  const slug = str(body, 'slug', 64).toLowerCase();
+  const name = str(body, 'name', 120);
   if (!validSlug(slug)) throw new HttpError(400, 'bad slug', 'use lowercase letters, digits and dashes');
   if (!name) throw new HttpError(400, 'name required', 'send {"slug","name"} plus optional notes');
   if (await queryFirst('SELECT slug FROM areas WHERE slug = ?', [slug])) {
     throw new HttpError(409, 'area exists', 'area slugs are unique');
   }
-  await exec('INSERT INTO areas (slug, name, notes) VALUES (?, ?, ?)', [slug, name, String(body.notes || '')]);
-  const row = await queryFirst<Area>('SELECT * FROM areas WHERE slug = ?', [slug]);
+  const scope = oneOf(AREA_SCOPES, str(body, 'scope', 16) || 'all', 'scope');
+  const row = await queryFirst<Area>('INSERT INTO areas (slug, name, notes, scope) VALUES (?, ?, ?, ?) RETURNING *', [
+    slug,
+    name,
+    str(body, 'notes', 2000),
+    scope,
+  ]);
   await appendChangelog(actorName(user), `area ${slug} added`);
   return json({ area: row }, 201);
 }
 
 export const Route = createFileRoute('/api/areas')({
-  server: {
-    handlers: {
-  GET: async () => {
-    try {
-      return await handleGet();
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-  POST: async ({ request }: { request: Request }) => {
-    try {
-      return await handlePost(request);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-    },
-  },
+  server: { handlers: apiHandlers({ GET: handleGet, POST: handlePost }) },
 });

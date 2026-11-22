@@ -1,0 +1,108 @@
+---
+title: "Getting started"
+description: "Run the tracker locally, run its tests, and deploy it to Cloudflare."
+---
+
+The tracker is a TanStack Start app on Cloudflare Workers with a D1 (SQLite) database. Locally,
+Vite runs it in the Workers runtime with a local D1, the same code path as production.
+
+## Run it locally
+
+Needs [bun](https://bun.sh) and Node 20 or newer.
+
+```sh
+bun install && bun run dev
+```
+
+`bun run dev` runs `scripts/setup-local.mjs`, then Vite. The setup step is safe to run on every start:
+
+1. Creates `.dev.vars` from `.dev.vars.example` if it is missing, with
+   `ADMIN_EMAIL=admin@iosonand.local` and a random `ADMIN_PASSWORD`. It prints the password once.
+   The file is git-ignored.
+2. Applies the D1 migrations to the local database
+   (`wrangler d1 migrations apply oneios-tracker --local`).
+3. Loads `seed/seed.json` when the local database has no devices. It never seeds over existing rows.
+
+The app and the API listen on port 3000 on every address, IPv4 and IPv6. Set `PORT` for another
+port:
+
+```sh
+PORT=3103 bun run dev
+```
+
+The port is strict: if it is taken, Vite exits instead of picking another one.
+
+### The admin account
+
+Log in at `/login` with the `ADMIN_EMAIL` and `ADMIN_PASSWORD` from `.dev.vars`. That pair always
+logs in as the admin; the account is created on first use. From the CLI:
+
+```sh
+node cli.mjs login --admin      # reads ADMIN_EMAIL / ADMIN_PASSWORD from .dev.vars
+node cli.mjs whoami
+```
+
+### Other scripts
+
+| Command | What it does |
+|---|---|
+| `bun run setup` | the setup step alone |
+| `bun run dev:only` | Vite without the setup step |
+| `bun run db:migrate:local` | apply migrations to the local DB |
+| `bun run seed:local` | seed the local DB (refuses when it has devices; `node seed/apply.mjs --local --force` replaces the seeded tables) |
+| `node scripts/seed-export.mjs` | write the local DB's seeded tables (devices, areas, statuses, repos, support rows, lineage, posts) back into `seed/seed.json`; `--dry-run` prints the counts |
+| `bun run check` | `node cli.mjs check` against the tracker URL |
+| `bun run typecheck` | `tsc --noEmit` |
+| `bun run build` | `vite build` into `dist/` |
+
+The local database lives in `.wrangler/state/`. Delete that folder to start over; the next
+`bun run dev` recreates and seeds it.
+
+## Tests
+
+The API tests run against a running tracker:
+
+```sh
+bun test tests/api                                   # TRACKER_URL defaults to http://127.0.0.1:3001
+TRACKER_URL=http://127.0.0.1:3000 bun test tests/api
+```
+
+They read the admin pair from the environment or `.dev.vars`. Each run uses fresh random accounts
+and throwaway devices `t-<random>`, and deletes what it made afterwards (devices, repos, uploads,
+accounts, and its changelog rows in the local D1). Seed data is only read.
+
+| File | What it covers |
+|---|---|
+| `tests/api/api.test.ts` | auth, the trust model, forks, posts, CSRF, routing |
+| `tests/api/v2.test.ts` | the not-applicable rule, pagination, API keys (scopes, expiry, last_used, rotate, revoke), repo claims (owner, proof file, admin approve and reject, stepping down), support rows, lineage and device families, uploads (types, limits, Range, cookie uploads and CSRF, delete), post thumbnails, `/cli.mjs` |
+| `tests/api/unit.test.ts` | no tracker needed: the multipart parser, the file-type check and the proof-file check with a stubbed fetch |
+| `tests/api/openapi.test.ts` | every route under `src/routes/api/` is in the OpenAPI document (`src/lib/openapi.ts`), each operation's `x-scope` is the enforced one, and the served documents match |
+
+A few v2 cases write to the local D1 directly (a test GitHub login for the owner check, a past key
+expiry), so they run only against a local tracker. The proof-file success path needs a real push;
+the unit test covers it with a stubbed fetch.
+
+## Deploy to Cloudflare
+
+<Callout type="warn" title="Untested">
+  No Cloudflare account has been used yet. `wrangler.jsonc` still has
+  `database_id: "local-only-for-now"`. These are the planned steps.
+</Callout>
+
+```sh
+bunx wrangler login
+bunx wrangler d1 create oneios-tracker     # put the returned database_id into wrangler.jsonc
+bunx wrangler r2 bucket create iosonand-media   # uploads (binding MEDIA)
+bun run db:migrate:remote
+bun run seed:remote
+bunx wrangler secret put ADMIN_EMAIL
+bunx wrangler secret put ADMIN_PASSWORD
+bunx wrangler secret put GITHUB_TOKEN      # optional
+bun run deploy                             # vite build, then wrangler deploy
+```
+
+The docs at `/docs` are compiled into the Worker at build time; they read no files at runtime.
+`GET /cli.mjs` serves the repo's `cli.mjs`, imported as text at build time (in `vite dev` a small
+dev-only middleware in `vite.config.ts` serves the file, because Vite would otherwise answer that
+URL itself). Locally, uploads use the emulated R2 under `.wrangler/state`.
+The API reference at `/api-reference` loads Scalar from jsDelivr in the browser.

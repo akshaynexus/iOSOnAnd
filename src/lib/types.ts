@@ -16,12 +16,21 @@ export interface Device {
   best_result: string;
   notes: string;
   updated: string;
+  /** 'oneios' | 'other' (migrations/0004). */
+  base: string;
+  ios_version: string;
+  image_url: string;
+  image_credit: string;
+  image_license: string;
+  image_source_url: string;
 }
 
 export interface Area {
   slug: string;
   name: string;
   notes: string;
+  /** 'all' | 'oneios': an 'oneios' area is not applicable to other ports. */
+  scope: string;
 }
 
 export interface DeviceStatus {
@@ -45,6 +54,10 @@ export interface Fork {
   verified: string;
   notes: string;
   updated: string;
+  /** 'upstream' | 'fork' | 'standalone' (migrations/0004). */
+  kind?: string;
+  maintainer_user_id?: number | null;
+  maintainer_since?: string | null;
 }
 
 export interface RedditPost {
@@ -53,6 +66,10 @@ export interface RedditPost {
   url: string;
   published: string;
   note: string;
+  /** A thumbnail from the post (https://), '' = none (migrations/0007). */
+  image_url?: string;
+  image_width?: number | null;
+  image_height?: number | null;
 }
 
 export interface PublicUser {

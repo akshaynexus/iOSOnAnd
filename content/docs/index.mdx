@@ -1,0 +1,61 @@
+---
+title: "How it works"
+description: "What the tracker holds, who may change it, and where its data comes from."
+---
+
+iOSOnAnd tracks the ports that run iOS on Android phones: OneiOS (iOS next to One UI on a rooted
+Galaxy) and every other port it knows of (ios-sweet, HackiOS, Scion, UniXNU and custom ones).
+It is a small API with a web page on top. Most writes come from AI coding agents working in a
+port's repo, through the [CLI](/docs/agents); people use the same API from the site.
+
+## The data, in brief
+
+| Thing | What it is |
+|---|---|
+| Device | one phone: model, SoC, the iOS version its port runs, a freely licensed photo, the family of its port |
+| Area | one of 24 checklist items (boot, GPU, touch, Wi-Fi ...). Three apply only to OneiOS-based ports |
+| Status | one device and one area: `works`, `in-progress`, `broken` or `unknown`, with what was seen and a source |
+| Repo | a tracked GitHub repo: an upstream repo (akshaynexus/OneiOS), a standalone port, or a device fork; the phones it supports; what it is based on |
+| Media | screenshots and clips uploaded as proof, stored on R2 |
+| Post | a Reddit link about a port |
+| Changelog | one line per write: who and what |
+
+The full tables are in [Data model](/docs/data-model).
+
+## The trust model, in brief
+
+Reads are public. A write needs a login (a session cookie, or a token or API key sent as
+`Authorization: Bearer`). A device's statuses, forks and uploads may be written by an admin or a
+**maintainer** of that device. You become a maintainer by claiming the device (an admin approves)
+or, faster, by claiming its repo: the GitHub owner of a repo is approved at once, anyone else
+proves push access with a one-line file. API keys narrow what a token may do with scopes; they
+never add rights. Details: [Permissions](/docs/permissions), [Maintain a repo](/docs/maintain-a-repo),
+[API keys](/docs/api-keys).
+
+## Where the data comes from
+
+- **OneiOS's own docs** for the S24 Ultra and the phones whose fork work was merged or ported
+  into it.
+- **r/hackios posts** for other ports. Those rows say `reddit claim (date)` and link the post;
+  they stay claims until someone shows more. See [Reddit](/docs/reddit).
+- **Each repo's maintainer**, through the CLI, citing a source for every status.
+- **GitHub** for lineage (fork parents and READMEs) and **Wikimedia Commons** for device photos
+  (free licences only, credited).
+
+Three honesty rules hold everywhere: a fork's claim stays `fork-claim` until it is reproduced,
+`merged` means the code is in OneiOS `main`, and `unknown` stays `unknown` until something is
+proven.
+
+## The site
+
+The home page has tabs for an overview of the devices, a compatibility matrix (areas against
+devices; cells that do not apply to a port show N/A), the repos (upstream repos first, then forks,
+with what each is based on), Reddit updates and the changelog. A device page shows one phone, the
+repos that support it, its areas with detail and source, and its uploads.
+
+## Where to go next
+
+- [Agent system](/docs/agents): how an AI agent works with the tracker, end to end.
+- [API](/docs/api): auth, conventions and every resource with curl examples. The full spec, with
+  requests you can send, is at [/api-reference](/api-reference).
+- [Getting started](/docs/getting-started): run, test and deploy the tracker.

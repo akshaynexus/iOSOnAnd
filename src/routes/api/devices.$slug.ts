@@ -1,26 +1,29 @@
-// /api/devices/$slug — GET detail (statuses + forks + claims + recent posts),
-// PATCH update (auth), DELETE remove (admin).
+// /api/devices/$slug — GET detail (statuses + forks + claims + maintainers +
+// supported_by + media + recent posts, public), PATCH update (admin or a
+// maintainer of $slug; base and image_* are admin-only; CLI device-set),
+// DELETE remove (admin).
 
 import { createFileRoute } from '@tanstack/react-router';
 import { queryAll, queryFirst, exec } from '@/lib/db';
+import { mediaBucket } from '@/lib/media';
 import {
   HttpError,
+  REPO_KINDS,
   STATES,
   actorName,
-  handleError,
   json,
   nowIso,
+  isAdmin,
+  oneOf,
   readJson,
   requireAdmin,
-  requireUser,
+  requireDeviceEditor,
+  str,
 } from '@/lib/auth';
+import { apiHandlers, type ApiCtx } from '@/lib/api';
+import { DEVICE_ADMIN_FIELDS, DEVICE_TEXT, deviceField, withDetails } from '@/lib/devices';
 import { appendChangelog } from '@/lib/changelog';
-import type { Claim, Device, DeviceStatus, Fork, RedditPost } from '@/lib/types';
-import { mapClaimRow } from '@/routes/api/claims.$id';
-
-const REPO_KINDS = ['home', 'fork', 'snapshot', 'mirror', 'none'];
-
-type Ctx = { request: Request; params: Record<string, string> };
+import type { Device } from '@/lib/types';
 
 async function loadDevice(slug: string): Promise<Device> {
   const device = await queryFirst<Device>('SELECT * FROM devices WHERE slug = ?', [slug]);
@@ -28,110 +31,79 @@ async function loadDevice(slug: string): Promise<Device> {
   return device;
 }
 
-async function handleGet(_req: Request, params: Record<string, string>): Promise<Response> {
-  const slug = params.slug;
-  const device = await loadDevice(slug);
-  const statuses = await queryAll<DeviceStatus & { area_name: string }>(
-    `SELECT ds.*, a.name AS area_name FROM device_status ds
-     JOIN areas a ON a.slug = ds.area_slug WHERE ds.device_slug = ? ORDER BY ds.area_slug`,
-    [slug],
-  );
-  const forks = await queryAll<Fork>('SELECT * FROM forks WHERE device_slug = ? ORDER BY repo', [slug]);
-  const claims = await queryAll<Claim & { display_name: string | null; github_login: string | null }>(
-    `SELECT c.*, u.display_name, u.github_login FROM claims c
-     LEFT JOIN users u ON u.id = c.user_id WHERE c.device_slug = ? ORDER BY c.id DESC`,
-    [slug],
-  );
-  const posts = await queryAll<RedditPost>('SELECT * FROM reddit_posts ORDER BY id DESC LIMIT 10');
-  // A device's forks are "maintained" by whoever holds the latest approved
-  // port claim for the device; forks carry no owner column of their own.
-  const approvedClaim = claims.find((c) => c.status === 'approved');
-  const maintainer = approvedClaim
-    ? (approvedClaim.github_login ? `@${approvedClaim.github_login}` : (approvedClaim.display_name || ''))
-    : '';
-  // UI shape: everything nested under device (area_names + related rows).
-  const area_names: Record<string, string> = {};
-  for (const s of statuses) area_names[s.area_slug] = s.area_name;
-  return json({
-    device: {
-      ...device,
-      area_names,
-      statuses,
-      forks: forks.map((f) => ({ ...f, maintainer })),
-      claims: claims.map(mapClaimRow),
-      posts,
-    },
-  });
+async function handleGet({ params }: ApiCtx): Promise<Response> {
+  const [device] = await withDetails([await loadDevice(params.slug)], true);
+  return json({ device });
 }
 
-const PATCHABLE = ['name', 'model', 'soc', 'repo_kind', 'status', 'best_result', 'notes'];
+const PATCHABLE: Record<string, number> = {
+  name: 120,
+  model: 64,
+  soc: 64,
+  repo_kind: 32,
+  status: 32,
+  best_result: 2000,
+  notes: 4000,
+};
 
-async function handlePatch(req: Request, params: Record<string, string>): Promise<Response> {
-  const user = await requireUser(req);
+async function handlePatch({ request, params }: ApiCtx): Promise<Response> {
   const slug = params.slug;
-  await loadDevice(slug);
-  const body = await readJson(req);
+  const user = await requireDeviceEditor(request, slug);
+  const body = await readJson(request);
   const sets: string[] = [];
   const vals: unknown[] = [];
-  for (const f of PATCHABLE) {
+  for (const [f, max] of Object.entries(PATCHABLE)) {
     if (body[f] === undefined) continue;
-    const v = String(body[f]);
-    if (f === 'status' && !(STATES as readonly string[]).includes(v)) {
-      throw new HttpError(400, 'bad status', `state must be one of: ${STATES.join(' | ')}`);
-    }
-    if (f === 'repo_kind' && !REPO_KINDS.includes(v)) {
-      throw new HttpError(400, 'bad repo_kind', `must be one of: ${REPO_KINDS.join(' | ')}`);
-    }
-    if (f === 'name' && !v.trim()) throw new HttpError(400, 'name required', 'device name cannot be empty');
+    const v = str(body, f, max);
+    if (f === 'status') oneOf(STATES, v, 'status');
+    if (f === 'repo_kind') oneOf(REPO_KINDS, v, 'repo_kind');
+    if (f === 'name' && !v) throw new HttpError(400, 'name required', 'device name cannot be empty');
     sets.push(`${f} = ?`);
-    vals.push(f === 'name' ? v.trim() : v);
+    vals.push(v);
+  }
+  for (const f of Object.keys(DEVICE_TEXT)) {
+    if (body[f] === undefined) continue;
+    if (DEVICE_ADMIN_FIELDS.includes(f) && !isAdmin(user)) {
+      throw new HttpError(403, 'admin required', `only an admin sets ${f}; maintainers may set ios_version and the other fields`);
+    }
+    sets.push(`${f} = ?`);
+    vals.push(deviceField(body, f));
   }
   if (!sets.length) {
-    throw new HttpError(400, 'nothing to update', `send any of: ${PATCHABLE.join(', ')}`);
+    throw new HttpError(400, 'nothing to update', `send any of: ${[...Object.keys(PATCHABLE), ...Object.keys(DEVICE_TEXT)].join(', ')}`);
   }
   sets.push('updated = ?');
   vals.push(nowIso(), slug);
-  await exec(`UPDATE devices SET ${sets.join(', ')} WHERE slug = ?`, vals as never[]);
+  await exec(`UPDATE devices SET ${sets.join(', ')} WHERE slug = ?`, vals);
   const row = await loadDevice(slug);
   await appendChangelog(actorName(user), `device ${slug} updated (${sets.length - 1} field(s))`);
   return json({ device: row });
 }
 
-async function handleDelete(req: Request, params: Record<string, string>): Promise<Response> {
-  const user = await requireAdmin(req);
+async function handleDelete({ request, params }: ApiCtx): Promise<Response> {
+  const user = await requireAdmin(request);
   const slug = params.slug;
   await loadDevice(slug);
   await exec('DELETE FROM device_status WHERE device_slug = ?', [slug]);
+  await exec('DELETE FROM claims WHERE device_slug = ?', [slug]);
   await exec('UPDATE forks SET device_slug = NULL WHERE device_slug = ?', [slug]);
+  await exec('DELETE FROM repo_devices WHERE device_slug = ?', [slug]);
+  await exec('UPDATE repo_claims SET device_slug = NULL WHERE device_slug = ?', [slug]);
+  // Uploads go with the device: the R2 objects and the media rows.
+  const media = await queryAll<{ id: number; r2_key: string }>('SELECT id, r2_key FROM media WHERE device_slug = ? AND deleted = 0', [slug]);
+  if (media.length) {
+    try {
+      await mediaBucket().delete(media.map((m) => m.r2_key));
+    } catch (e) {
+      console.error('media delete failed:', e);
+    }
+  }
+  await exec('DELETE FROM media WHERE device_slug = ?', [slug]);
   await exec('DELETE FROM devices WHERE slug = ?', [slug]);
   await appendChangelog(actorName(user), `device ${slug} removed`);
   return json({ deleted: slug });
 }
 
 export const Route = createFileRoute('/api/devices/$slug')({
-  server: {
-    handlers: {
-  GET: async ({ request, params }: Ctx) => {
-    try {
-      return await handleGet(request, params);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-  PATCH: async ({ request, params }: Ctx) => {
-    try {
-      return await handlePatch(request, params);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-  DELETE: async ({ request, params }: Ctx) => {
-    try {
-      return await handleDelete(request, params);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-    },
-  },
+  server: { handlers: apiHandlers({ GET: handleGet, PATCH: handlePatch, DELETE: handleDelete }) },
 });

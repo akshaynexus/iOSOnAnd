@@ -1,0 +1,75 @@
+---
+title: "Uploads"
+description: "Screenshots and clips as proof: who may upload, the allowed types and sizes, and how files are stored and served."
+---
+
+A maintainer attaches proof to a phone: a screenshot of a working area, a clip of the boot. Files
+are stored in Cloudflare R2 (the `MEDIA` binding, bucket `iosonand-media`); the database keeps one
+`media` row per file.
+
+## Upload
+
+```sh
+node cli.mjs media-upload boot.mp4 --device s25 --area boot --caption "cold boot to the lock screen"
+node cli.mjs media-list --device s25
+node cli.mjs media-delete 14
+```
+
+`media-upload` sends `POST /api/media` as `multipart/form-data` with the fields `device`
+(required), `fork_id`, `area`, `caption` and then `file`. With curl:
+
+```sh
+curl -H "authorization: Bearer $TOKEN" -F device=s25 -F area=wifi -F caption="joined WPA2" -F file=@wifi.png "$BASE/api/media"
+```
+
+- Who: an admin, or a maintainer of the device. A key needs `media:write`.
+- The text fields must come **before** the file part: the server checks the device and your rights
+  before it stores anything. `?device=` in the URL works too.
+- From the site (session cookie) the page sends the header `X-Requested-With: iosonand`, because
+  the body is not JSON ([API conventions](/docs/api#conventions)).
+- The answer is 201 with the media row; the file is at its `url`.
+
+## Types and sizes
+
+The type comes from the file's first bytes, never from its name or the client's Content-Type.
+
+| Kind | Types | Limit |
+|---|---|---|
+| image | `image/jpeg`, `image/png`, `image/webp`, `image/avif` | 15 MB |
+| video | `video/mp4`, `video/webm`, `video/quicktime` | 95 MB |
+
+| Answer | Why |
+|---|---|
+| 411 | no `Content-Length` |
+| 413 | `Content-Length` over 95 MB (refused before the body is read), or an image over 15 MB |
+| 415 | not `multipart/form-data`, or a file that is none of the types above (GIF, SVG, HEIC, PDF ...) |
+| 400 | no file, no device, a second file, a caption over 500 characters |
+| 403 / 404 | not a maintainer of the device / unknown device, area or fork |
+
+Image width and height are read from the file (PNG, JPEG, WebP, AVIF headers); videos have none.
+
+## Storage and serving
+
+- The body is streamed: files up to 8 MiB go to R2 in one put, larger ones as an R2 multipart
+  upload of 8 MiB parts, so a 95 MB clip is never held in memory whole. A refused or failed upload
+  is aborted, so nothing is left behind.
+- Keys look like `s25/2026-11-23-<random>.mp4`.
+- `GET /media/<key>` (not under `/api`) streams the file with its type,
+  `Cache-Control: public, max-age=31536000, immutable`, an ETag (304 on `If-None-Match`),
+  `X-Content-Type-Options: nosniff` and a sandboxing Content-Security-Policy.
+- It supports `Range: bytes=a-b`, `bytes=a-` and `bytes=-n` (206 with `Content-Range`, for video
+  seeking); a range past the end is 416.
+
+## List and delete
+
+- `GET /api/media?device=&fork_id=&area=&kind=image|video&limit=&offset=` (public), newest first.
+  Each item: `id, device_slug, fork_id, area_slug, url, content_type, kind, bytes, width, height,
+  caption, user, created`.
+- Every device carries `latest_media` (its newest image) and `media_count`.
+- `DELETE /api/media/{id}`: the uploader or an admin. It is a soft delete (the row keeps
+  `deleted = 1`) and the R2 object is removed, so `/media/<key>` answers 404 afterwards.
+
+## Local dev and deploy
+
+`vite dev` uses the emulated R2 under `.wrangler/state`, so uploads work locally with no setup.
+For a deploy, create the bucket once: `wrangler r2 bucket create iosonand-media`.

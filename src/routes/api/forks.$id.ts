@@ -1,105 +1,80 @@
-// /api/forks/$id — GET one, PATCH update (auth), DELETE remove (admin).
+// /api/forks/$id — GET one (public), PATCH update (admin, the repo's
+// maintainer, or a maintainer of the fork's device; moving it to another
+// device needs that device too; kind, verified other than fork-claim and
+// base_project: admin only), DELETE remove (admin; its repo_devices rows go
+// too; its lineage stays as an untracked node; uploads and claims keep their
+// rows without the fork).
 
 import { createFileRoute } from '@tanstack/react-router';
-import { queryFirst, exec } from '@/lib/db';
-import {
-  HttpError,
-  actorName,
-  handleError,
-  json,
-  nowIso,
-  readJson,
-  requireAdmin,
-  requireUser,
-} from '@/lib/auth';
-import { VERIFIED } from '@/routes/api/forks';
+import { exec } from '@/lib/db';
+import { HttpError, actorName, isAdmin, json, nowIso, readJson, requireAdmin, requireDeviceEditor, requireUser, str } from '@/lib/auth';
+import { apiHandlers, type ApiCtx } from '@/lib/api';
+import { FORK_TEXT, canEditFork, forkDevice, forkKind, forkText, forkVerified, forkView, loadForkRow, syncOwnSupport } from '@/lib/forks';
 import { appendChangelog } from '@/lib/changelog';
-import type { Fork } from '@/lib/types';
 
-type Ctx = { request: Request; params: Record<string, string> };
-
-async function loadFork(id: string): Promise<Fork> {
-  if (!/^\d+$/.test(id)) throw new HttpError(404, 'unknown fork', 'fork ids are numeric');
-  const row = await queryFirst<Fork>('SELECT * FROM forks WHERE id = ?', [Number(id)]);
-  if (!row) throw new HttpError(404, 'unknown fork', 'GET /api/forks to list known forks');
-  return row;
+async function handleGet({ params }: ApiCtx): Promise<Response> {
+  return json({ fork: await forkView(await loadForkRow(params.id)) });
 }
 
-async function handleGet(_req: Request, params: Record<string, string>): Promise<Response> {
-  return json({ fork: await loadFork(params.id) });
-}
-
-const PATCHABLE = ['device_slug', 'branch', 'url', 'best_result', 'ported', 'fork_only', 'verified', 'notes'];
-
-async function handlePatch(req: Request, params: Record<string, string>): Promise<Response> {
-  const user = await requireUser(req);
-  const fork = await loadFork(params.id);
-  const body = await readJson(req);
+async function handlePatch({ request, params }: ApiCtx): Promise<Response> {
+  const fork = await loadForkRow(params.id);
+  const user = await requireUser(request);
+  if (!(await canEditFork(user, fork))) await requireDeviceEditor(request, fork.device_slug); // throws the right 403/404
+  const body = await readJson(request);
   const sets: string[] = [];
   const vals: unknown[] = [];
-  for (const f of PATCHABLE) {
+  const nextDevice = forkDevice(body);
+  if (nextDevice !== undefined && nextDevice !== fork.device_slug) {
+    await requireDeviceEditor(request, nextDevice);
+    sets.push('device_slug = ?');
+    vals.push(nextDevice);
+  }
+  for (const f of Object.keys(FORK_TEXT)) {
     if (body[f] === undefined) continue;
-    if (f === 'verified' && !VERIFIED.includes(String(body[f]))) {
-      throw new HttpError(400, 'bad verified', `must be one of: ${VERIFIED.join(' | ')}`);
-    }
-    if (f === 'url' && body[f] && !/^https?:\/\//.test(String(body[f]))) {
-      throw new HttpError(400, 'bad url', 'url must start with http(s)://');
-    }
-    if (f === 'device_slug' && body[f]) {
-      const ds = String(body[f]).trim();
-      if (!(await queryFirst('SELECT slug FROM devices WHERE slug = ?', [ds]))) {
-        throw new HttpError(404, 'unknown device', 'POST /api/devices to add it first, or null to detach');
-      }
-      sets.push('device_slug = ?');
-      vals.push(ds);
-      continue;
-    }
     sets.push(`${f} = ?`);
-    vals.push(body[f] === null ? null : String(body[f]));
+    vals.push(forkText(body, f));
+  }
+  if (body.verified !== undefined) {
+    sets.push('verified = ?');
+    vals.push(forkVerified(user, body.verified));
+  }
+  if (body.kind !== undefined) {
+    sets.push('kind = ?');
+    vals.push(forkKind(user, body.kind));
+  }
+  if (body.base_project !== undefined) {
+    if (!isAdmin(user)) throw new HttpError(403, 'admin required', 'only an admin sets base_project; use repo-lineage for what the repo is based on');
+    sets.push('base_project = ?');
+    vals.push(str(body, 'base_project', 64));
   }
   if (!sets.length) {
-    throw new HttpError(400, 'nothing to update', `send any of: ${PATCHABLE.join(', ')}`);
+    throw new HttpError(400, 'nothing to update', `send any of: device_slug, verified, kind, base_project, ${Object.keys(FORK_TEXT).join(', ')}`);
   }
   sets.push('updated = ?');
   vals.push(nowIso(), fork.id);
-  await exec(`UPDATE forks SET ${sets.join(', ')} WHERE id = ?`, vals as never[]);
-  const row = await loadFork(params.id);
+  await exec(`UPDATE forks SET ${sets.join(', ')} WHERE id = ?`, vals);
+  const row = await loadForkRow(params.id);
+  await syncOwnSupport(row, fork.device_slug);
   await appendChangelog(actorName(user), `fork ${row.repo} updated`);
-  return json({ fork: row });
+  return json({ fork: await forkView(row) });
 }
 
-async function handleDelete(req: Request, params: Record<string, string>): Promise<Response> {
-  const user = await requireAdmin(req);
-  const fork = await loadFork(params.id);
+async function handleDelete({ request, params }: ApiCtx): Promise<Response> {
+  const user = await requireAdmin(request);
+  const fork = await loadForkRow(params.id);
+  await exec('DELETE FROM repo_devices WHERE fork_id = ?', [fork.id]);
+  await exec('UPDATE repo_devices SET via_fork_id = NULL WHERE via_fork_id = ?', [fork.id]);
+  // Its lineage stays as an untracked repo of the family tree.
+  await exec('UPDATE repo_lineage SET fork_id = NULL WHERE fork_id = ?', [fork.id]);
+  await exec('UPDATE repo_lineage SET base_fork_id = NULL WHERE base_fork_id = ?', [fork.id]);
+  await exec('INSERT OR IGNORE INTO lineage_repos (repo, base_project) VALUES (?, ?)', [fork.repo, fork.base_project ?? '']);
+  await exec('UPDATE repo_claims SET fork_id = NULL WHERE fork_id = ?', [fork.id]);
+  await exec('UPDATE media SET fork_id = NULL WHERE fork_id = ?', [fork.id]);
   await exec('DELETE FROM forks WHERE id = ?', [fork.id]);
   await appendChangelog(actorName(user), `fork ${fork.repo} removed`);
   return json({ deleted: fork.id });
 }
 
 export const Route = createFileRoute('/api/forks/$id')({
-  server: {
-    handlers: {
-  GET: async ({ request, params }: Ctx) => {
-    try {
-      return await handleGet(request, params);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-  PATCH: async ({ request, params }: Ctx) => {
-    try {
-      return await handlePatch(request, params);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-  DELETE: async ({ request, params }: Ctx) => {
-    try {
-      return await handleDelete(request, params);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-    },
-  },
+  server: { handlers: apiHandlers({ GET: handleGet, PATCH: handlePatch, DELETE: handleDelete }) },
 });

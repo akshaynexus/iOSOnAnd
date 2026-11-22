@@ -1,0 +1,169 @@
+---
+title: "Data model"
+description: "The tables, the 24 checklist areas and their scope, the states, repos with their supported devices and lineage, uploads, and where each row comes from."
+---
+
+The database is D1 (SQLite). `migrations/` is the source of truth; `schema.sql` is a reference
+dump of the schema after all migrations. A schema change is a new `migrations/NNNN_name.sql`.
+
+## devices
+
+One row per phone.
+
+| Column | What |
+|---|---|
+| `slug` | primary key, lowercase letters, digits and dashes, e.g. `s24-ultra` |
+| `name`, `model`, `soc` | `Galaxy S24 Ultra`, `SM-S928`, `SM8650` |
+| `repo_kind` | `home`, `fork`, `snapshot`, `mirror` or `none` |
+| `status` | the headline state, one of the four states below |
+| `best_result` | the furthest the port got, in one line |
+| `ios_version` | the iOS (or iPadOS, tvOS) version the port runs, as its source states it, e.g. `iOS 16.7.16`, `iOS 27.0.1 (24A446)`; empty when not stated |
+| `base` | `oneios` (a OneiOS-based port: hosted XNU next to Android) or `other`. Used only for the not-applicable rule below |
+| `image_url`, `image_credit`, `image_license`, `image_source_url` | a photo of the phone: the image, its author, its licence, and the page it comes from. Set by an admin (`device-set`) |
+| `notes`, `updated` | free text; date of the last write |
+
+Every device response also carries, computed:
+
+- `supported_by`: every repo that supports the phone (from `repo_devices`), upstream repos first.
+- `families` and `family`: the `base_project` labels of those repos (and of the phone's own
+  forks), ordered by the best support level (primary, merged, ported, claimed), then by how many
+  repos carry it. `family` is the first one, or empty when the phone has no repo; `unknown` only
+  when no repo of the phone has a known family. `GET /api/devices?family=` filters on it.
+- `latest_media` (its newest image) and `media_count`.
+
+## areas
+
+The checklist: 24 areas, the same for every device. `src/lib/areas.ts` groups them into
+categories for the Compatibility tab and the device page.
+
+| Category | Area slugs |
+|---|---|
+| Boot and system | `boot`, `return-to-oneui`, `stability`, `ipc`, `kernel-mem` |
+| Display and GPU | `gpu`, `brightness` |
+| Input | `touch`, `keyboard`, `haptics`, `sensors` |
+| Audio and media | `audio`, `camera`, `video-encode` |
+| Connectivity | `wifi`, `bluetooth`, `modem`, `calls`, `sms` |
+| Power and thermal | `battery`, `thermal` |
+| Security and apps | `passcode`, `face-id`, `wallet` |
+
+`scope` is `all` or `oneios`. `return-to-oneui`, `ipc` and `kernel-mem` are `oneios`: they describe
+OneiOS's hosted design (switching back to One UI, host-call IPIs, the hosted kernel's memory).
+For a device whose `base` is not `oneios` they are **not applicable**: a write is 400
+`area not applicable`, and the site shows N/A and leaves them out of the unknown counts.
+
+## device_status
+
+One row per device and area: `state`, `detail` (what was seen) and `source` (the file, log,
+commit or link that proves it). The primary key is `(device_slug, area_slug)`; a write replaces
+the row.
+
+| State | Meaning |
+|---|---|
+| `works` | works on that phone, with a source |
+| `in-progress` | partly works, or a fix is being proven |
+| `broken` | tried and fails |
+| `unknown` | nothing proven; an area with no row counts as unknown |
+
+## forks (repos)
+
+Every tracked GitHub repo. The repo name is unique (case-insensitive).
+
+| Column | What |
+|---|---|
+| `repo`, `branch`, `url` | `OWNER/NAME` on GitHub; the URL defaults to `https://github.com/<repo>` |
+| `kind` | `upstream` (a project's main repo: akshaynexus/OneiOS), `standalone` (an own port that is no fork, e.g. akshaynexus/iOSPlus10, xaxaapple/s25ver) or `fork` |
+| `device_slug` | the repo's primary device (may be null) |
+| `best_result` | the repo's own claim |
+| `ported`, `fork_only` | what already flowed back to OneiOS `main`; what is still only in the repo |
+| `verified` | `fork-claim`, `reproduced` or `merged` |
+| `maintainer_user_id`, `maintainer_since` | the user who maintains the repo on the tracker (an approved repo claim) |
+| `base_project` | the family label: `OneiOS`, `ios-sweet`, `HackiOS`, `UniXNU`, `Scion`, `iOSPlus10`, `Jesvi-iOS`, `Open Mapple`, `xnu-hd2`, `custom`, `emulator`, `tooling`, `unknown` |
+
+`verified` is a trust statement: `fork-claim` (the repo says so; every repo starts here, and a
+maintainer can only file this), `reproduced` (reproduced on hardware, set by an admin), `merged`
+(the code is in OneiOS `main`, set by an admin).
+
+### repo_devices: the phones a repo supports
+
+One row per repo and device: `support` and, for work that came from another repo, `via_fork_id`.
+
+| support | Meaning |
+|---|---|
+| `primary` | the repo's own phone (akshaynexus/OneiOS: s24-ultra) |
+| `merged` | fork work merged into the repo (OneiOS: s25 via xaxaapple/s25ver, s26-ultra via YMGPwcca/OneiOS) |
+| `ported` | fork work ported into the repo (OneiOS: s25-ultra via YumikoHayamato/OneiOS, a56 via Musicalista/OneiOS-A56) |
+| `claimed` | the repo says it supports the phone (every fork's own device) |
+
+The `note` says what was taken, when, and what was not taken. Fork responses carry this as
+`supports`; device responses as `supported_by`. Admins add `primary`, `merged` and `ported` rows,
+a repo's maintainer `claimed` ones (`repo-support`).
+
+### repo_lineage: what a repo is based on
+
+One row per (repo, base, relation). `base` is `OWNER/REPO` or a project name; `fork_id` and
+`base_fork_id` are set when the repo or the base is tracked. Rows also describe untracked repos
+(the parents and bases of tracked ones), so the family tree stays connected; `lineage_repos` holds
+their family label.
+
+| relation | Meaning |
+|---|---|
+| `fork-of` | the GitHub fork parent (or the root of the fork network) |
+| `derived-from` | copied from or based on, per the README |
+| `ported-from` | parts ported in |
+| `uses` | a kernel, loader or tool it builds on |
+
+Fork responses carry `based_on: [{base, base_repo_url, relation, note}]` (no URL when GitHub has
+no such repo). `GET /api/lineage` returns the whole graph: nodes (tracked and untracked repos)
+and edges from a repo to its bases. The data comes from the GitHub API (fork parents and READMEs);
+maintainers add rows with `repo-lineage`.
+
+## claims and repo_claims
+
+- `claims`: who maintains which device: `pending`, `approved` or `rejected`. An approved claim
+  makes its user a maintainer of the device.
+- `repo_claims`: a claim on a repo: `method` (`owner`, `proof-file`, `admin`), `nonce` (the
+  verification code), `status` (`pending`, `approved`, `rejected`, `expired`; 24 hours),
+  `fork_created` (the claim added the repo) and `device_claim_id` (the device claim the approval
+  granted). See [Maintain a repo](/docs/maintain-a-repo).
+
+## media
+
+Uploads on R2: `device_slug`, optional `fork_id` and `area_slug`, `user_id`, `r2_key`,
+`content_type` (from the file bytes), `bytes`, `width`, `height`, `caption`, `created` and
+`deleted` (a soft delete; the R2 object is removed). See [Uploads](/docs/uploads).
+
+## reddit_posts
+
+Links shown on the Updates tab: `title`, `url` (unique, stored as `https://www.reddit.com/r/...`
+without a query), `published` (`YYYY-MM-DD`), `note`, and a thumbnail from the post: `image_url`,
+`image_width`, `image_height`. See [Reddit](/docs/reddit).
+
+## changelog
+
+Every write adds a row: `who` (`@github_login`, the display name, or `user#id`), `summary`
+(for example `status s24-ultra/wifi -> in-progress: ...`) and `created`.
+
+## Accounts
+
+`users`, `sessions` (cookie logins), `api_tokens` (tokens and API keys, stored as SHA-256 hashes,
+with `scopes`, `expires` and `last_used`), `login_challenges` (gist-proof nonces, 10 minutes, one
+use). See [Permissions](/docs/permissions) and [API keys](/docs/api-keys).
+
+## Where the data comes from
+
+`seed/seed.json` holds the starting data, loaded into an empty database by `bun run dev`. Its
+sources:
+
+- **OneiOS's own docs** (README, `docs/forks.md` and the device records) for the S24 Ultra and the
+  phones supported through ported or merged fork work. Rows whose detail ends with
+  `(OneiOS maintainer, date)` come from the project's maintainer and are authoritative.
+- **r/hackios threads** for other devices. Each such status row has `detail` starting with
+  `reddit claim (YYYY-MM-DD):` and `source` set to the thread's permalink.
+- **The GitHub API** (repo metadata, fork parents and READMEs, no clones) for lineage and
+  `base_project`.
+- **`ios_version`** from what each device's best result, status details or notes state; empty
+  when they state none.
+- **Photos** set by an admin with `device-set`, credited with author and licence and linked to
+  their source page.
+
+After the seed, rows change through the API; the changelog records each write.

@@ -1,93 +1,92 @@
-// POST /api/forks/sync — upsert a fork by repo (CLI fork-sync).
-// Matches repo (+ device scope when device_slug is given); updates the syncable
-// fields and stamps updated, or creates the fork (verified: fork-claim).
-// -> {fork, created}.
+// POST /api/forks/sync — upsert a fork by repo (CLI fork-sync). The repo name
+// is unique, so an existing fork is found by repo alone; syncing it under a
+// different device is 409 (PATCH /api/forks/<id> moves it, POST
+// /api/forks/<id>/devices adds a supported device). Admin, the repo's
+// maintainer, or a maintainer of device_slug (no device: admin only). Only
+// the fields sent change on an existing fork; a new one starts as
+// verified=fork-claim. -> {fork, created}.
 
 import { createFileRoute } from '@tanstack/react-router';
 import { queryFirst, exec } from '@/lib/db';
+import { HttpError, actorName, json, nowIso, readJson, requireDeviceEditor, requireUser } from '@/lib/auth';
+import { apiHandlers, type ApiCtx } from '@/lib/api';
 import {
-  HttpError,
-  actorName,
-  handleError,
-  insertReturningId,
-  json,
-  nowIso,
-  readJson,
-  requireUser,
-} from '@/lib/auth';
-import { VERIFIED } from '@/routes/api/forks';
+  FORK_TEXT,
+  canEditFork,
+  findForkByRepo,
+  forkDevice,
+  forkRepo,
+  forkText,
+  forkVerified,
+  forkView,
+  linkLineage,
+  loadForkRow,
+  syncOwnSupport,
+} from '@/lib/forks';
 import { appendChangelog } from '@/lib/changelog';
-import type { Fork } from '@/lib/types';
 
-async function handlePost(req: Request): Promise<Response> {
-  const user = await requireUser(req);
-  const body = await readJson(req);
-  const repo = String(body.repo || '').trim();
-  if (!repo) throw new HttpError(400, 'repo required', 'send {"repo":"OWNER/REPO"} plus --best-result etc.');
-  const deviceSlug = body.device_slug ? String(body.device_slug).trim() : null;
-  if (deviceSlug && !(await queryFirst('SELECT slug FROM devices WHERE slug = ?', [deviceSlug]))) {
-    throw new HttpError(404, 'unknown device', 'POST /api/devices to add it first, or omit device_slug');
-  }
-  const url = body.url ? String(body.url) : deviceSlug || repo.includes('/')
-    ? `https://github.com/${repo}`
-    : repo;
-  if (url && !/^https?:\/\//.test(url)) throw new HttpError(400, 'bad url', 'url must start with http(s)://');
-
-  const existing = deviceSlug
-    ? await queryFirst<Fork>('SELECT * FROM forks WHERE repo = ? AND device_slug = ?', [repo, deviceSlug])
-    : await queryFirst<Fork>('SELECT * FROM forks WHERE repo = ? AND device_slug IS NULL', [repo]);
-
-  const fields = {
-    branch: String(body.branch || ''),
-    url,
-    best_result: String(body.best_result || ''),
-    ported: String(body.ported || ''),
-    fork_only: String(body.fork_only || ''),
-    notes: String(body.notes || ''),
-  };
+async function handlePost({ request }: ApiCtx): Promise<Response> {
+  const body = await readJson(request);
+  const sent = forkDevice(body);
+  const repo = forkRepo(body);
+  const existing = await findForkByRepo(repo);
 
   if (existing) {
-    const sets = ['branch = ?', 'url = ?', 'best_result = ?', 'ported = ?', 'fork_only = ?', 'notes = ?'];
-    const vals: unknown[] = [fields.branch, fields.url, fields.best_result, fields.ported, fields.fork_only, fields.notes];
+    if (sent !== undefined && sent !== existing.device_slug) {
+      throw new HttpError(
+        409,
+        'fork tracked for another device',
+        `${existing.repo} is fork #${existing.id} for ${existing.device_slug ?? 'no device'}; PATCH /api/forks/${existing.id} moves it, POST /api/forks/${existing.id}/devices adds a device`,
+      );
+    }
+    const user = await requireUser(request);
+    if (!(await canEditFork(user, existing))) await requireDeviceEditor(request, existing.device_slug);
+    const sets: string[] = [];
+    const vals: unknown[] = [];
+    for (const f of Object.keys(FORK_TEXT)) {
+      if (body[f] === undefined) continue;
+      sets.push(`${f} = ?`);
+      vals.push(forkText(body, f));
+    }
     if (body.verified !== undefined) {
-      const v = String(body.verified);
-      if (!VERIFIED.includes(v)) {
-        throw new HttpError(400, 'bad verified', `must be one of: ${VERIFIED.join(' | ')}`);
-      }
       sets.push('verified = ?');
-      vals.push(v);
+      vals.push(forkVerified(user, body.verified));
     }
     sets.push('updated = ?');
     vals.push(nowIso(), existing.id);
-    await exec(`UPDATE forks SET ${sets.join(', ')} WHERE id = ?`, vals as never[]);
-    const row = await queryFirst<Fork>('SELECT * FROM forks WHERE id = ?', [existing.id]);
+    await exec(`UPDATE forks SET ${sets.join(', ')} WHERE id = ?`, vals);
+    const row = await loadForkRow(existing.id);
+    await syncOwnSupport(row);
     await appendChangelog(actorName(user), `fork ${repo} synced`);
-    return json({ fork: row, created: false });
+    return json({ fork: await forkView(row), created: false });
   }
 
-  const id = await insertReturningId(
+  const deviceSlug = sent ?? null;
+  const user = await requireDeviceEditor(request, deviceSlug);
+  const verified = forkVerified(user, body.verified ?? 'fork-claim');
+  const ins = await queryFirst<{ id: number }>(
     `INSERT INTO forks (device_slug, repo, branch, url, best_result, ported, fork_only, verified, notes, updated)
-     VALUES (?, ?, ?, ?, ?, ?, ?, 'fork-claim', ?, ?)`,
-    [deviceSlug, repo, fields.branch, fields.url, fields.best_result, fields.ported, fields.fork_only, fields.notes, nowIso()],
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
+    [
+      deviceSlug,
+      repo,
+      forkText(body, 'branch'),
+      forkText(body, 'url') || `https://github.com/${repo}`,
+      forkText(body, 'best_result'),
+      forkText(body, 'ported'),
+      forkText(body, 'fork_only'),
+      verified,
+      forkText(body, 'notes'),
+      nowIso(),
+    ],
   );
-  const row = id
-    ? await queryFirst<Fork>('SELECT * FROM forks WHERE id = ?', [id])
-    : await queryFirst<Fork>('SELECT * FROM forks ORDER BY id DESC LIMIT 1');
-  if (!row) throw new HttpError(500, 'fork creation failed', 'retry');
+  if (!ins) throw new HttpError(500, 'fork creation failed', 'retry');
+  await syncOwnSupport({ id: ins.id, device_slug: deviceSlug, kind: 'fork', verified });
+  await linkLineage({ id: ins.id, repo });
   await appendChangelog(actorName(user), `fork ${repo} added via sync${deviceSlug ? ` for ${deviceSlug}` : ''}`);
-  return json({ fork: row, created: true }, 201);
+  return json({ fork: await forkView(await loadForkRow(ins.id)), created: true }, 201);
 }
 
 export const Route = createFileRoute('/api/forks/sync')({
-  server: {
-    handlers: {
-  POST: async ({ request }: { request: Request }) => {
-    try {
-      return await handlePost(request);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-    },
-  },
+  server: { handlers: apiHandlers({ POST: handlePost }) },
 });

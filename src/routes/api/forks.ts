@@ -1,86 +1,99 @@
-// /api/forks — GET list (?device=), POST add (auth).
+// /api/forks — GET list (public; ?device= (the fork's own device or any device
+// it supports), ?kind=upstream|fork|standalone, ?base_project=, ?limit=
+// (default and max 500), ?offset=; sorted upstream first, then by repo;
+// -> {forks, total, limit, offset, next}), POST add (admin, or a maintainer of
+// the fork's device_slug; forks without a device are admin-only; kind other
+// than fork, verified other than fork-claim: admin only). The repo name is
+// unique: a second POST for it is 409.
 
 import { createFileRoute } from '@tanstack/react-router';
-import { queryAll, queryFirst } from '@/lib/db';
+import { queryFirst } from '@/lib/db';
+import { FORK_KINDS, HttpError, actorName, json, nowIso, oneOf, paged, pageParams, readJson, requireDeviceEditor, str } from '@/lib/auth';
+import { apiHandlers, type ApiCtx } from '@/lib/api';
 import {
-  HttpError,
-  actorName,
-  handleError,
-  insertReturningId,
-  json,
-  nowIso,
-  readJson,
-  requireUser,
-} from '@/lib/auth';
+  FORK_SELECT,
+  findForkByRepo,
+  forkDevice,
+  forkKind,
+  forkRepo,
+  forkText,
+  forkVerified,
+  forkView,
+  forkViews,
+  linkLineage,
+  loadForkRow,
+  syncOwnSupport,
+  type ForkRow,
+} from '@/lib/forks';
 import { appendChangelog } from '@/lib/changelog';
-import type { Fork } from '@/lib/types';
 
-export const VERIFIED = ['fork-claim', 'reproduced', 'merged'];
-
-async function handleGet(req: Request): Promise<Response> {
-  const device = new URL(req.url).searchParams.get('device')?.trim() || null;
-  const forks = device
-    ? await queryAll<Fork>('SELECT * FROM forks WHERE device_slug = ? ORDER BY repo', [device])
-    : await queryAll<Fork>('SELECT * FROM forks ORDER BY repo LIMIT 200');
-  return json({ forks });
+async function handleGet({ request }: ApiCtx): Promise<Response> {
+  const sp = new URL(request.url).searchParams;
+  const device = sp.get('device')?.trim() || null;
+  const kind = sp.get('kind')?.trim() || null;
+  const baseProject = sp.get('base_project')?.trim() || null;
+  if (kind) oneOf(FORK_KINDS, kind, 'kind');
+  const page = pageParams(sp, 500, 500);
+  const where: string[] = [];
+  const vals: unknown[] = [];
+  if (device) {
+    where.push('(f.device_slug = ? OR f.id IN (SELECT fork_id FROM repo_devices WHERE device_slug = ?))');
+    vals.push(device, device);
+  }
+  if (kind) {
+    where.push('f.kind = ?');
+    vals.push(kind);
+  }
+  if (baseProject) {
+    where.push('f.base_project = ? COLLATE NOCASE');
+    vals.push(baseProject);
+  }
+  const w = where.length ? `WHERE ${where.join(' AND ')}` : '';
+  const { rows, page: info } = await paged<ForkRow>(
+    `${FORK_SELECT} ${w} ORDER BY CASE f.kind WHEN 'upstream' THEN 0 WHEN 'standalone' THEN 1 ELSE 2 END, f.repo COLLATE NOCASE`,
+    `SELECT COUNT(*) AS n FROM forks f ${w}`,
+    vals,
+    page,
+  );
+  return json({ forks: await forkViews(rows), ...info });
 }
 
-async function handlePost(req: Request): Promise<Response> {
-  const user = await requireUser(req);
-  const body = await readJson(req);
-  const repo = String(body.repo || '').trim();
-  if (!repo) throw new HttpError(400, 'repo required', 'send {"repo":"owner/name"} plus optional device_slug/branch/url');
-  const deviceSlug = body.device_slug ? String(body.device_slug).trim() : null;
-  if (deviceSlug && !(await queryFirst('SELECT slug FROM devices WHERE slug = ?', [deviceSlug]))) {
-    throw new HttpError(404, 'unknown device', 'POST /api/devices to add it first, or omit device_slug for a pure mirror');
+async function handlePost({ request }: ApiCtx): Promise<Response> {
+  const body = await readJson(request);
+  const deviceSlug = forkDevice(body) ?? null;
+  const user = await requireDeviceEditor(request, deviceSlug);
+  const repo = forkRepo(body);
+  const verified = forkVerified(user, body.verified ?? 'fork-claim');
+  const kind = forkKind(user, body.kind ?? 'fork');
+  const dup = await findForkByRepo(repo);
+  if (dup) {
+    throw new HttpError(409, 'fork already tracked', `${dup.repo} is fork #${dup.id}; POST /api/forks/sync or PATCH /api/forks/${dup.id} updates it`);
   }
-  const verified = body.verified ? String(body.verified) : 'fork-claim';
-  if (!VERIFIED.includes(verified)) {
-    throw new HttpError(400, 'bad verified', `must be one of: ${VERIFIED.join(' | ')}`);
-  }
-  const url = String(body.url || '');
-  if (url && !/^https?:\/\//.test(url)) throw new HttpError(400, 'bad url', 'url must start with http(s)://');
-  const id = await insertReturningId(
-    `INSERT INTO forks (device_slug, repo, branch, url, best_result, ported, fork_only, verified, notes, updated)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  const ins = await queryFirst<{ id: number }>(
+    `INSERT INTO forks (device_slug, repo, branch, url, best_result, ported, fork_only, verified, notes, updated, kind, base_project)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
     [
       deviceSlug,
       repo,
-      String(body.branch || ''),
-      url,
-      String(body.best_result || ''),
-      String(body.ported || ''),
-      String(body.fork_only || ''),
+      forkText(body, 'branch'),
+      forkText(body, 'url') || `https://github.com/${repo}`,
+      forkText(body, 'best_result'),
+      forkText(body, 'ported'),
+      forkText(body, 'fork_only'),
       verified,
-      String(body.notes || ''),
+      forkText(body, 'notes'),
       nowIso(),
+      kind,
+      str(body, 'base_project', 64),
     ],
   );
-  const row = id
-    ? await queryFirst<Fork>('SELECT * FROM forks WHERE id = ?', [id])
-    : await queryFirst<Fork>('SELECT * FROM forks ORDER BY id DESC LIMIT 1');
-  if (!row) throw new HttpError(500, 'fork creation failed', 'retry');
+  if (!ins) throw new HttpError(500, 'fork creation failed', 'retry');
+  await syncOwnSupport({ id: ins.id, device_slug: deviceSlug, kind, verified });
+  await linkLineage({ id: ins.id, repo });
   await appendChangelog(actorName(user), `fork ${repo} added${deviceSlug ? ` for ${deviceSlug}` : ''}`);
-  return json({ fork: row }, 201);
+  return json({ fork: await forkView(await loadForkRow(ins.id)) }, 201);
 }
 
 export const Route = createFileRoute('/api/forks')({
-  server: {
-    handlers: {
-  GET: async ({ request }: { request: Request }) => {
-    try {
-      return await handleGet(request);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-  POST: async ({ request }: { request: Request }) => {
-    try {
-      return await handlePost(request);
-    } catch (e) {
-      return handleError(e);
-    }
-  },
-    },
-  },
+  server: { handlers: apiHandlers({ GET: handleGet, POST: handlePost }) },
 });

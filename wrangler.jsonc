@@ -12,7 +12,19 @@
     {
       "binding": "DB",
       "database_name": "oneios-tracker",
-      "database_id": "local-only-for-now"
+      "database_id": "local-only-for-now",
+      // `wrangler d1 migrations apply oneios-tracker --local|--remote` applies
+      // migrations/NNNN_*.sql in order and records them in d1_migrations.
+      "migrations_dir": "migrations"
+    }
+  ],
+  // Uploads (POST /api/media, served at /media/<key>). Local dev (vite dev,
+  // wrangler dev) uses the emulated R2 under .wrangler/state, so it needs no
+  // setup. Deploy: `wrangler r2 bucket create iosonand-media` once.
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "iosonand-media"
     }
   ],
   "observability": {
