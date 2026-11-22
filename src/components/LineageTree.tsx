@@ -94,7 +94,7 @@ function Branch({ node, depth }: { node: TreeNode; depth: number }) {
           <span className="truncate text-xs font-medium">{short}</span>
         )}
         {depth > 0 && node.relation ? (
-          <span className="shrink-0 text-[11px] text-muted-foreground">
+          <span className="shrink-0 text-xs text-muted-foreground">
             {(RELATION_LABELS[node.relation] ?? node.relation).toLowerCase()}
           </span>
         ) : null}

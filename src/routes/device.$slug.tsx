@@ -172,14 +172,19 @@ function DevicePage() {
             <div className="flex flex-col gap-2">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 <h1 className="text-2xl font-semibold tracking-tight" style={{ viewTransitionName: vtName("name", device.slug) }}>{device.name}</h1>
-                <StateLabel state={device.status} className="text-sm" />
-                <FamilyChip families={families} />
+                <span className="inline-flex" style={{ viewTransitionName: vtName("state", device.slug) }}><StateLabel state={device.status} className="text-sm" /></span>
+                <span className="inline-flex" style={{ viewTransitionName: vtName("family", device.slug) }}><FamilyChip families={families} /></span>
               </div>
               {device.ios_version ? (
                 <p className="w-fit text-3xl font-semibold tracking-tight" style={{ viewTransitionName: vtName("ios", device.slug) }}>{device.ios_version}</p>
               ) : (
                 <p className="w-fit text-lg text-muted-foreground" style={{ viewTransitionName: vtName("ios", device.slug) }}>iOS version not stated</p>
               )}
+              {device.model || device.soc ? (
+                <p className="w-fit text-sm text-muted-foreground" style={{ viewTransitionName: vtName("sub", device.slug) }}>
+                  {[device.model, device.soc].filter(Boolean).join(" · ")}
+                </p>
+              ) : null}
               {device.best_result ? <p className="max-w-3xl text-base">{device.best_result}</p> : null}
             </div>
 
@@ -187,7 +192,9 @@ function DevicePage() {
               <Fact label="Model">{device.model || <span className="text-muted-foreground">Not recorded</span>}</Fact>
               <Fact label="SoC">{device.soc || <span className="text-muted-foreground">Not recorded</span>}</Fact>
               <Fact label="Maintainer">
-                {maintainers.length > 0 ? maintainers.join(", ") : <span className="text-muted-foreground">Unclaimed</span>}
+                <span className="inline-block" style={{ viewTransitionName: vtName("repo", device.slug) }}>
+                  {maintainers.length > 0 ? maintainers.join(", ") : <span className="text-muted-foreground">Unclaimed</span>}
+                </span>
               </Fact>
               <Fact label="Updated">
                 {device.updated ? (
@@ -203,7 +210,7 @@ function DevicePage() {
                   {applicable.length} areas{applicable.length < areas.length ? `, ${areas.length - applicable.length} not applicable` : ""}
                 </dt>
                 <dd>
-                  <StatusBar counts={counts} className="max-w-xl" />
+                  <div className="max-w-xl" style={{ viewTransitionName: vtName("bar", device.slug) }}><StatusBar counts={counts} /></div>
                 </dd>
               </div>
             </dl>

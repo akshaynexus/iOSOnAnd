@@ -53,6 +53,6 @@ export function formatDate(value: string): string {
  * and iOS version carry the same view-transition-name on both pages, so the
  * browser morphs them into place (View Transitions API; no-op where missing).
  */
-export function vtName(part: "img" | "name" | "ios", slug: string): string {
+export function vtName(part: "img" | "name" | "ios" | "state" | "family" | "bar" | "sub" | "repo", slug: string): string {
   return `dev-${part}-${slug.toLowerCase().replace(/[^a-z0-9-]/g, "-")}`;
 }

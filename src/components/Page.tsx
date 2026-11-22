@@ -196,7 +196,7 @@ function SiteSearch({ className, autoFocus }: { className?: string; autoFocus?: 
           <X className="size-3.5" aria-hidden />
         </button>
       ) : (
-        <kbd className="pointer-events-none absolute top-1/2 right-2.5 hidden h-5 -translate-y-1/2 items-center rounded border px-1.5 font-mono text-[11px] text-muted-foreground lg:inline-flex">
+        <kbd className="pointer-events-none absolute top-1/2 right-2.5 hidden h-5 -translate-y-1/2 items-center rounded border px-1.5 font-mono text-xs text-muted-foreground lg:inline-flex">
           /
         </kbd>
       )}

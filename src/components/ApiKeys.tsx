@@ -256,7 +256,7 @@ export function ApiKeys() {
                     <td className="px-3 py-2 align-middle">
                       <span className="flex flex-wrap gap-1">
                         {(t.scopes && t.scopes.length > 0 ? t.scopes : ["all"]).map((s) => (
-                          <code key={s} className="rounded border px-1.5 font-mono text-[11px]">
+                          <code key={s} className="rounded border px-1.5 font-mono text-xs">
                             {s}
                           </code>
                         ))}

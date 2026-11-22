@@ -108,7 +108,7 @@ function Photo({ src, name, maker, compact, vt }: { src: string | null; name: st
     return (
       <span className="flex flex-col items-center gap-1 text-(--rc-muted) opacity-60" style={vt ? { viewTransitionName: vt } : undefined}>
         <PhoneOutline className={compact ? "h-9 w-auto" : "h-[70px] w-auto"} />
-        {compact ? null : <span className="text-[10px] tracking-wide">{maker === "Other" ? "No photo" : maker}</span>}
+        {compact ? null : <span className="text-[11px] tracking-wide">{maker === "Other" ? "No photo" : maker}</span>}
       </span>
     );
   }
@@ -220,17 +220,17 @@ export const DeviceCard = memo(function DeviceCard({
                 <h3 className="min-w-0 flex-1 truncate text-sm font-semibold text-(--rc-ink)">
                   <span className="inline-block max-w-full truncate align-bottom" style={{ viewTransitionName: vtName("name", d.slug) }}>{d.name}</span>
                 </h3>
-                <span className="reflective-card__status device-card__state">
+                <span className="reflective-card__status device-card__state" style={{ viewTransitionName: vtName("state", d.slug) }}>
                   <span className="reflective-card__dot" />
                   {STATE_LABELS[state]}
                 </span>
               </div>
               <div className="flex min-w-0 items-center gap-2">
                 <IosVersion value={d.ios_version} compact vt={vtName("ios", d.slug)} />
-                <FamilyChip families={families} card />
+                <span className="inline-flex min-w-0" style={{ viewTransitionName: vtName("family", d.slug) }}><FamilyChip families={families} card /></span>
               </div>
-              <SegmentBar counts={counts} />
-              <p className="truncate text-[11px] text-(--rc-muted)">
+              <div style={{ viewTransitionName: vtName("bar", d.slug) }}><SegmentBar counts={counts} /></div>
+              <p className="w-fit max-w-full truncate text-xs text-(--rc-muted)" style={{ viewTransitionName: vtName("repo", d.slug) }}>
                 {repoLine}, {owner}
               </p>
             </div>
@@ -238,8 +238,8 @@ export const DeviceCard = memo(function DeviceCard({
         ) : (
           <>
             <div className="reflective-card__header device-card__top">
-              <FamilyChip families={families} card />
-              <span className="reflective-card__status device-card__state">
+              <span className="inline-flex min-w-0" style={{ viewTransitionName: vtName("family", d.slug) }}><FamilyChip families={families} card /></span>
+              <span className="reflective-card__status device-card__state" style={{ viewTransitionName: vtName("state", d.slug) }}>
                 <span className="reflective-card__dot" />
                 {STATE_LABELS[state]}
               </span>
@@ -252,13 +252,13 @@ export const DeviceCard = memo(function DeviceCard({
             <div className="mt-auto flex min-w-0 flex-col gap-0.5">
               <h3 className="w-fit max-w-full truncate text-sm font-semibold text-(--rc-ink)" style={{ viewTransitionName: vtName("name", d.slug) }}>{d.name}</h3>
               <IosVersion value={d.ios_version} vt={vtName("ios", d.slug)} />
-              {sub ? <p className="truncate text-xs text-(--rc-muted)">{sub}</p> : null}
+              {sub ? <p className="w-fit max-w-full truncate text-xs text-(--rc-muted)" style={{ viewTransitionName: vtName("sub", d.slug) }}>{sub}</p> : null}
             </div>
 
             <div className="mt-2 flex flex-col gap-1.5">
-              <SegmentBar counts={counts} />
-              <p className="truncate text-xs text-(--rc-muted)" title={`${repoLine}, ${owner}`}>
-                {mainRepo ? <span className="font-mono text-[11px]">{mainRepo}</span> : "No repo"}
+              <div style={{ viewTransitionName: vtName("bar", d.slug) }}><SegmentBar counts={counts} /></div>
+              <p className="w-fit max-w-full truncate text-xs text-(--rc-muted)" title={`${repoLine}, ${owner}`} style={{ viewTransitionName: vtName("repo", d.slug) }}>
+                {mainRepo ? <span className="font-mono text-xs">{mainRepo}</span> : "No repo"}
                 {", "}
                 {owner}
               </p>

@@ -154,7 +154,7 @@ export function NaCell({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        "inline-flex size-7 items-center justify-center rounded-md bg-[repeating-linear-gradient(135deg,var(--muted)_0_3px,transparent_3px_6px)] text-[10px] font-medium text-muted-foreground",
+        "inline-flex size-7 items-center justify-center rounded-md bg-[repeating-linear-gradient(135deg,var(--muted)_0_3px,transparent_3px_6px)] text-[11px] font-medium text-muted-foreground",
         className,
       )}
     >
