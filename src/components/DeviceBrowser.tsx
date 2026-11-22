@@ -50,11 +50,16 @@ export function DeviceBrowser({
   areas,
   forks,
   emptyText,
+  family,
+  onFamilyChange,
 }: {
   devices: Device[];
   areas: Area[];
   forks: Fork[];
   emptyText: string;
+  /** The family filter, when the page holds it (the Overview keeps it in ?family=); else it is local. */
+  family?: string;
+  onFamilyChange?: (key: string) => void;
 }) {
   const theme = useThemeMode();
   const [view, setView] = useState<View>("cards");
@@ -63,7 +68,9 @@ export function DeviceBrowser({
     setView(readView());
     setDensity(readDensity());
   }, []);
-  const [base, setBase] = useState("");
+  const [localBase, setLocalBase] = useState("");
+  const base = family ?? localBase;
+  const setBase = (v: string) => (onFamilyChange ? onFamilyChange(v) : setLocalBase(v));
   const [bootOnly, setBootOnly] = useState(false);
   const [maker, setMaker] = useState("");
   const [sort, setSort] = useState<Sort>("working");
@@ -133,7 +140,7 @@ export function DeviceBrowser({
   const filtering = !!(base || bootOnly || maker);
 
   return (
-    <section aria-labelledby="devices-heading" className="flex flex-col gap-4">
+    <section aria-labelledby="devices-heading" className="flex scroll-mt-20 flex-col gap-4">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <h2 id="devices-heading" className="mr-auto text-base font-semibold">
           Phones{" "}
@@ -150,7 +157,7 @@ export function DeviceBrowser({
               <NativeSelect id="flt-base" value={base} onChange={(e) => {
                   const v = e.target.value;
                   withViewTransition(() => setBase(v));
-                }} className="h-8 min-w-0 flex-1 sm:w-auto sm:flex-none">
+                }} className="h-8 min-w-36 basis-36 flex-1 sm:w-auto sm:flex-none">
                 <option value="">Any family</option>
                 {familyOptions.list.map(([f, n]) => (
                   <option key={f} value={f}>
@@ -167,7 +174,7 @@ export function DeviceBrowser({
           <NativeSelect id="flt-maker" value={maker} onChange={(e) => {
               const v = e.target.value;
               withViewTransition(() => setMaker(v));
-            }} className="h-8 min-w-0 flex-1 sm:w-auto sm:flex-none">
+            }} className="h-8 min-w-36 basis-36 flex-1 sm:w-auto sm:flex-none">
             <option value="">Any maker</option>
             {makers.map(([m, n]) => (
               <option key={m} value={m}>
@@ -197,7 +204,7 @@ export function DeviceBrowser({
               const v = e.target.value as Sort;
               withViewTransition(() => setSort(v));
             }}
-            className="h-8 min-w-0 flex-1 sm:w-auto sm:flex-none"
+            className="h-8 min-w-36 basis-36 flex-1 sm:w-auto sm:flex-none"
           >
             <option value="working">Most working areas</option>
             <option value="updated">Recently updated</option>

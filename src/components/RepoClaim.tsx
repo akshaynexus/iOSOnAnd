@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
-import { Link, useRouter } from "@tanstack/react-router";
+import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -171,7 +171,8 @@ export function ClaimRepoDialog({
     void submit();
   }
 
-  const redirect = typeof window === "undefined" ? "/" : window.location.pathname + window.location.search;
+  // From the router, not window: the same value on the server and the client.
+  const redirect = useRouterState({ select: (s) => s.location.pathname + s.location.searchStr });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

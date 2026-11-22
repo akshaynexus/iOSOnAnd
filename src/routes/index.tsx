@@ -3,7 +3,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { RouteError, RoutePending } from "@/components/Page";
 import { useAuth } from "@/components/auth";
 import { DeviceBrowser } from "@/components/DeviceBrowser";
-import { OverviewBento } from "@/components/OverviewBento";
+import { OverviewSummary } from "@/components/OverviewSummary";
 import { CompatMatrix } from "@/components/CompatMatrix";
 import { MainRepos, ReposTable } from "@/components/ReposTable";
 import { MaintainPanel } from "@/components/RepoClaim";
@@ -20,6 +20,8 @@ interface HomeSearch {
   tab?: Tab;
   /** Repos tab: a device slug, or "none" for forks with no device. */
   device?: string;
+  /** Overview: the phone grid's family filter (a family key, or "none" for phones with no repo). */
+  family?: string;
 }
 
 export const Route = createFileRoute("/")({
@@ -30,6 +32,7 @@ export const Route = createFileRoute("/")({
       out.tab = search.tab as Tab;
     }
     if (typeof search.device === "string" && search.device) out.device = search.device;
+    if (typeof search.family === "string" && search.family) out.family = search.family;
     return out;
   },
   loader: () => loadDashboard(),
@@ -48,7 +51,7 @@ const TITLES: Record<Tab, string> = {
 
 function HomePage() {
   const data = Route.useLoaderData();
-  const { q = "", tab = "overview", device } = Route.useSearch();
+  const { q = "", tab = "overview", device, family = "" } = Route.useSearch();
   const navigate = useNavigate({ from: "/" });
   const { canEdit } = useAuth();
   const query = q.trim();
@@ -70,6 +73,9 @@ function HomePage() {
     [data.forks, deviceNames, query],
   );
   const plainForks = useMemo(() => forks.filter((f) => forkKind(f) === "fork"), [forks]);
+
+  const setFamily = (key: string) =>
+    void navigate({ search: (s) => ({ ...s, family: key || undefined }), replace: true, resetScroll: false });
 
   const clearSearch = () => void navigate({ search: (s) => ({ ...s, q: undefined }), replace: true });
 
@@ -96,9 +102,11 @@ function HomePage() {
       <div key={tab} className="tab-fade flex flex-col gap-6">
       {tab === "overview" ? (
         <div className="flex flex-col gap-8">
-          {query ? null : <OverviewBento data={data} />}
+          {query ? null : <OverviewSummary data={data} family={family} onFamily={setFamily} />}
           <DeviceBrowser
             devices={shown}
+            family={family}
+            onFamilyChange={setFamily}
             areas={data.areas}
             forks={data.forks}
             emptyText={data.devices.length === 0 ? "No phones tracked yet." : `No phones match "${query}".`}
