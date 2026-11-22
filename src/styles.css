@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/geist";
+@import "@fontsource-variable/roboto-flex/opsz.css";
 /* Fumadocs UI (/docs): shadcn.css maps its --color-fd-* tokens onto the
    tokens below, so the docs use the same neutral palette, light and dark. */
 @import "fumadocs-ui/css/shadcn.css";
@@ -11,7 +11,7 @@
 
 @theme inline {
     --font-heading: var(--font-sans);
-    --font-sans: 'Geist Variable', sans-serif;
+    --font-sans: "Roboto Flex Variable", "Roboto Flex", system-ui, sans-serif;
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -170,7 +170,12 @@
   }
   body {
     @apply bg-background text-sm text-foreground antialiased;
-    font-feature-settings: "ss01", "cv11";
+    /* Roboto Flex: optical sizing follows the font size. */
+    font-optical-sizing: auto;
+  }
+  h1, h2, h3 {
+    font-weight: 600;
+    letter-spacing: -0.015em;
   }
 }
 
@@ -340,4 +345,32 @@
 .specular-button.primary-action--row {
   padding: 6px 12px;
   font-size: 0.8125rem;
+}
+
+/* Card <-> device page: the photo, name and iOS version morph into place and
+   back (Material "emphasized" easing). The rest of the page crossfades. */
+::view-transition-group(*) {
+  animation-duration: 450ms;
+  animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+::view-transition-group(root) {
+  animation-duration: 220ms;
+}
+/* Keep text crisp while it scales between sizes. */
+::view-transition-old(*),
+::view-transition-new(*) {
+  height: 100%;
+  object-fit: contain;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+/* Elements that only exist on one side (the other cards) fade with the page. */
+::view-transition-old(*):only-child,
+::view-transition-new(*):only-child {
+  animation-duration: 220ms;
 }

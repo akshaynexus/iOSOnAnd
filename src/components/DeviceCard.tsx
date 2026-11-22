@@ -9,7 +9,7 @@ import { familyName } from "@/components/repoInfo";
 import { useSeenOnce } from "@/components/motion";
 import { makerOf, type StateCounts } from "@/lib/areas";
 import { maintainersOf, type AreaState, type Device } from "@/lib/client";
-import { cn } from "@/lib/utils";
+import { cn, vtName } from "@/lib/utils";
 
 /** The device's photo: its own image_url, else its newest uploaded image. */
 export function devicePhoto(d: Pick<Device, "image_url" | "latest_media">): string | null {
@@ -102,11 +102,11 @@ export function FamilyChip({ families, card = false }: { families: string[]; car
 export type Density = "comfortable" | "compact";
 
 /** The photo, or a small light outline with the maker's name so it never reads as a broken image. */
-function Photo({ src, name, maker, compact }: { src: string | null; name: string; maker: string; compact?: boolean }) {
+function Photo({ src, name, maker, compact, vt }: { src: string | null; name: string; maker: string; compact?: boolean; vt?: string }) {
   const [failed, setFailed] = useState(false);
   if (!src || failed) {
     return (
-      <span className="flex flex-col items-center gap-1 text-(--rc-muted) opacity-60">
+      <span className="flex flex-col items-center gap-1 text-(--rc-muted) opacity-60" style={vt ? { viewTransitionName: vt } : undefined}>
         <PhoneOutline className={compact ? "h-9 w-auto" : "h-[70px] w-auto"} />
         {compact ? null : <span className="text-[10px] tracking-wide">{maker === "Other" ? "No photo" : maker}</span>}
       </span>
@@ -120,16 +120,18 @@ function Photo({ src, name, maker, compact }: { src: string | null; name: string
       decoding="async"
       draggable={false}
       onError={() => setFailed(true)}
+      style={vt ? { viewTransitionName: vt } : undefined}
       className="max-h-full max-w-full rounded-md object-contain"
     />
   );
 }
 
-function IosVersion({ value, compact }: { value?: string; compact?: boolean }) {
+function IosVersion({ value, compact, vt }: { value?: string; compact?: boolean; vt?: string }) {
   if (!value) {
     return (
       <span
         className="device-card__chip w-fit text-(--rc-muted)"
+        style={vt ? { viewTransitionName: vt } : undefined}
         title="iOS version not stated"
         aria-label="iOS version not stated"
       >
@@ -138,7 +140,10 @@ function IosVersion({ value, compact }: { value?: string; compact?: boolean }) {
     );
   }
   return (
-    <p className={cn("truncate font-semibold tracking-tight text-(--rc-ink)", compact ? "text-sm" : "text-lg leading-6")}>
+    <p
+      style={vt ? { viewTransitionName: vt } : undefined}
+      className={cn("w-fit max-w-full truncate font-semibold tracking-tight text-(--rc-ink)", compact ? "text-sm" : "text-lg leading-6")}
+    >
       {value}
     </p>
   );
@@ -208,18 +213,20 @@ export const DeviceCard = memo(function DeviceCard({
         {compact ? (
           <div className="flex h-full min-w-0 items-center gap-3">
             <span className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-[10px] bg-(--rc-track)">
-              <Photo src={photo} name={d.name} maker={makerOf(d)} compact />
+              <Photo src={photo} name={d.name} maker={makerOf(d)} compact vt={vtName("img", d.slug)} />
             </span>
             <div className="flex min-w-0 flex-1 flex-col gap-1">
               <div className="flex min-w-0 items-center gap-2">
-                <h3 className="min-w-0 flex-1 truncate text-sm font-semibold text-(--rc-ink)">{d.name}</h3>
+                <h3 className="min-w-0 flex-1 truncate text-sm font-semibold text-(--rc-ink)">
+                  <span className="inline-block max-w-full truncate align-bottom" style={{ viewTransitionName: vtName("name", d.slug) }}>{d.name}</span>
+                </h3>
                 <span className="reflective-card__status device-card__state">
                   <span className="reflective-card__dot" />
                   {STATE_LABELS[state]}
                 </span>
               </div>
               <div className="flex min-w-0 items-center gap-2">
-                <IosVersion value={d.ios_version} compact />
+                <IosVersion value={d.ios_version} compact vt={vtName("ios", d.slug)} />
                 <FamilyChip families={families} card />
               </div>
               <SegmentBar counts={counts} />
@@ -239,12 +246,12 @@ export const DeviceCard = memo(function DeviceCard({
             </div>
 
             <div className="flex h-[150px] shrink-0 items-center justify-center py-2">
-              <Photo src={photo} name={d.name} maker={makerOf(d)} />
+              <Photo src={photo} name={d.name} maker={makerOf(d)} vt={vtName("img", d.slug)} />
             </div>
 
             <div className="mt-auto flex min-w-0 flex-col gap-0.5">
-              <h3 className="truncate text-sm font-semibold text-(--rc-ink)">{d.name}</h3>
-              <IosVersion value={d.ios_version} />
+              <h3 className="w-fit max-w-full truncate text-sm font-semibold text-(--rc-ink)" style={{ viewTransitionName: vtName("name", d.slug) }}>{d.name}</h3>
+              <IosVersion value={d.ios_version} vt={vtName("ios", d.slug)} />
               {sub ? <p className="truncate text-xs text-(--rc-muted)">{sub}</p> : null}
             </div>
 

@@ -47,3 +47,12 @@ export function formatDate(value: string): string {
   })
   return withTime ? `${s} UTC` : s
 }
+
+/**
+ * Shared-element names for the card ↔ device page transition: the photo, name
+ * and iOS version carry the same view-transition-name on both pages, so the
+ * browser morphs them into place (View Transitions API; no-op where missing).
+ */
+export function vtName(part: "img" | "name" | "ios", slug: string): string {
+  return `dev-${part}-${slug.toLowerCase().replace(/[^a-z0-9-]/g, "-")}`;
+}

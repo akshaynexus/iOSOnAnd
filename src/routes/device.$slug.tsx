@@ -17,7 +17,7 @@ import { FamilyChip } from "@/components/DeviceCard";
 import { applicableAreas, applies, entryFor, stateCounts } from "@/lib/areas";
 import { loadDevice, maintainersOf, type Area, type Device, type Fork } from "@/lib/client";
 import { LinkedText } from "@/components/SourceLink";
-import { formatDate, relativeTime } from "@/lib/utils";
+import { formatDate, relativeTime, vtName } from "@/lib/utils";
 
 export const Route = createFileRoute("/device/$slug")({
   loader: async ({ params }) => {
@@ -77,10 +77,11 @@ function DevicePhoto({ device }: { device: Device }) {
             src={src}
             alt={device.name}
             onError={() => setFailed(true)}
+            style={{ viewTransitionName: vtName("img", device.slug) }}
             className="max-h-[28rem] max-w-full rounded-lg object-contain"
           />
         ) : (
-          <PhoneOutline className="h-3/4 w-auto text-muted-foreground/60" />
+          <PhoneOutline className="h-3/4 w-auto text-muted-foreground/60" style={{ viewTransitionName: vtName("img", device.slug) }} />
         )}
       </div>
       {ownPhoto && (device.image_credit || device.image_license) ? (
@@ -170,14 +171,14 @@ function DevicePage() {
           <div className="flex min-w-0 flex-col gap-5">
             <div className="flex flex-col gap-2">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                <h1 className="text-2xl font-semibold tracking-tight">{device.name}</h1>
+                <h1 className="text-2xl font-semibold tracking-tight" style={{ viewTransitionName: vtName("name", device.slug) }}>{device.name}</h1>
                 <StateLabel state={device.status} className="text-sm" />
                 <FamilyChip families={families} />
               </div>
               {device.ios_version ? (
-                <p className="text-3xl font-semibold tracking-tight">{device.ios_version}</p>
+                <p className="w-fit text-3xl font-semibold tracking-tight" style={{ viewTransitionName: vtName("ios", device.slug) }}>{device.ios_version}</p>
               ) : (
-                <p className="text-lg text-muted-foreground">iOS version not stated</p>
+                <p className="w-fit text-lg text-muted-foreground" style={{ viewTransitionName: vtName("ios", device.slug) }}>iOS version not stated</p>
               )}
               {device.best_result ? <p className="max-w-3xl text-base">{device.best_result}</p> : null}
             </div>

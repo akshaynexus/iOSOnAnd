@@ -9,6 +9,8 @@ export const getRouter = () => {
     routeTree,
     defaultPreload: "intent",
     scrollRestoration: true,
+    // Card <-> device page: shared photo/name/iOS version morph (src/styles.css).
+    defaultViewTransition: true,
   });
   return router;
 };

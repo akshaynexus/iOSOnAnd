@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { useTheme } from "next-themes";
 import { Check, Copy } from "lucide-react";
 import { toast } from "sonner";
@@ -111,9 +111,9 @@ export function PrimaryAction({
 }
 
 /** A neutral phone outline for devices without a photo. */
-export function PhoneOutline({ className }: { className?: string }) {
+export function PhoneOutline({ className, style }: { className?: string; style?: CSSProperties }) {
   return (
-    <svg viewBox="0 0 120 220" fill="none" aria-hidden className={className}>
+    <svg viewBox="0 0 120 220" fill="none" aria-hidden className={className} style={style}>
       <rect x="10" y="6" width="100" height="208" rx="18" stroke="currentColor" strokeWidth="3" />
       <rect x="18" y="20" width="84" height="176" rx="8" stroke="currentColor" strokeWidth="1.5" opacity="0.45" />
       <circle cx="60" cy="13" r="2.5" fill="currentColor" opacity="0.6" />
