@@ -298,6 +298,15 @@ export async function setLineage(
   baseExists = true,
 ): Promise<void> {
   const baseFork = validRepo(base) ? await queryFirst<{ id: number }>('SELECT id FROM forks WHERE repo = ? COLLATE NOCASE', [base]) : null;
+  // A base already known to 404 on GitHub (lineage_repos.repo_exists = 0) never gets a link,
+  // whatever the caller passed; a tracked base always exists.
+  if (!baseFork && baseExists && validRepo(base)) {
+    const known = await queryFirst<{ repo_exists: number }>(
+      'SELECT repo_exists FROM lineage_repos WHERE repo = ? COLLATE NOCASE',
+      [base],
+    );
+    if (known && Number(known.repo_exists) === 0) baseExists = false;
+  }
   await exec(
     `INSERT INTO repo_lineage (repo, fork_id, base, base_fork_id, relation, note, source, base_exists) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(repo, base, relation) DO UPDATE SET fork_id = excluded.fork_id, base_fork_id = excluded.base_fork_id,

@@ -228,6 +228,46 @@
    "updated": "2026-11-22T19:33:28.088Z"
   },
   {
+   "device_slug": "a32",
+   "area_slug": "audio",
+   "state": "broken",
+   "detail": "reddit claim (2026-11-22): no audio yet",
+   "source": "https://www.reddit.com/r/hackios/comments/1y32x8p/booted_ios_165_on_a_samsung_galaxy_a32_4g_helio",
+   "updated": "2026-11-22T23:49:39.819Z"
+  },
+  {
+   "device_slug": "a32",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "reddit claim (2026-11-22): iOS 16.5 (Darwin 22.5.0) to the lock screen and SpringBoard; Phone app and Control Center open (\"still tentative\")",
+   "source": "https://www.reddit.com/r/hackios/comments/1y32x8p/booted_ios_165_on_a_samsung_galaxy_a32_4g_helio",
+   "updated": "2026-11-22T23:49:39.675Z"
+  },
+  {
+   "device_slug": "a32",
+   "area_slug": "gpu",
+   "state": "broken",
+   "detail": "reddit claim (2026-11-22): CPU software rendering, no GPU acceleration yet",
+   "source": "https://www.reddit.com/r/hackios/comments/1y32x8p/booted_ios_165_on_a_samsung_galaxy_a32_4g_helio",
+   "updated": "2026-11-22T23:49:39.744Z"
+  },
+  {
+   "device_slug": "a32",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "reddit claim (2026-11-22): no cellular/network yet",
+   "source": "https://www.reddit.com/r/hackios/comments/1y32x8p/booted_ios_165_on_a_samsung_galaxy_a32_4g_helio",
+   "updated": "2026-11-22T23:49:39.782Z"
+  },
+  {
+   "device_slug": "a32",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "reddit claim (2026-11-22): lock screen, home screen, Phone app and Control Center respond to touch",
+   "source": "https://www.reddit.com/r/hackios/comments/1y32x8p/booted_ios_165_on_a_samsung_galaxy_a32_4g_helio",
+   "updated": "2026-11-22T23:49:39.711Z"
+  },
+  {
    "device_slug": "a5-2016",
    "area_slug": "boot",
    "state": "in-progress",
@@ -2260,6 +2300,102 @@
    "updated": "2026-11-22T19:33:35.086Z"
   },
   {
+   "device_slug": "poco-x6",
+   "area_slug": "audio",
+   "state": "in-progress",
+   "detail": "reddit claim (2026-11-22): both speakers through the audio DSP (system sounds, music, video); no microphones, headphones or earpiece route (README, dev branch)",
+   "source": "https://www.reddit.com/r/hackios/comments/1y3036f/ios_16_reference_repo",
+   "updated": "2026-11-22T23:49:40.025Z"
+  },
+  {
+   "device_slug": "poco-x6",
+   "area_slug": "battery",
+   "state": "in-progress",
+   "detail": "reddit claim (2026-11-22): level reading; on a PC port the 0.5 A charge is below the 3-4 W iOS draws at idle, so the level still falls (README, dev branch)",
+   "source": "https://www.reddit.com/r/hackios/comments/1y3036f/ios_16_reference_repo",
+   "updated": "2026-11-22T23:49:40.209Z"
+  },
+  {
+   "device_slug": "poco-x6",
+   "area_slug": "bluetooth",
+   "state": "in-progress",
+   "detail": "reddit claim (2026-11-22): devices pair and connect (earbuds, a fitness band through CoreBluetooth); no sound through them yet (README, dev branch)",
+   "source": "https://www.reddit.com/r/hackios/comments/1y3036f/ios_16_reference_repo",
+   "updated": "2026-11-22T23:49:40.062Z"
+  },
+  {
+   "device_slug": "poco-x6",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "reddit claim (2026-11-22): iOS 16.5 boots from RAM (fastboot boot, nothing written) to SpringBoard, Settings, Safari and the stock apps; all 8 cores with frequency scaling (README, dev branch)",
+   "source": "https://www.reddit.com/r/hackios/comments/1y3036f/ios_16_reference_repo",
+   "updated": "2026-11-22T23:49:39.857Z"
+  },
+  {
+   "device_slug": "poco-x6",
+   "area_slug": "calls",
+   "state": "in-progress",
+   "detail": "reddit claim (2026-11-22): calls made and answered, without sound; not listed under Recents (README, dev branch)",
+   "source": "https://www.reddit.com/r/hackios/comments/1y3036f/ios_16_reference_repo",
+   "updated": "2026-11-22T23:49:40.137Z"
+  },
+  {
+   "device_slug": "poco-x6",
+   "area_slug": "camera",
+   "state": "broken",
+   "detail": "reddit claim (2026-11-22): camera does not work yet (README, dev branch)",
+   "source": "https://www.reddit.com/r/hackios/comments/1y3036f/ios_16_reference_repo",
+   "updated": "2026-11-22T23:49:40.245Z"
+  },
+  {
+   "device_slug": "poco-x6",
+   "area_slug": "gpu",
+   "state": "works",
+   "detail": "reddit claim (2026-11-22): Metal graphics: CoreAnimation through Metal on the Adreno 710 at 940 MHz, page swipes 62-68 fps; Control Center 35-40 fps, 120 Hz not reached (README, dev branch)",
+   "source": "https://www.reddit.com/r/hackios/comments/1y3036f/ios_16_reference_repo",
+   "updated": "2026-11-22T23:49:39.895Z"
+  },
+  {
+   "device_slug": "poco-x6",
+   "area_slug": "modem",
+   "state": "in-progress",
+   "detail": "reddit claim (2026-11-22): with modem=1: registered on LTE, signal bars, mobile data, USSD; off by default, a restart is needed after a session (README, dev branch)",
+   "source": "https://www.reddit.com/r/hackios/comments/1y3036f/ios_16_reference_repo",
+   "updated": "2026-11-22T23:49:40.099Z"
+  },
+  {
+   "device_slug": "poco-x6",
+   "area_slug": "sensors",
+   "state": "broken",
+   "detail": "reddit claim (2026-11-22): sensors and GPS do not work yet (README, dev branch)",
+   "source": "https://www.reddit.com/r/hackios/comments/1y3036f/ios_16_reference_repo",
+   "updated": "2026-11-22T23:49:40.298Z"
+  },
+  {
+   "device_slug": "poco-x6",
+   "area_slug": "sms",
+   "state": "broken",
+   "detail": "reddit claim (2026-11-22): no SMS (README, dev branch)",
+   "source": "https://www.reddit.com/r/hackios/comments/1y3036f/ios_16_reference_repo",
+   "updated": "2026-11-22T23:49:40.174Z"
+  },
+  {
+   "device_slug": "poco-x6",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "reddit claim (2026-11-22): FocalTech FT3683G multi-touch and system gestures; power and volume buttons (README, dev branch)",
+   "source": "https://www.reddit.com/r/hackios/comments/1y3036f/ios_16_reference_repo",
+   "updated": "2026-11-22T23:49:39.931Z"
+  },
+  {
+   "device_slug": "poco-x6",
+   "area_slug": "wifi",
+   "state": "works",
+   "detail": "reddit claim (2026-11-22): 2.4 and 5 GHz WPA2 scan and join from Settings, DHCP, Safari; no WPA3 (README, dev branch)",
+   "source": "https://www.reddit.com/r/hackios/comments/1y3036f/ios_16_reference_repo",
+   "updated": "2026-11-22T23:49:39.968Z"
+  },
+  {
    "device_slug": "poco-x6-pro",
    "area_slug": "boot",
    "state": "works",
@@ -2334,130 +2470,138 @@
   {
    "device_slug": "realme-8i",
    "area_slug": "audio",
-   "state": "works",
-   "detail": "reddit claim (2026-11-18): speaker, earpiece, mic",
-   "source": "https://www.reddit.com/r/hackios/comments/1xzmj80/release_introducing_open_mapple_a_stabilityfirst",
-   "updated": "2026-11-22T18:20:31.075Z"
+   "state": "in-progress",
+   "detail": "reddit claim (2026-11-21): microphone works, audio WIP on iOS 18.7.10. Release 1 (iOS 16.7.16): speaker (well under Android's level), earpiece and main mic; no headset",
+   "source": "https://www.reddit.com/r/hackios/comments/1y1vycq/open_mapple_ios_18710_on_mediatek_getting_closer",
+   "updated": "2026-11-22T23:49:40.871Z"
   },
   {
    "device_slug": "realme-8i",
    "area_slug": "battery",
    "state": "works",
-   "detail": "reddit claim (2026-11-21): battery (iOS 18.7.10 WIP build)",
+   "detail": "reddit claim (2026-11-21): battery on iOS 18.7.10 WIP. Release 1: the fuel gauge's level is read, charging control not yet (release notes)",
    "source": "https://www.reddit.com/r/hackios/comments/1y1vycq/open_mapple_ios_18710_on_mediatek_getting_closer",
-   "updated": "2026-11-22T19:33:23.419Z"
+   "updated": "2026-11-22T23:49:40.698Z"
   },
   {
    "device_slug": "realme-8i",
    "area_slug": "bluetooth",
-   "state": "works",
-   "detail": "reddit claim (2026-11-18): Bluetooth audio and keyboards; headset mic planned",
-   "source": "https://www.reddit.com/r/hackios/comments/1xzmj80/release_introducing_open_mapple_a_stabilityfirst",
-   "updated": "2026-11-22T18:20:30.930Z"
+   "state": "in-progress",
+   "detail": "reddit claim (2026-11-21): Bluetooth WIP on iOS 18.7.10. Release 1 (iOS 16.7.16): pairing, LE scan, keyboards; its release notes list Bluetooth audio and a headset's microphone under \"Not yet\" (device.conf: headphones play music)",
+   "source": "https://www.reddit.com/r/hackios/comments/1y1vycq/open_mapple_ios_18710_on_mediatek_getting_closer",
+   "updated": "2026-11-22T23:49:40.809Z"
   },
   {
    "device_slug": "realme-8i",
    "area_slug": "boot",
    "state": "works",
-   "detail": "reddit claim (2026-11-18): Open Mapple Release 1, iOS 16.7.16, dual boot",
-   "source": "https://www.reddit.com/r/hackios/comments/1xzmj80/release_introducing_open_mapple_a_stabilityfirst",
-   "updated": "2026-11-22T18:20:30.330Z"
+   "detail": "reddit claim (2026-11-21): Open Mapple iOS 18.7.10 WIP build boots, all CPU cores, full RAM, dual boot with Android (source with Release 2). History: iOS 18.7 booted 2026-11-20; Release 1 (spaced-1.0, 2026-11-18) is iOS 16.7.16 (20H392), single boot or SplitBoot dual boot",
+   "source": "https://www.reddit.com/r/hackios/comments/1y1vycq/open_mapple_ios_18710_on_mediatek_getting_closer",
+   "updated": "2026-11-22T23:49:40.516Z"
   },
   {
    "device_slug": "realme-8i",
    "area_slug": "brightness",
    "state": "in-progress",
-   "detail": "reddit claim (2026-11-18): manual brightness works; auto-brightness sensor planned for Release 2",
+   "detail": "reddit claim (2026-11-18): manual brightness works (Release 1, iOS 16.7.16); auto-brightness sensor planned for Release 2",
    "source": "https://www.reddit.com/r/hackios/comments/1xzmj80/release_introducing_open_mapple_a_stabilityfirst",
-   "updated": "2026-11-22T18:20:31.365Z"
+   "updated": "2026-11-22T23:49:41.120Z"
   },
   {
    "device_slug": "realme-8i",
    "area_slug": "calls",
    "state": "in-progress",
-   "detail": "reddit claim (2026-11-18): calls WIP for Release 2 with the rest of cellular (porter: almost fixed, not stable enough for Release 1)",
-   "source": "https://www.reddit.com/r/hackios/comments/1xzh8pi/almost_everything_fixed_on_a_mediatek_phone",
-   "updated": "2026-11-22T19:33:19.838Z"
+   "detail": "reddit claim (2026-11-19): calls planned in Open Mapple's own app on MediaTek (no QMI), native Phone app planned for Release 3; part of the cellular work still WIP on iOS 18.7.10 (2026-11-21)",
+   "source": "https://www.reddit.com/r/hackios/comments/1xzmj80/release_introducing_open_mapple_a_stabilityfirst",
+   "updated": "2026-11-22T23:49:40.978Z"
   },
   {
    "device_slug": "realme-8i",
    "area_slug": "camera",
    "state": "in-progress",
-   "detail": "reddit claim (2026-11-18): cameras WIP for Release 2 (porter: almost fixed, not stable enough for Release 1)",
-   "source": "https://www.reddit.com/r/hackios/comments/1xzh8pi/almost_everything_fixed_on_a_mediatek_phone",
-   "updated": "2026-11-22T19:33:19.887Z"
+   "detail": "reddit claim (2026-11-21): camera WIP on iOS 18.7.10; not in Release 1 (porter 2026-11-18: almost fixed, for Release 2)",
+   "source": "https://www.reddit.com/r/hackios/comments/1y1vycq/open_mapple_ios_18710_on_mediatek_getting_closer",
+   "updated": "2026-11-22T23:49:40.907Z"
   },
   {
    "device_slug": "realme-8i",
    "area_slug": "gpu",
    "state": "works",
-   "detail": "reddit claim (2026-11-18): Mali GPU Metal acceleration",
-   "source": "https://www.reddit.com/r/hackios/comments/1xzmj80/release_introducing_open_mapple_a_stabilityfirst",
-   "updated": "2026-11-22T18:20:30.632Z"
+   "detail": "reddit claim (2026-11-21): GPU Metal on iOS 18.7.10 WIP; slow UI on the old 4 GB phone (porter). Release 1 (iOS 16.7.16): the Mali-G57 MC2 through Panfrost draws the UI and Photos; heavy wallpapers may run out of GPU memory (release notes)",
+   "source": "https://www.reddit.com/r/hackios/comments/1y1vycq/open_mapple_ios_18710_on_mediatek_getting_closer",
+   "updated": "2026-11-22T23:49:40.564Z"
   },
   {
    "device_slug": "realme-8i",
    "area_slug": "haptics",
    "state": "works",
-   "detail": "reddit claim (2026-11-18): vibration and torch",
-   "source": "https://www.reddit.com/r/hackios/comments/1xzmj80/release_introducing_open_mapple_a_stabilityfirst",
-   "updated": "2026-11-22T18:20:31.222Z"
+   "detail": "reddit claim (2026-11-21): haptics and flashlight on iOS 18.7.10 WIP. Release 1: vibration motor from iOS's haptics and the torch (release notes)",
+   "source": "https://www.reddit.com/r/hackios/comments/1y1vycq/open_mapple_ios_18710_on_mediatek_getting_closer",
+   "updated": "2026-11-22T23:49:40.735Z"
   },
   {
    "device_slug": "realme-8i",
    "area_slug": "modem",
    "state": "in-progress",
-   "detail": "reddit claim (2026-11-18): cellular (SIM, calls, SMS, data) planned for Release 2; first modem handshake passed (porter's comment 2026-11-22)",
-   "source": "https://www.reddit.com/r/hackios/comments/1xzmj80/release_introducing_open_mapple_a_stabilityfirst",
-   "updated": "2026-11-22T19:33:19.940Z"
+   "detail": "reddit claim (2026-11-21): cellular WIP on iOS 18.7.10; first modem handshake passed (porter, 2026-11-22); MediaTek AT commands over CCCI with Open Mapple's own data daemon; not in Release 1",
+   "source": "https://www.reddit.com/r/hackios/comments/1y1vycq/open_mapple_ios_18710_on_mediatek_getting_closer",
+   "updated": "2026-11-22T23:49:40.944Z"
   },
   {
    "device_slug": "realme-8i",
    "area_slug": "passcode",
    "state": "works",
-   "detail": "reddit claim (2026-11-18): sleep and passcode",
+   "detail": "reddit claim (2026-11-18): sleep and passcode (Release 1, iOS 16.7.16); not stated for iOS 18.7.10",
    "source": "https://www.reddit.com/r/hackios/comments/1xzh8pi/almost_everything_fixed_on_a_mediatek_phone",
-   "updated": "2026-11-22T19:33:23.367Z"
+   "updated": "2026-11-22T23:49:41.084Z"
   },
   {
    "device_slug": "realme-8i",
    "area_slug": "sensors",
    "state": "in-progress",
-   "detail": "reddit claim (2026-11-18): rotation works; proximity, compass, step sensors planned for Release 2",
+   "detail": "reddit claim (2026-11-18): rotation works (Release 1, iOS 16.7.16); proximity, compass, step and light sensors planned for Release 2; not stated for iOS 18.7.10",
    "source": "https://www.reddit.com/r/hackios/comments/1xzmj80/release_introducing_open_mapple_a_stabilityfirst",
-   "updated": "2026-11-22T18:20:31.513Z"
+   "updated": "2026-11-22T23:49:41.155Z"
   },
   {
    "device_slug": "realme-8i",
    "area_slug": "sms",
    "state": "in-progress",
-   "detail": "reddit claim (2026-11-18): SMS WIP for Release 2 with the rest of cellular (porter: almost fixed, not stable enough for Release 1)",
-   "source": "https://www.reddit.com/r/hackios/comments/1xzh8pi/almost_everything_fixed_on_a_mediatek_phone",
-   "updated": "2026-11-22T19:33:20.000Z"
+   "detail": "reddit claim (2026-11-19): SMS planned in Open Mapple's own app on MediaTek, native support planned for Release 3; part of the cellular work still WIP on iOS 18.7.10 (2026-11-21)",
+   "source": "https://www.reddit.com/r/hackios/comments/1xzmj80/release_introducing_open_mapple_a_stabilityfirst",
+   "updated": "2026-11-22T23:49:41.013Z"
+  },
+  {
+   "device_slug": "realme-8i",
+   "area_slug": "stability",
+   "state": "in-progress",
+   "detail": "reddit claim (2026-11-21): iOS 18.7.10 \"getting closer to being stable\"; Release 1 (iOS 16.7.16) is the released build",
+   "source": "https://www.reddit.com/r/hackios/comments/1y1vycq/open_mapple_ios_18710_on_mediatek_getting_closer",
+   "updated": "2026-11-22T23:49:41.049Z"
   },
   {
    "device_slug": "realme-8i",
    "area_slug": "thermal",
    "state": "works",
-   "detail": "reddit claim (2026-11-21): thermals (iOS 18.7.10 WIP build)",
+   "detail": "reddit claim (2026-11-21): thermals on iOS 18.7.10 WIP. Release 1: LVTS reads the CPU sensors (device.conf: partial)",
    "source": "https://www.reddit.com/r/hackios/comments/1y1vycq/open_mapple_ios_18710_on_mediatek_getting_closer",
-   "updated": "2026-11-22T19:33:23.474Z"
+   "updated": "2026-11-22T23:49:40.644Z"
   },
   {
    "device_slug": "realme-8i",
    "area_slug": "touch",
    "state": "works",
-   "detail": "reddit claim (2026-11-18): display and touch, physical keys",
-   "source": "https://www.reddit.com/r/hackios/comments/1xzmj80/release_introducing_open_mapple_a_stabilityfirst",
-   "updated": "2026-11-22T18:20:30.482Z"
+   "detail": "reddit claim (2026-11-21): touch on iOS 18.7.10 WIP. Release 1 (iOS 16.7.16): touch up to three fingers (slow on one core), power and volume buttons (release notes)",
+   "source": "https://www.reddit.com/r/hackios/comments/1y1vycq/open_mapple_ios_18710_on_mediatek_getting_closer",
+   "updated": "2026-11-22T23:49:40.602Z"
   },
   {
    "device_slug": "realme-8i",
    "area_slug": "wifi",
-   "state": "works",
-   "detail": "reddit claim (2026-11-18): Wi-Fi",
-   "source": "https://www.reddit.com/r/hackios/comments/1xzmj80/release_introducing_open_mapple_a_stabilityfirst",
-   "updated": "2026-11-22T18:20:30.783Z"
+   "state": "in-progress",
+   "detail": "reddit claim (2026-11-21): Wi-Fi WIP on iOS 18.7.10. Release 1 (iOS 16.7.16): works (scan, WPA2 join, Safari, downloads); porter 2026-11-22: \"Wifi already works\"",
+   "source": "https://www.reddit.com/r/hackios/comments/1y1vycq/open_mapple_ios_18710_on_mediatek_getting_closer",
+   "updated": "2026-11-22T23:49:40.771Z"
   },
   {
    "device_slug": "realme-narzo-30-pro",
@@ -2666,6 +2810,38 @@
    "detail": "reddit claim (2026-11-04): touch and volume controls work",
    "source": "https://www.reddit.com/r/hackios/comments/1xnual9/ios_16_on_redmi_k20",
    "updated": "2026-11-22T19:33:32.525Z"
+  },
+  {
+   "device_slug": "redmi-k20-pro",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "repo claim (2026-10-27): UEFI, loader and XNU boot iOS 16.5 (20F66) to the desktop from RAM; all 39 init checks pass (README test, branch raphael-bringup)",
+   "source": "https://github.com/HeliumStudio-Dev/hackios-xnu-kernel/tree/raphael-bringup",
+   "updated": "2026-11-22T23:55:13.138Z"
+  },
+  {
+   "device_slug": "redmi-k20-pro",
+   "area_slug": "gpu",
+   "state": "in-progress",
+   "detail": "repo claim (2026-10-27): OpenGL ES through Mesa Freedreno on the Adreno 640 (1080x2340 draw and readback, no GL error); no Metal driver (README test, branch raphael-bringup)",
+   "source": "https://github.com/HeliumStudio-Dev/hackios-xnu-kernel/tree/raphael-bringup",
+   "updated": "2026-11-22T23:55:14.108Z"
+  },
+  {
+   "device_slug": "redmi-k20-pro",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "repo claim (2026-10-27): desktop, Control Center, touch and buttons work (user-confirmed); not a steady 60 fps everywhere (README test, branch raphael-bringup)",
+   "source": "https://github.com/HeliumStudio-Dev/hackios-xnu-kernel/tree/raphael-bringup",
+   "updated": "2026-11-22T23:55:13.540Z"
+  },
+  {
+   "device_slug": "redmi-k20-pro",
+   "area_slug": "wifi",
+   "state": "in-progress",
+   "detail": "repo claim (2026-10-27): 5 GHz WPA3-SAE join with an address and real web access (WPA2 before); after turning Wi-Fi off and on it lists networks but cannot reconnect (README test, branch raphael-bringup)",
+   "source": "https://github.com/HeliumStudio-Dev/hackios-xnu-kernel/tree/raphael-bringup",
+   "updated": "2026-11-22T23:55:14.264Z"
   },
   {
    "device_slug": "redmi-note-10-pro",
@@ -3422,10 +3598,10 @@
   {
    "device_slug": "s24-ultra",
    "area_slug": "haptics",
-   "state": "in-progress",
-   "detail": "The haptic server starts on the phone (hosted 0078, 2026-11-22); the Actuator then played silence (no DSP chain for it): hosted 0086 merged, phone proof pending",
-   "source": "docs/hardware.md §5, README#what-works",
-   "updated": "2026-11-22T19:54:02.955Z"
+   "state": "works",
+   "detail": "Haptics work through OneiOS/OneOS on the phone (OneiOS maintainer, 2026-11-23)",
+   "source": "https://github.com/akshaynexus/OneiOS",
+   "updated": "2026-11-22T23:27:52.202Z"
   },
   {
    "device_slug": "s24-ultra",
@@ -3727,9 +3903,9 @@
    "device_slug": "s7",
    "area_slug": "boot",
    "state": "works",
-   "detail": "reddit claim (2026-11-15): iOS 16.7.16 to the home screen, usable day to day",
-   "source": "https://www.reddit.com/r/hackios/comments/1xwzenw/ios_16716_on_a_galaxy_s7_exynos_8890_front_camera",
-   "updated": "2026-11-22T18:20:03.715Z"
+   "detail": "reddit claim (2026-11-22): iOS 26.6.2 (23G90, iPhone 11 userland) boots to the home screen on xnu-12377.121.6 built from Apple's source (branch herolte-ios26); Settings opens. Before: iOS 16.7.16 to the home screen, usable day to day (2026-11-15, branch herolte)",
+   "source": "https://www.reddit.com/r/hackios/comments/1y31zto/ios_2662_booting_on_a_samsung_galaxy_s7_exynos",
+   "updated": "2026-11-22T23:49:40.336Z"
   },
   {
    "device_slug": "s7",
@@ -3751,9 +3927,9 @@
    "device_slug": "s7",
    "area_slug": "gpu",
    "state": "works",
-   "detail": "reddit claim (2026-11-15): GLES via Mesa Panfrost under an EAGL bridge; Metal not working (blurs black, 2026-11-07)",
+   "detail": "reddit claim (2026-11-15): GLES via Mesa Panfrost under an EAGL bridge on iOS 16.7.16; Metal not working (blurs black, 2026-11-07). iOS 26.6.2 (2026-11-22): no GPU acceleration yet, CPU drawing, runs hot; Metal on the Mali-T880 through Mesa/Panfrost is next",
    "source": "https://www.reddit.com/r/hackios/comments/1xwzenw/ios_16716_on_a_galaxy_s7_exynos_8890_front_camera",
-   "updated": "2026-11-22T18:20:03.871Z"
+   "updated": "2026-11-22T23:49:40.409Z"
   },
   {
    "device_slug": "s7",
@@ -3781,19 +3957,27 @@
   },
   {
    "device_slug": "s7",
+   "area_slug": "stability",
+   "state": "in-progress",
+   "detail": "reddit claim (2026-11-22): iOS 26.6.2: backboardd crashes from time to time and the UI restarts; Control Center shows up empty",
+   "source": "https://www.reddit.com/r/hackios/comments/1y31zto/ios_2662_booting_on_a_samsung_galaxy_s7_exynos",
+   "updated": "2026-11-22T23:49:40.373Z"
+  },
+  {
+   "device_slug": "s7",
    "area_slug": "touch",
    "state": "works",
-   "detail": "reddit claim (2026-11-07): touch and buttons",
+   "detail": "reddit claim (2026-11-07): touch and buttons; display and touch also work on iOS 26.6.2 (2026-11-22)",
    "source": "https://www.reddit.com/r/hackios/comments/1xpu4qm/update_ios_16_on_a_galaxy_s7_exynos_8890_gpu",
-   "updated": "2026-11-22T18:20:04.955Z"
+   "updated": "2026-11-22T23:49:40.481Z"
   },
   {
    "device_slug": "s7",
    "area_slug": "wifi",
    "state": "works",
-   "detail": "reddit claim (2026-11-15): BCM4359 Wi-Fi with internet",
+   "detail": "reddit claim (2026-11-15): BCM4359 Wi-Fi with internet; also connects on iOS 26.6.2 (2026-11-22)",
    "source": "https://www.reddit.com/r/hackios/comments/1xwzenw/ios_16716_on_a_galaxy_s7_exynos_8890_front_camera",
-   "updated": "2026-11-22T18:20:04.041Z"
+   "updated": "2026-11-22T23:49:40.445Z"
   },
   {
    "device_slug": "s8",
@@ -4497,6 +4681,23 @@
    "updated": "2026-11-22T20:55:30.688Z"
   },
   {
+   "slug": "a32",
+   "name": "Galaxy A32 4G",
+   "model": "SM-A325F",
+   "soc": "Helio G80 (MT6768)",
+   "repo_kind": "none",
+   "status": "in-progress",
+   "best_result": "reddit claim: iOS 16.5 (Darwin 22.5.0) to the lock screen and SpringBoard with touch (Phone app, Control Center); CPU rendering, no cellular or audio yet",
+   "notes": "No repo yet, by u/Hantertaker (\"still tentative\"). Source: https://www.reddit.com/r/hackios/comments/1y32x8p/booted_ios_165_on_a_samsung_galaxy_a32_4g_helio",
+   "base": "other",
+   "ios_version": "iOS 16.5",
+   "image_url": "https://images.samsung.com/is/image/samsung/p6pim/ru/sm-a325fzkdser/gallery/ru-galaxy-a32-a325-sm-a325fzkdser-396522399?$650_519_PNG$",
+   "image_credit": "© Samsung, official product image, used for device identification",
+   "image_license": "© Samsung",
+   "image_source_url": "https://www.samsung.com/ru/support/model/SM-A325FZKDSER/",
+   "updated": "2026-11-22T23:49:36.593Z"
+  },
+  {
    "slug": "a5-2016",
    "name": "Galaxy A5 (2016)",
    "model": "SM-A510F",
@@ -4769,6 +4970,23 @@
    "updated": "2026-11-22T20:55:32.509Z"
   },
   {
+   "slug": "meizu-21",
+   "name": "Meizu 21",
+   "model": "M461Q",
+   "soc": "Snapdragon 8 Gen 3 (SM8650)",
+   "repo_kind": "fork",
+   "status": "unknown",
+   "best_result": "UEFI firmware, kernel (iPadOS 17.7.11 21H461 baseline) and boot images built; no device boot recorded",
+   "notes": "loolooc/UniXNU-meizu21 (OneiOS docs/references.md:142 row 15; README 当前状态).",
+   "base": "other",
+   "ios_version": "iPadOS 17.7.11 (21H461)",
+   "image_url": "https://openfile.meizu.com/group1/M00/0C/A6/Cgbj0WVmzWmAeX5iAArFLvc9Qv0344.png",
+   "image_credit": "© Meizu, official product image, used for device identification",
+   "image_license": "© Meizu",
+   "image_source_url": "https://detail.meizu.com/item/meizu21.html",
+   "updated": "2026-11-23T00:14:03.896Z"
+  },
+  {
    "slug": "mi-10",
    "name": "Xiaomi Mi 10",
    "model": "umi",
@@ -4973,6 +5191,23 @@
    "updated": "2026-11-22T20:55:33.901Z"
   },
   {
+   "slug": "moto-g84",
+   "name": "Moto G84 5G",
+   "model": "bangkk",
+   "soc": "Snapdragon 695 (SM6375)",
+   "repo_kind": "fork",
+   "status": "in-progress",
+   "best_result": "reddit claim: HakiOS port (iOS 16.5 SpringBoard from RAM, per its README) announced as coming soon; its iOS screenshot is still a \"Coming soon\" placeholder",
+   "notes": "bangkk. trenrua-dotcom/hakios-bangkk (GitHub fork of pixelpixys/hakios-malmo, network root oosexgang/hakios-xnu-kernel). Source: https://www.reddit.com/r/hackios/comments/1y30oeg/coming_soon_ios_on_moto_g84_5g",
+   "base": "other",
+   "ios_version": "iOS 16.5",
+   "image_url": "https://motorolain.vtexassets.com/arquivos/ids/158488/motorola-g84-pdp-ecom-render-5-color-1-.png?v=638279595732430000",
+   "image_credit": "© Motorola, official product image, used for device identification",
+   "image_license": "© Motorola",
+   "image_source_url": "https://www.motorola.in/smartphones-moto-g84-5g/p",
+   "updated": "2026-11-23T00:14:08.703Z"
+  },
+  {
    "slug": "nokia-5-3",
    "name": "Nokia 5.3",
    "model": "TA-1234",
@@ -5075,6 +5310,23 @@
    "updated": "2026-11-22T20:55:34.593Z"
   },
   {
+   "slug": "nubia-z60-ultra",
+   "name": "nubia Z60 Ultra",
+   "model": "NX721J",
+   "soc": "Snapdragon 8 Gen 3 (SM8650)",
+   "repo_kind": "fork",
+   "status": "unknown",
+   "best_result": "Kernel bring-up baseline (board.toml: 'kernel probe'); no result stated",
+   "notes": "SangLuoCN/UniXNU-Nubia-Z60U (OneiOS docs/references.md:142 row 15). Its README is UniXNU-sheng's text; board.toml names nx721j, iPad7,1 17.7.11 21H461 IPSW.",
+   "base": "other",
+   "ios_version": "iPadOS 17.7.11 (21H461)",
+   "image_url": "https://intl.nubia.com/cdn/shop/files/Z60Ultra-_1.png?v=1717750188",
+   "image_credit": "© nubia, official product image, used for device identification",
+   "image_license": "© nubia",
+   "image_source_url": "https://intl.nubia.com/products/nubia-z60-ultra",
+   "updated": "2026-11-23T00:14:04.698Z"
+  },
+  {
    "slug": "oneplus-10-pro",
    "name": "OnePlus 10 Pro",
    "model": "NE2211",
@@ -5090,6 +5342,23 @@
    "image_license": "© OnePlus",
    "image_source_url": "https://www.oneplus.com/global/10-pro",
    "updated": "2026-11-22T20:55:34.711Z"
+  },
+  {
+   "slug": "oneplus-13",
+   "name": "OnePlus 13",
+   "model": "dodge",
+   "soc": "Snapdragon 8 Elite (SM8750)",
+   "repo_kind": "fork",
+   "status": "in-progress",
+   "best_result": "XNU (xnu-8796) boots far enough to switch on the MMU and survive it (4 KiB pages); nothing boots to iOS yet",
+   "notes": "palazik/ios-dodge, a fork of dipa-studio/ios-sweet (OneiOS docs/references.md:152; README Status).",
+   "base": "other",
+   "ios_version": "iOS 16",
+   "image_url": "https://www.oneplus.com/content/dam/oneplus/2025/product-station/13/images/images-design-img-1-1-6fa195.png",
+   "image_credit": "© OnePlus, official product image, used for device identification",
+   "image_license": "© OnePlus",
+   "image_source_url": "https://www.oneplus.com/global/13",
+   "updated": "2026-11-23T00:14:06.576Z"
   },
   {
    "slug": "oneplus-2",
@@ -5245,6 +5514,23 @@
    "updated": "2026-11-22T20:55:35.741Z"
   },
   {
+   "slug": "oneplus-ace-5",
+   "name": "OnePlus Ace 5",
+   "model": "PKG110",
+   "soc": "Snapdragon 8 Gen 3 (SM8650)",
+   "repo_kind": "fork",
+   "status": "in-progress",
+   "best_result": "UEFI handoff, XNU on CPU0, native UFS, Hello/Setup starts with full-panel display and aligned touch (2026-10-23); no GPU execution",
+   "notes": "Codename giulia. tycykp/UniXNU-OnePlus-Ace5 (archived; OneiOS docs/references.md:142 row 15: bare-metal SM8650 boards, Wi-Fi on giulia; README hardware table 2026-10-23).",
+   "base": "other",
+   "ios_version": "iOS 16",
+   "image_url": "https://www.oneplus.com/content/dam/oneplus/2024/cn/product/ace-5/images-v1/images-kv-phone-2-1-f2557b.png",
+   "image_credit": "© OnePlus, official product image, used for device identification",
+   "image_license": "© OnePlus",
+   "image_source_url": "https://www.oneplus.com/cn/ace-5",
+   "updated": "2026-11-23T00:13:58.835Z"
+  },
+  {
    "slug": "oneplus-nord",
    "name": "OnePlus Nord",
    "model": "avicii",
@@ -5277,6 +5563,40 @@
    "image_license": "© OnePlus",
    "image_source_url": "https://www.oneplus.com/global/open",
    "updated": "2026-11-22T20:55:35.958Z"
+  },
+  {
+   "slug": "oneplus-pad-pro",
+   "name": "OnePlus Pad Pro",
+   "model": "OPD2404",
+   "soc": "Snapdragon 8 Gen 3 (SM8650)",
+   "repo_kind": "fork",
+   "status": "in-progress",
+   "best_result": "iPadOS 27.0.1 to the home screen with Metal, sound, network and persistent Data as a DroidVM guest (crosvm on Gunyah), per OneiOS docs/references.md",
+   "notes": "Tablet, codename caihong. Droid-VM/UniXNU-droidvm (DroidVM guest; OneiOS docs/references.md:17-21, :127) and Axiang-dev/UniXNU-caihong (bare metal, archived 2026-10-29; docs/references.md:142).",
+   "base": "other",
+   "ios_version": "iPadOS 27.0.1",
+   "image_url": "https://www.oneplus.com/content/dam/oneplus/2024/cn/nav/oneplus-padpro.png",
+   "image_credit": "© OnePlus, official product image, used for device identification",
+   "image_license": "© OnePlus",
+   "image_source_url": "https://www.oneplus.com/cn",
+   "updated": "2026-11-23T00:13:56.270Z"
+  },
+  {
+   "slug": "oppo-find-x7-ultra",
+   "name": "OPPO Find X7 Ultra (satellite edition)",
+   "model": "PHY120",
+   "soc": "Snapdragon 8 Gen 3 (SM8650)",
+   "repo_kind": "fork",
+   "status": "in-progress",
+   "best_result": "UEFI bring-up: the Mu-Silicium firmware runs on the phone (1440x3168 panel, SEC/PrePi/MMU pass); stops at the inner FV's LZMA decode (SZ_ERROR_DATA)",
+   "notes": "peiyuesheng666/UniXNU-PHY120 (OneiOS docs/references.md:142 row 15; docs/PHY120-STATUS.md).",
+   "base": "other",
+   "ios_version": "",
+   "image_url": "https://www.oppo.com/content/dam/oppo/common/mkt/v2-2/find-x7-series-cn/listpage/find-x7-ultra-427_600-blue.png",
+   "image_credit": "© OPPO, official product image, used for device identification",
+   "image_license": "© OPPO",
+   "image_source_url": "https://www.oppo.com/cn/smartphones/series-find-x/find-x7-ultra/",
+   "updated": "2026-11-23T00:14:05.058Z"
   },
   {
    "slug": "pixel-1",
@@ -5405,14 +5725,14 @@
    "repo_kind": "fork",
    "status": "in-progress",
    "best_result": "reddit claim: iOS 16.7.16 (PixeliOS) with GPU (Panfrost, ~50 fps), Wi-Fi with internet, Bluetooth pairing, touch and buttons; no audio yet",
-   "notes": "bluejay. PixOS-Project (org link; docs pixos-project.github.io/pixelios-site) by u/Ok-Willingness-2358; dristotle/ios-bluejay is a separate Pixel 6a port. Source: https://www.reddit.com/r/hackios/comments/1xwz8fl/pixel_6a_wifi_and_gpu_working",
+   "notes": "bluejay. PixOS by u/Ok-Willingness-2358: PixOS-Project/pixelios-kernel and PixOS-Project/pixelios-userland (docs pixos-project.github.io/pixelios-site); dristotle/ios-bluejay is a separate Pixel 6a port. Source: https://www.reddit.com/r/hackios/comments/1xwz8fl/pixel_6a_wifi_and_gpu_working",
    "base": "other",
    "ios_version": "iOS 16.7.16",
    "image_url": "https://storage.googleapis.com/gweb-uniblog-publish-prod/images/Pixel_6a_6_AtY2wo3.width-1300.png",
    "image_credit": "© Google, official product image, used for device identification",
    "image_license": "© Google",
    "image_source_url": "https://blog.google/products-and-platforms/devices/pixel/pixel-6a-io-2022/",
-   "updated": "2026-11-22T20:55:36.824Z"
+   "updated": "2026-11-22T23:55:12.382Z"
   },
   {
    "slug": "pixel-7",
@@ -5517,6 +5837,23 @@
    "updated": "2026-11-22T20:55:37.465Z"
   },
   {
+   "slug": "poco-f5-pro",
+   "name": "POCO F5 Pro / Redmi K60",
+   "model": "mondrian",
+   "soc": "Snapdragon 8+ Gen 1 (SM8475)",
+   "repo_kind": "fork",
+   "status": "in-progress",
+   "best_result": "iOS 16 userland boots to the home screen (CPU rendering, touch, Settings); command-mode AMOLED at 60 fps",
+   "notes": "xNekom/ios-mondrian branch mondrian, a fork of dipa-studio/ios-sweet (OneiOS docs/references.md:153; README Status).",
+   "base": "other",
+   "ios_version": "iOS 16.7.16",
+   "image_url": "https://i02.appmifile.com/638_operator_sg/21/04/2023/96bd043ea8810ff590a07ef10ff3508f.png",
+   "image_credit": "© Xiaomi, official product image, used for device identification",
+   "image_license": "© Xiaomi",
+   "image_source_url": "https://www.po.co/global/product/poco-f5-pro/specs/",
+   "updated": "2026-11-23T00:14:06.835Z"
+  },
+  {
    "slug": "poco-f7",
    "name": "POCO F7",
    "model": "onyx",
@@ -5572,17 +5909,17 @@
    "name": "POCO X3 NFC",
    "model": "surya",
    "soc": "Snapdragon 732G (SM7150)",
-   "repo_kind": "none",
+   "repo_kind": "fork",
    "status": "in-progress",
    "best_result": "reddit claim: iOS (ios-sweet base) running (image only)",
-   "notes": "surya (Huaxing panel). No repo by u/jimmyxnu. Source: https://www.reddit.com/r/hackios/comments/1y24qxf/poco_x3_nfc",
+   "notes": "surya (Huaxing panel). Repo android-a5y7lte/ios-surya (branch surya: Adreno 618 bring-up), linked by u/jimmyxnu (OP) on 2026-11-22. Source: https://www.reddit.com/r/hackios/comments/1y24qxf/poco_x3_nfc",
    "base": "other",
    "ios_version": "",
    "image_url": "https://i01.appmifile.com/webfile/globalimg/products/pc/poco-x3-nfc/section01-phone1.png",
    "image_credit": "© Xiaomi, official product image, used for device identification",
    "image_license": "© Xiaomi",
    "image_source_url": "https://www.mi.com/uk/poco-x3-nfc/",
-   "updated": "2026-11-22T20:55:37.904Z"
+   "updated": "2026-11-22T23:49:36.908Z"
   },
   {
    "slug": "poco-x3-pro",
@@ -5617,6 +5954,23 @@
    "image_license": "© Xiaomi",
    "image_source_url": "https://www.mi.com/global/product/poco-x5-5g/",
    "updated": "2026-11-22T20:55:38.155Z"
+  },
+  {
+   "slug": "poco-x6",
+   "name": "POCO X6 5G",
+   "model": "garnet",
+   "soc": "Snapdragon 7s Gen 2 (SM7435)",
+   "repo_kind": "fork",
+   "status": "in-progress",
+   "best_result": "iOS 16.5 from RAM with Metal on the Adreno 710 (page swipes 62-68 fps), Wi-Fi, both speakers, LTE data (calls without sound), touch and buttons; Bluetooth pairs without audio (README, dev branch)",
+   "notes": "garnet. rafsanbasunia/ios-garnet (branch dev), built on HakiOS and the JosephMontfort garnet/sm7435 port; boots from RAM, nothing written to the phone. Sources: https://www.reddit.com/r/hackios/comments/1y3036f/ios_16_reference_repo, https://github.com/rafsanbasunia/ios-garnet/tree/dev",
+   "base": "other",
+   "ios_version": "iOS 16.5",
+   "image_url": "https://i02.appmifile.com/353_operatorx_operatorx_opx/09/01/2024/93fa26bc310c101aef06eed6f823190c.png",
+   "image_credit": "© Xiaomi, official product image, used for device identification",
+   "image_license": "© Xiaomi",
+   "image_source_url": "https://www.mi.com/global/product/poco-x6/",
+   "updated": "2026-11-22T23:49:36.687Z"
   },
   {
    "slug": "poco-x6-pro",
@@ -5674,17 +6028,17 @@
    "name": "realme 8i",
    "model": "RMX3151",
    "soc": "Helio G96 (MT6781)",
-   "repo_kind": "none",
+   "repo_kind": "fork",
    "status": "in-progress",
-   "best_result": "reddit claim: Open Mapple Release 1, iOS 16.7.16: Mali Metal GPU, Wi-Fi, BT audio, speaker/earpiece/mic, vibration, passcode, dual boot; cellular and camera WIP; iOS 18.7.10 WIP build boots",
-   "notes": "Open Mapple (github.com/open-mapple; bring-up scripts in open-mapple/mapple_device_setup_scripts). iOS 18.7 also booted (WIP, 2026-11-20). Source: https://www.reddit.com/r/hackios/comments/1xzmj80/release_introducing_open_mapple_a_stabilityfirst",
+   "best_result": "reddit claim: Open Mapple iOS 18.7.10 WIP build (2026-11-21): boot, touch, Metal GPU, thermals, battery, haptics, microphone, all CPU cores, full RAM, dual boot; Wi-Fi, Bluetooth, audio, camera and cellular WIP. Released: Open Mapple 1.0 (spaced-1.0, 2026-11-18), iOS 16.7.16 with Metal GPU, Wi-Fi, Bluetooth keyboards, speaker/earpiece/mic, vibration, torch, Files and SplitBoot dual boot",
+   "notes": "spaced (RMX3151). Open Mapple, by Pritish Joshi (u/Dr_tSinX98, DrtSinX98), github.com/open-mapple: open-mapple/manifest (repo manifest), xnu_device_realme_spaced (device repo), xnu_kernel_mediatek_common (xnu-8796.141.3 with the ios-sweet and ios-viva patch series) + xnu_kernel_mediatek_mt6781, mapple_gpu_mali (Metal on Panfrost, from viva-gpu), mapple_loader and mapple_splitboot (from HakiOS and ios-viva), mapple_releases. Release 1 = spaced-1.0 (2026-11-18): iOS 16.7.16 (20H392), single boot or SplitBoot dual boot. iOS 18.7 booted 2026-11-20 and iOS 18.7.10 WIP 2026-11-21; their source comes with Release 2. Mali Valhall only for now; Bifrost (e.g. Helio G81) support is at an early stage (porter, 2026-11-22). Sources: https://www.reddit.com/r/hackios/comments/1y1vycq/open_mapple_ios_18710_on_mediatek_getting_closer, https://www.reddit.com/r/hackios/comments/1y109oo/open_mapple_ios_187_booted_on_realme_8i_mediatek, https://www.reddit.com/r/hackios/comments/1xzmj80/release_introducing_open_mapple_a_stabilityfirst, https://github.com/open-mapple/mapple_releases/releases/tag/spaced-1.0, https://github.com/open-mapple/xnu_device_realme_spaced/blob/main/device.conf",
    "base": "other",
-   "ios_version": "iOS 16.7.16",
+   "ios_version": "iOS 18.7.10",
    "image_url": "https://static.realme.net/v2/realme-8i/images/spec/black-36cfc42604.png",
    "image_credit": "© realme, official product image, used for device identification",
    "image_license": "© realme",
    "image_source_url": "https://www.realme.com/in/realme-8i/specs",
-   "updated": "2026-11-22T20:55:38.625Z"
+   "updated": "2026-11-22T23:49:36.992Z"
   },
   {
    "slug": "realme-narzo-30-pro",
@@ -5719,6 +6073,23 @@
    "image_license": "© nubia (REDMAGIC)",
    "image_source_url": "https://my.redmagic.gg/pages/redmagic-8-pro",
    "updated": "2026-11-22T20:55:38.859Z"
+  },
+  {
+   "slug": "redmagic-9-pro",
+   "name": "nubia RedMagic 9 Pro",
+   "model": "NX769J",
+   "soc": "Snapdragon 8 Gen 3 (SM8650)",
+   "repo_kind": "fork",
+   "status": "unknown",
+   "best_result": "Every image builds (kernel, UEFI, payload, root, boot image); boot on hardware not attempted",
+   "notes": "Also 9 Pro+, 9S Pro, 9S Pro+ (NX769J). Asultop/UniXNU-NX769J (OneiOS docs/references.md:142 row 15; README Status).",
+   "base": "other",
+   "ios_version": "iOS 16.5 (20F66)",
+   "image_url": "https://global.redmagic.gg/cdn/shop/files/1024_500_2x_1.png?v=1702623026",
+   "image_credit": "© nubia (REDMAGIC), official product image, used for device identification",
+   "image_license": "© nubia (REDMAGIC)",
+   "image_source_url": "https://global.redmagic.gg/pages/redmagic-9-pro-specs",
+   "updated": "2026-11-23T00:13:59.703Z"
   },
   {
    "slug": "redmi-10c",
@@ -5787,6 +6158,40 @@
    "image_license": "© Xiaomi",
    "image_source_url": "https://www.mi.com/in/redmi-k20/",
    "updated": "2026-11-22T20:55:39.356Z"
+  },
+  {
+   "slug": "redmi-k20-pro",
+   "name": "Redmi K20 Pro",
+   "model": "raphael",
+   "soc": "Snapdragon 855 (SM8150)",
+   "repo_kind": "fork",
+   "status": "in-progress",
+   "best_result": "repo claim: iOS 16.5 (20F66) from RAM to the desktop with touch, buttons, Safari and GLES on the Adreno 640 (no Metal); Wi-Fi joins once (README test 2026-10-27)",
+   "notes": "raphael (also Mi 9T Pro). HeliumStudio-Dev/hackios-xnu-kernel (branch raphael-bringup, HakiOS) and HeliumStudio-Dev/ios-raphael (ios-sweet fork), both linked in https://www.reddit.com/r/hackios/comments/1xpemvy/anyone_made_ios_for_k20_pro_yet. Source: https://github.com/HeliumStudio-Dev/hackios-xnu-kernel/tree/raphael-bringup",
+   "base": "other",
+   "ios_version": "iOS 16.5 (20F66)",
+   "image_url": "https://i01.appmifile.com/webfile/globalimg/in/cms/46A03055-7D4B-291C-3223-B50EF0A2861C.jpg",
+   "image_credit": "© Xiaomi, official product image, used for device identification",
+   "image_license": "© Xiaomi",
+   "image_source_url": "https://www.mi.com/in/redmi-k20-pro/",
+   "updated": "2026-11-22T23:54:59.751Z"
+  },
+  {
+   "slug": "redmi-k80",
+   "name": "Redmi K80",
+   "model": "zorn",
+   "soc": "Snapdragon 8 Gen 3 (SM8650-AB)",
+   "repo_kind": "fork",
+   "status": "in-progress",
+   "best_result": "iOS 26.6.2 (23G90) active port: v572 sustained ordinary presentation at 2-TE for 552.84 s (README); Adreno 750 GPU, Metal, display and FT3683 touch in work",
+   "notes": "Codename zorn. kerrinz/UniXNU-zorn (OneiOS docs/references.md:142 row 15; README 'Current evidence').",
+   "base": "other",
+   "ios_version": "iOS 26.6.2 (23G90)",
+   "image_url": "https://cdn.cnbj1.fds.api.mi-img.com/product-images/redmi-k80_373232/images/23851.png",
+   "image_credit": "© Xiaomi, official product image, used for device identification",
+   "image_license": "© Xiaomi",
+   "image_source_url": "https://www.mi.com/prod/redmi-k80",
+   "updated": "2026-11-23T00:13:58.993Z"
   },
   {
    "slug": "redmi-note-10-pro",
@@ -5946,17 +6351,17 @@
    "name": "Redmi Note 9S",
    "model": "curtana",
    "soc": "Snapdragon 720G (SM7125)",
-   "repo_kind": "none",
+   "repo_kind": "fork",
    "status": "in-progress",
    "best_result": "reddit claim: HackiOS with GPU + Metal, sound, haptics, buttons, battery, sleep; touch only on the Huaxing panel; Wi-Fi, BT, cameras WIP",
-   "notes": "curtana (miatoll). No repo named in the thread; the porter links only the qdizax-w GitHub org (org link). Porter u/qdizax-w. Source: https://www.reddit.com/r/hackios/comments/1xie0kg/hackios_booted_on_redmi_note_9s_curtanamiatoll",
+   "notes": "curtana (miatoll). Porter u/qdizax-w links the qdizax-w GitHub account: qdizax-w/hakios-sm7125 (HakiOS device repo, iOS 16.5) and qdizax-w/UniXNU-miatoll (UniXNU, not booted yet). Source: https://www.reddit.com/r/hackios/comments/1xie0kg/hackios_booted_on_redmi_note_9s_curtanamiatoll",
    "base": "other",
-   "ios_version": "",
+   "ios_version": "iOS 16.5",
    "image_url": "https://i01.appmifile.com/webfile/globalimg/products/pc/redmi-note-9s/index_16.jpg",
    "image_credit": "© Xiaomi, official product image, used for device identification",
    "image_license": "© Xiaomi",
    "image_source_url": "https://www.mi.com/uk/redmi-note-9s/",
-   "updated": "2026-11-22T20:55:40.820Z"
+   "updated": "2026-11-22T23:55:39.573Z"
   },
   {
    "slug": "s10",
@@ -6059,6 +6464,23 @@
    "image_license": "© Samsung",
    "image_source_url": "https://www.samsung.com/uk/support/model/SM-G986BZADEUA/",
    "updated": "2026-11-22T20:55:41.786Z"
+  },
+  {
+   "slug": "s20-ultra",
+   "name": "Galaxy S20 Ultra 5G (Snapdragon)",
+   "model": "SM-G9880",
+   "soc": "Snapdragon 865 (SM8250)",
+   "repo_kind": "fork",
+   "status": "unknown",
+   "best_result": "iOS 16 (iPhone X userland) port of ios-sweet (GitHub description); README still the upstream text, no recorded boot",
+   "notes": "Codename z3q. chenzikang/z3q-port (OneiOS docs/references.md:156).",
+   "base": "other",
+   "ios_version": "iOS 16",
+   "image_url": "https://images.samsung.com/is/image/samsung/uk-galaxy-s20-ultra-sm-g988-5g-sm-g988bzkdeua-frontcosmicblack-214107293?$650_519_PNG$",
+   "image_credit": "© Samsung, official product image, used for device identification",
+   "image_license": "© Samsung",
+   "image_source_url": "https://www.samsung.com/uk/support/model/SM-G988BZKDEUA/",
+   "updated": "2026-11-23T00:14:07.286Z"
   },
   {
    "slug": "s21-5g",
@@ -6220,15 +6642,15 @@
    "soc": "Exynos 8890",
    "repo_kind": "fork",
    "status": "in-progress",
-   "best_result": "reddit claim: iOS 16.7.16 to home screen, GPU (GLES via Panfrost), Wi-Fi, speaker, front camera, Bluetooth scan, brightness, vibration motor; iOS 18.7.8 also boots to SpringBoard (no GPU)",
-   "notes": "herolte. wardevsa/ios-a5xelte branch herolte. Source: https://www.reddit.com/r/hackios/comments/1xwzenw/ios_16716_on_a_galaxy_s7_exynos_8890_front_camera",
+   "best_result": "reddit claim: iOS 16.7.16 to home screen, GPU (GLES via Panfrost), Wi-Fi, speaker, front camera, Bluetooth scan, brightness, vibration motor (branch herolte); iOS 26.6.2 (23G90) boots to the home screen with Wi-Fi, CPU drawing (branch herolte-ios26, 2026-11-22); iOS 18.7.8 also boots to SpringBoard (no GPU)",
+   "notes": "herolte. wardevsa/ios-a5xelte branches herolte (iOS 16.7.16), herolte-ios18 and herolte-ios26 (iOS 26.6.2 on xnu-12377.121.6; kernel base: the port of ry-diffusion/Bergamota; the ARMv8.0 Exynos 8890 runs it with PAC stripped, LSE/RCpc/FP16 rewritten in the shared cache plus a 2 MB routine island, the rest emulated by the kernel). Sources: https://www.reddit.com/r/hackios/comments/1xwzenw/ios_16716_on_a_galaxy_s7_exynos_8890_front_camera, https://www.reddit.com/r/hackios/comments/1y31zto/ios_2662_booting_on_a_samsung_galaxy_s7_exynos",
    "base": "other",
-   "ios_version": "iOS 16.7.16",
+   "ios_version": "iOS 26.6.2 (23G90)",
    "image_url": "https://images.samsung.com/is/image/samsung/de-galaxy-s7-g930f-sm-g930fzkadbt-black-Black-81587219?$650_519_PNG$",
    "image_credit": "© Samsung, official product image, used for device identification",
    "image_license": "© Samsung",
    "image_source_url": "https://www.samsung.com/de/support/model/SM-G930FZKADBT/",
-   "updated": "2026-11-22T20:55:43.865Z"
+   "updated": "2026-11-22T23:49:36.860Z"
   },
   {
    "slug": "s8",
@@ -6333,6 +6755,40 @@
    "updated": "2026-11-22T20:55:44.634Z"
   },
   {
+   "slug": "tab-s7-fe",
+   "name": "Galaxy Tab S7 FE Wi-Fi",
+   "model": "SM-T733",
+   "soc": "Snapdragon 778G (SM7325)",
+   "repo_kind": "fork",
+   "status": "in-progress",
+   "best_result": "Adreno 642L GPU backend: hardware startup, Turnip offscreen fill, compute and triangle render pass with zero faults (build 50c, 2026-10-25); system Metal composition and DPU scanout pending",
+   "notes": "Codename gts7fewifi. RigoLigoRLC/unixnu-adreno6xx branch unixnu-sm-t733 (OneiOS docs/references.md:158; README 'Build and current device status').",
+   "base": "other",
+   "ios_version": "",
+   "image_url": "https://images.samsung.com/is/image/samsung/p6pim/au/sm-t733nzkaxsa/gallery/au-galaxy-tab-s7-fe-wifi-t733-sm-t733nzkaxsa-530580678?$650_519_PNG$",
+   "image_credit": "© Samsung, official product image, used for device identification",
+   "image_license": "© Samsung",
+   "image_source_url": "https://www.samsung.com/au/support/model/SM-T733NZKAXSA/",
+   "updated": "2026-11-23T00:14:06.070Z"
+  },
+  {
+   "slug": "tab-s7-plus",
+   "name": "Galaxy Tab S7+",
+   "model": "SM-T970",
+   "soc": "Snapdragon 865+ (SM8250-AB)",
+   "repo_kind": "fork",
+   "status": "unknown",
+   "best_result": "Personal research port: iPadOS 18.7 kernel (GitHub description); no recorded result",
+   "notes": "kmu1757/UniXNU-t970 (named kmu1757/UniXNU-y2q in OneiOS docs/references.md:157: 'Tab S7+/S20+, SM8250, iPadOS 18.7'; renamed on GitHub; based on UniXNU-pong).",
+   "base": "other",
+   "ios_version": "iPadOS 18.7",
+   "image_url": "https://images.samsung.com/is/image/samsung/uk-galaxy-tab-s7-plus-t970-sm-t970nzkaeua-289499296?$650_519_PNG$",
+   "image_credit": "© Samsung, official product image, used for device identification",
+   "image_license": "© Samsung",
+   "image_source_url": "https://www.samsung.com/uk/support/model/SM-T970NZKAEUA/",
+   "updated": "2026-11-23T00:14:05.565Z"
+  },
+  {
    "slug": "tab-s8",
    "name": "Galaxy Tab S8",
    "model": "SM-X700",
@@ -6418,6 +6874,40 @@
    "updated": "2026-11-22T20:55:45.204Z"
   },
   {
+   "slug": "xiaomi-14",
+   "name": "Xiaomi 14",
+   "model": "23127PN0CC",
+   "soc": "Snapdragon 8 Gen 3 (SM8650)",
+   "repo_kind": "fork",
+   "status": "in-progress",
+   "best_result": "Bare-metal Adreno 750: GMU, real command submission, desktop on iOS 16; partial (frame drops, colour faults)",
+   "notes": "Codename houji. lonzzi/UniXNU-houji (OneiOS docs/references.md:141; README: lock screen, home screen and Settings on hardware, iPhone X d22ap userland 16.7.16 20H392).",
+   "base": "other",
+   "ios_version": "iOS 16.7.16 (20H392)",
+   "image_url": "https://i02.appmifile.com/976_operatorx_operatorx_opx/23/02/2024/c4866f7bdd20c6ed7acf6082417dd340.png",
+   "image_credit": "© Xiaomi, official product image, used for device identification",
+   "image_license": "© Xiaomi",
+   "image_source_url": "https://www.mi.com/global/product/xiaomi-14/",
+   "updated": "2026-11-23T00:13:58.664Z"
+  },
+  {
+   "slug": "xiaomi-14-pro",
+   "name": "Xiaomi 14 Pro",
+   "model": "23116PN5BC",
+   "soc": "Snapdragon 8 Gen 3 (SM8650)",
+   "repo_kind": "fork",
+   "status": "in-progress",
+   "best_result": "HakiOS layer (Fearless109/hakios-sm8650, device.conf): system boots to SpringBoard on 8 cores; touch, buttons, haptics and UFS writes work; display, GPU, audio and Wi-Fi partial. UniXNU-shennong stops in _arm_init on iOS 27",
+   "notes": "Codename shennong. YX2748198202-lab/UniXNU-shennong (UniXNU; iPhone17,1 iOS 27.0.1 24A446 target stops in _arm_init, OneiOS docs/references.md:140) and Fearless109/hakios-sm8650 (HakiOS, docs/references.md:142). ios_version left empty: the HakiOS layer does not state its iOS build.",
+   "base": "other",
+   "ios_version": "",
+   "image_url": "https://cdn.cnbj1.fds.api.mi-img.com/product-images/xiaomi14proy4y29r/index/28064.png",
+   "image_credit": "© Xiaomi, official product image, used for device identification",
+   "image_license": "© Xiaomi",
+   "image_source_url": "https://www.mi.com/xiaomi-14-pro",
+   "updated": "2026-11-23T00:13:58.295Z"
+  },
+  {
    "slug": "xiaomi-15",
    "name": "Xiaomi 15",
    "model": "dada",
@@ -6486,6 +6976,23 @@
    "updated": "2026-11-22T20:55:45.667Z"
   },
   {
+   "slug": "xiaomi-pad-6s-pro",
+   "name": "Xiaomi Pad 6S Pro 12.4",
+   "model": "sheng",
+   "soc": "Snapdragon 8 Gen 2 (SM8550)",
+   "repo_kind": "fork",
+   "status": "in-progress",
+   "best_result": "Native Metal GPU driver fully working: the render server composites the system UI through the Adreno 740 (UniXNU/UniXNU-sheng)",
+   "notes": "Tablet, codename sheng: UniXNU's own reference device (UniXNU/UniXNU-sheng). Sources: OneiOS docs/references.md:139, :165; iPadOS 27.0.1 (24A446) from UniXNU/QcaBluetooth README; the sheng README names OS profiles 17, 26 and 27 (27 maintained).",
+   "base": "other",
+   "ios_version": "iPadOS 27.0.1 (24A446)",
+   "image_url": "https://i02.appmifile.com/726_operatorx_operatorx_opx/18/11/2024/472ce7ec2c5869976e27c72ee78a52e0.png",
+   "image_credit": "© Xiaomi, official product image, used for device identification",
+   "image_license": "© Xiaomi",
+   "image_source_url": "https://www.mi.com/global/product/xiaomi-pad-6s-pro-124/",
+   "updated": "2026-11-23T00:13:56.825Z"
+  },
+  {
    "slug": "xperia-xz3",
    "name": "Xperia XZ3",
    "model": "akatsuki",
@@ -6518,6 +7025,23 @@
    "image_license": "© Samsung",
    "image_source_url": "https://www.samsung.com/uk/support/model/SM-F700FZKDBTU/",
    "updated": "2026-11-22T20:55:45.890Z"
+  },
+  {
+   "slug": "z-flip-4",
+   "name": "Galaxy Z Flip4",
+   "model": "SM-F721",
+   "soc": "Snapdragon 8+ Gen 1 (SM8475)",
+   "repo_kind": "fork",
+   "status": "unknown",
+   "best_result": "README still the upstream ios-sweet text, no recorded boot",
+   "notes": "Codename b4q. vizPilot/ios-b4q branch b4q, a fork of dipa-studio/ios-sweet (OneiOS docs/references.md:153, :155).",
+   "base": "other",
+   "ios_version": "iOS 16",
+   "image_url": "https://images.samsung.com/is/image/samsung/p6pim/uk/sm-f721bzageub/gallery/uk-galaxy-z-flip4-f721-sm-f721bzageub-534230133?$650_519_PNG$",
+   "image_credit": "© Samsung, official product image, used for device identification",
+   "image_license": "© Samsung",
+   "image_source_url": "https://www.samsung.com/uk/support/model/SM-F721BZAGEUB/",
+   "updated": "2026-11-23T00:14:07.154Z"
   },
   {
    "slug": "z-fold2",
@@ -6589,7 +7113,7 @@
   }
  ],
  "_note": "device_status rows not listed here default to 'unknown'. Anything the README does not say is 'unknown' - never invented. Never-goals (passcode/face-id/wallet/calls/sms) keep state 'unknown' with the reason in detail, per the schema's 4-state vocabulary.",
- "exported": "2026-11-22",
+ "exported": "2026-11-23",
  "forks": [
   {
    "repo": "akshaynexus/OneiOS",
@@ -6606,6 +7130,286 @@
    "updated": "2026-11-22T20:11:09.040Z"
   },
   {
+   "repo": "dipa-studio/ios-sweet",
+   "device_slug": "redmi-note-10-pro",
+   "kind": "upstream",
+   "branch": "",
+   "url": "https://github.com/dipa-studio/ios-sweet",
+   "best_result": "The original ios-sweet port (Redmi Note 10 Pro) many forks start from",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "reddit claim (r/hackios 2026-11-03); source: https://www.reddit.com/r/hackios/comments/1xmrsla/redmi_note_11_pro_4g",
+   "base_project": "ios-sweet",
+   "updated": "2026-11-23T00:00:53.219Z"
+  },
+  {
+   "repo": "Droid-VM/applebox",
+   "device_slug": null,
+   "kind": "upstream",
+   "branch": "main",
+   "url": "https://github.com/Droid-VM/applebox",
+   "best_result": "Apple's open-source command-line tools as one multicall binary for iOS; in OneiOS's userland overlay",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:119, scripts/setup/get-references.sh:54",
+   "base_project": "tooling",
+   "updated": "2026-11-23T00:00:51.734Z"
+  },
+  {
+   "repo": "Droid-VM/droidvm-meta-repo",
+   "device_slug": null,
+   "kind": "upstream",
+   "branch": "wip/hackintosh",
+   "url": "https://github.com/Droid-VM/droidvm-meta-repo",
+   "best_result": "DroidVM's meta repo (build flow, plans, measurements, guest Mesa patches); its PROGRESS.md records iPadOS 27 on an SM8650 / Adreno 750 phone with Metal, hardware decode and encode (2026-11-04) and MetalCheck 41/41 (2026-11-08)",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:17-21, :135, scripts/setup/get-references.sh:55",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:51.078Z"
+  },
+  {
+   "repo": "Droid-VM/ownervisor",
+   "device_slug": null,
+   "kind": "upstream",
+   "branch": "main",
+   "url": "https://github.com/Droid-VM/ownervisor",
+   "best_result": "The debug shell of an iOS guest: a small service manager for the owner's services outside launchd (ssh, serial shell); in OneiOS's userland overlay",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:119, docs/userland.md:75, userland/helpers/README.md:10",
+   "base_project": "tooling",
+   "updated": "2026-11-23T00:00:51.681Z"
+  },
+  {
+   "repo": "fahadalijaved/OneOS",
+   "device_slug": null,
+   "kind": "upstream",
+   "branch": "",
+   "url": "https://github.com/fahadalijaved/OneOS",
+   "best_result": "Another Android next to One UI on a rooted Galaxy, switched as a container on One UI's kernel and back without flashing; the hot-switch OneiOS's session is built on (not an iOS port)",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS README.md:110 (Credits: \"OneOS (fahadalijaved) and OneLineage (WeWaffles): the container hot-switch\")",
+   "base_project": "tooling",
+   "updated": "2026-11-23T00:00:50.828Z"
+  },
+  {
+   "repo": "oosexgang/hackios-xnu-userland",
+   "device_slug": null,
+   "kind": "upstream",
+   "branch": "",
+   "url": "https://github.com/oosexgang/hackios-xnu-userland",
+   "best_result": "HackiOS userland, open-sourced with the HackiOS kernel (2026-10-22)",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "reddit claim (r/hackios 2026-10-22); source: https://www.reddit.com/r/hackios/comments/1xccd6m/hackios_project_just_open_sourced_now Named next to hackios-xnu-kernel with the org link github.com/oosexgang.",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T00:00:53.305Z"
+  },
+  {
+   "repo": "oosexgang/hakios-xnu-kernel",
+   "device_slug": null,
+   "kind": "upstream",
+   "branch": "",
+   "url": "https://github.com/oosexgang/hakios-xnu-kernel",
+   "best_result": "HackiOS kernel (open-sourced 2026-10-22), the base of many ports",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "reddit claim (r/hackios 2026-10-22); source: https://www.reddit.com/r/hackios/comments/1xccd6m/hackios_project_just_open_sourced_now Linked as github.com/oosexgang + hackios-xnu-kernel; renamed on GitHub to hakios-xnu-kernel.",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T00:00:53.267Z"
+  },
+  {
+   "repo": "open-mapple/manifest",
+   "device_slug": "realme-8i",
+   "kind": "upstream",
+   "branch": "main",
+   "url": "https://github.com/open-mapple/manifest",
+   "best_result": "Open Mapple's repo manifest: Release 1 (spaced-1.0, iOS 16.7.16) for the realme 8i; the Qualcomm sweet and sunfish in the qcom group are build-only",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "The project root (repo init -u https://github.com/open-mapple/manifest -b main; spaced-1.0.xml pins Release 1). Groups: default (the realme 8i), gpu, splitboot, qcom (sweet, sunfish: build-only, not yet booted by anyone), private (the Mapple app and the assembler, not public). Source: README, gh api orgs/open-mapple/repos (2026-11-23)",
+   "base_project": "Open Mapple",
+   "updated": "2026-11-22T23:49:37.030Z"
+  },
+  {
+   "repo": "steelbrain/metal2vulkan",
+   "device_slug": null,
+   "kind": "upstream",
+   "branch": "",
+   "url": "https://github.com/steelbrain/metal2vulkan",
+   "best_result": "Metal-to-Vulkan shader and Metal API translation, credited for GPU acceleration by the OnePlus 10 Pro port (also used by Xiaomi 17 Pro Max and OnePlus Open ports)",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "reddit claim (r/hackios 2026-10-28); source: https://www.reddit.com/r/hackios/comments/1xhxiqm/misc_update_pausing_oneplus_10_pro_development Org link github.com/steelbrain + the name Metal2Vulkan in the credits.",
+   "base_project": "tooling",
+   "updated": "2026-11-23T00:00:53.465Z"
+  },
+  {
+   "repo": "UniXNU/AdrenoPM4",
+   "device_slug": null,
+   "kind": "upstream",
+   "branch": "main",
+   "url": "https://github.com/UniXNU/AdrenoPM4",
+   "best_result": "Adreno PM4 packet encoding kit, included by NativeAdreno's sources and the Metal plug-in build",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS scripts/setup/get-references.sh:21, :45, docs/gpu.md:703",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:51.541Z"
+  },
+  {
+   "repo": "UniXNU/ArmCpu",
+   "device_slug": null,
+   "kind": "upstream",
+   "branch": "main",
+   "url": "https://github.com/UniXNU/ArmCpu",
+   "best_result": "ARM64 CPU, GIC and timer driver; its requirements define xnuhost's machine (gic.c, sysreg.c, cpu.c)",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/booter.md:1786, docs/agents.md:146-148",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:51.384Z"
+  },
+  {
+   "repo": "UniXNU/ArmDTPlatform",
+   "device_slug": null,
+   "kind": "upstream",
+   "branch": "main",
+   "url": "https://github.com/UniXNU/ArmDTPlatform",
+   "best_result": "ARM device-tree platform expert; what its configure() demands is the tree xnuhost builds",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/booter.md:1786, docs/agents.md:146-148",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:51.422Z"
+  },
+  {
+   "repo": "UniXNU/ArmSmmu4K",
+   "device_slug": null,
+   "kind": "upstream",
+   "branch": "main",
+   "url": "https://github.com/UniXNU/ArmSmmu4K",
+   "best_result": "ARM SMMUv2 native 4 KiB table kit, included by NativeAdreno's sources",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS scripts/setup/get-references.sh:21, :46",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:51.629Z"
+  },
+  {
+   "repo": "UniXNU/DarwinBoot",
+   "device_slug": null,
+   "kind": "upstream",
+   "branch": "",
+   "url": "https://github.com/UniXNU/DarwinBoot",
+   "best_result": "DarwinBoot boot infrastructure credited by the OnePlus 10 Pro port",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "reddit claim (r/hackios 2026-10-28); source: https://www.reddit.com/r/hackios/comments/1xhxiqm/misc_update_pausing_oneplus_10_pro_development",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:53.427Z"
+  },
+  {
+   "repo": "UniXNU/QcaBluetooth",
+   "device_slug": null,
+   "kind": "upstream",
+   "branch": "main",
+   "url": "https://github.com/UniXNU/QcaBluetooth",
+   "best_result": "Qualcomm WCN7850 Bluetooth driver for XNU; its Skywalk UART pipe transport is adapted into OneiOS drivers/bluetooth/oneios_bt_sk.c",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:106, docs/hardware.md:1045",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:51.347Z"
+  },
+  {
+   "repo": "UniXNU/RamBlock",
+   "device_slug": null,
+   "kind": "upstream",
+   "branch": "main",
+   "url": "https://github.com/UniXNU/RamBlock",
+   "best_result": "RAM block storage and persistent overlay; xnuhost's blk.c takes its role (seed + persistent store)",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/booter.md:1788",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:51.463Z"
+  },
+  {
+   "repo": "UniXNU/ShengHidInput",
+   "device_slug": null,
+   "kind": "upstream",
+   "branch": "main",
+   "url": "https://github.com/UniXNU/ShengHidInput",
+   "best_result": "HID digitizer, buttons and keyboard; works on iOS 27 with sheng-touch-split; OneiOS stages it for the phone (kernel/patches/oneios-hosted/hid)",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:84, :133, scripts/setup/get-references.sh:51",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:51.273Z"
+  },
+  {
+   "repo": "UniXNU/UniXNU",
+   "device_slug": null,
+   "kind": "upstream",
+   "branch": "",
+   "url": "https://github.com/UniXNU/UniXNU",
+   "best_result": "UniXNU, the XNU-on-Android base many ports credit",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "reddit claim (r/hackios 2026-10-28); source: https://www.reddit.com/r/hackios/comments/1xhxiqm/misc_update_pausing_oneplus_10_pro_development",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:53.362Z"
+  },
+  {
+   "repo": "UniXNU/VirtioMmioBlock",
+   "device_slug": null,
+   "kind": "upstream",
+   "branch": "main",
+   "url": "https://github.com/UniXNU/VirtioMmioBlock",
+   "best_result": "Virtio block driver for XNU, used against xnuhost's virtio_blk",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/booter.md:1787, docs/references.md:114",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:51.501Z"
+  },
+  {
+   "repo": "UniXNU/XnuPrelink",
+   "device_slug": null,
+   "kind": "upstream",
+   "branch": "main",
+   "url": "https://github.com/UniXNU/XnuPrelink",
+   "best_result": "Kernel prelink emitter: kernel/prelink/build.sh's matcher and fileset emitter; builds the phone's kernel.kc (iPhone18,2 24A446 imports bound)",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:138, kernel/prelink/README.md:233, scripts/setup/get-references.sh:37-40, :58",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:51.312Z"
+  },
+  {
    "repo": "akshaynexus/iOSPlus10",
    "device_slug": "oneplus-10-pro",
    "kind": "standalone",
@@ -6618,6 +7422,412 @@
    "notes": "reddit claim (r/hackios 2026-10-24); source: https://www.reddit.com/r/hackios/comments/1xecyyz/ios_16716_running_on_oneplus_10_pro_india_variant",
    "base_project": "iOSPlus10",
    "updated": "2026-11-22T20:11:09.113Z"
+  },
+  {
+   "repo": "Asultop/UniXNU-NX769J",
+   "device_slug": "redmagic-9-pro",
+   "kind": "standalone",
+   "branch": "main",
+   "url": "https://github.com/Asultop/UniXNU-NX769J",
+   "best_result": "Every image builds (XNU kernel, UEFI firmware volume, payload, userdata root, boot image) for iOS 16.5 (20F66); boot on hardware not attempted",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:142 (row 15); README Status",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:52.015Z"
+  },
+  {
+   "repo": "Axiang-dev/UniXNU-caihong",
+   "device_slug": "oneplus-pad-pro",
+   "kind": "standalone",
+   "branch": "main",
+   "url": "https://github.com/Axiang-dev/UniXNU-caihong",
+   "best_result": "Real OS root mounts; the kernel reaches user space and starts /sbin/launchd, then stops at the dyld shared cache (vm_shared_region_start_address() failed); archived 2026-10-29",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:142 (row 15); README (archived 2026-10-29)",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:52.116Z"
+  },
+  {
+   "repo": "chenzikang/z3q-port",
+   "device_slug": "s20-ultra",
+   "kind": "standalone",
+   "branch": "main",
+   "url": "https://github.com/chenzikang/z3q-port",
+   "best_result": "iOS 16 (iPhone X userland) port of ios-sweet to the Galaxy S20 Ultra Snapdragon (GitHub description); README still the upstream text, no recorded boot",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:156. Not a GitHub fork.",
+   "base_project": "ios-sweet",
+   "updated": "2026-11-23T00:00:53.074Z"
+  },
+  {
+   "repo": "Chromitsune/Portsmith-iOS",
+   "device_slug": null,
+   "kind": "standalone",
+   "branch": "",
+   "url": "https://github.com/Chromitsune/Portsmith-iOS",
+   "best_result": "Collection of HackiOS ports as submodules plus porting tools",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "reddit claim (r/hackios 2026-11-06); source: https://www.reddit.com/r/hackios/comments/1xpcawt/the_github_repo_with_a_bunch_of_repos_combined",
+   "base_project": "custom",
+   "updated": "2026-11-23T00:00:53.721Z"
+  },
+  {
+   "repo": "Droid-VM/UniXNU-droidvm",
+   "device_slug": "oneplus-pad-pro",
+   "kind": "standalone",
+   "branch": "wip/hackintosh",
+   "url": "https://github.com/Droid-VM/UniXNU-droidvm",
+   "best_result": "iPadOS 27.0.1 to the home screen with Metal, sound, network and persistent Data as a DroidVM guest (crosvm on Gunyah) on a OnePlus Pad Pro (OPD2404, SM8650), per OneiOS docs/references.md (survey of f9121cd, 2026-11-10)",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:17-21, :127, kernel/pins.sh:26, docs/booter.md:1785. The repo's own README state table (default branch wip/hackintosh) says CPU-rendered on SM8650 and boots on SM8650 and SM8850 hosts; its GitHub description says iPadOS 17; the OneiOS survey is the source of the best result.",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:51.003Z"
+  },
+  {
+   "repo": "Fearless109/hakios-sm8650",
+   "device_slug": "xiaomi-14-pro",
+   "kind": "standalone",
+   "branch": "main",
+   "url": "https://github.com/Fearless109/hakios-sm8650",
+   "best_result": "HakiOS device layer for the Xiaomi 14 Pro (the SM8650 facts in soc/); its device.conf: system boots to SpringBoard on 8 cores, touch, buttons, haptics and UFS writes work, display, GPU, audio and Wi-Fi partial",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:142, scripts/setup/get-references.sh:63, :71; device.conf",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T00:00:52.815Z"
+  },
+  {
+   "repo": "kerrinz/UniXNU-zorn",
+   "device_slug": "redmi-k80",
+   "kind": "standalone",
+   "branch": "main",
+   "url": "https://github.com/kerrinz/UniXNU-zorn",
+   "best_result": "iOS 26.6.2 (23G90) active port: v572 sustained ordinary presentation at 2-TE for 552.84 s; Adreno 750 GPU, Metal, display and FT3683 touch in work",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:142 (row 15); README 'Current evidence'",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:51.965Z"
+  },
+  {
+   "repo": "kmu1757/UniXNU-t970",
+   "device_slug": "tab-s7-plus",
+   "kind": "standalone",
+   "branch": "main",
+   "url": "https://github.com/kmu1757/UniXNU-t970",
+   "best_result": "Personal research port: iPadOS 18.7 kernel on the Galaxy Tab S7+ (SM-T970, SM8250); no recorded result",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:157 names it kmu1757/UniXNU-y2q (\"Tab S7+/S20+, SM8250, iPadOS 18.7\"); GitHub redirects to kmu1757/UniXNU-t970. README is UniXNU-pong's text.",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:52.270Z"
+  },
+  {
+   "repo": "lonzzi/UniXNU-houji",
+   "device_slug": "xiaomi-14",
+   "kind": "standalone",
+   "branch": "main",
+   "url": "https://github.com/lonzzi/UniXNU-houji",
+   "best_result": "Bare-metal Adreno 750: GMU, real command submission, desktop on iOS 16 (16.7.16 20H392); partial (frame drops, colour faults)",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:141, scripts/setup/get-references.sh:62, :70",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:51.839Z"
+  },
+  {
+   "repo": "loolooc/UniXNU-meizu21",
+   "device_slug": "meizu-21",
+   "kind": "standalone",
+   "branch": "master",
+   "url": "https://github.com/loolooc/UniXNU-meizu21",
+   "best_result": "UEFI firmware, kernel (iPadOS 17.7.11 21H461 baseline) and package built; no device boot recorded",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:142 (row 15), :200 (no licence); README 当前状态",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:52.066Z"
+  },
+  {
+   "repo": "none24smu/UniXNU-zeta",
+   "device_slug": "surface-duo-2",
+   "kind": "standalone",
+   "branch": "main",
+   "url": "https://github.com/none24smu/UniXNU-zeta",
+   "best_result": "iOS 26 on the Surface Duo 2 (SM8350, no PAC): shared-cache PAC rewrite, lite job list, boot watchdog policy; target iPhone18,2 identity on iOS 26.5.2 (23F84)",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: iOSPlus10 docs/external-repos.md:37, CREDITS.md:44, README.md:79; OneiOS docs/references.md:162-163 (the non-PAC shared-cache rewrite the owner ruled out)",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:52.423Z"
+  },
+  {
+   "repo": "open-mapple/mapple_build",
+   "device_slug": "realme-8i",
+   "kind": "standalone",
+   "branch": "main",
+   "url": "https://github.com/open-mapple/mapple_build",
+   "best_result": "Build system (envsetup, lunch, mka, IPSW download, images and zips); being written",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "For now viva's ADT, boot image, root image and USB link tools and HakiOS's IPSW member fetcher. Source: README, NOTICE",
+   "base_project": "Open Mapple",
+   "updated": "2026-11-22T23:49:37.409Z"
+  },
+  {
+   "repo": "open-mapple/mapple_device_setup_scripts",
+   "device_slug": "realme-8i",
+   "kind": "standalone",
+   "branch": "main",
+   "url": "https://github.com/open-mapple/mapple_device_setup_scripts",
+   "best_result": "MediaTek bring-up generator: a device repo skeleton, a match report against Open Mapple's drivers and a porting brief from a phone's Android source trees; checked against the realme 8i (proof/spaced.sh)",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "MediaTek only (stops on Qualcomm trees); proof/merlinx.sh only tests the Redmi Note 9 (MT6768) trees, no port. Made public by the porter on 2026-11-19 (https://www.reddit.com/r/hackios/comments/1xzmj80/release_introducing_open_mapple_a_stabilityfirst). Source: README",
+   "base_project": "Open Mapple",
+   "updated": "2026-11-22T23:49:37.517Z"
+  },
+  {
+   "repo": "open-mapple/mapple_gpu_adreno",
+   "device_slug": null,
+   "kind": "standalone",
+   "branch": "main",
+   "url": "https://github.com/open-mapple/mapple_gpu_adreno",
+   "best_result": "Adreno backend of the Metal driver (Mesa freedreno over the kernel's msm-style client); tested against a mock, not on a phone",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "An overlay on mapple_gpu_mali; temporary until one mapple_gpu. Source: README",
+   "base_project": "Open Mapple",
+   "updated": "2026-11-22T23:49:37.695Z"
+  },
+  {
+   "repo": "open-mapple/mapple_gpu_mali",
+   "device_slug": "realme-8i",
+   "kind": "standalone",
+   "branch": "main",
+   "url": "https://github.com/open-mapple/mapple_gpu_mali",
+   "best_result": "Metal driver for Mali (Valhall) GPUs on Mesa Panfrost and the Valhall compiler; draws the realme 8i's UI in Release 1",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "GPL-3.0-or-later with viva-gpu's attribution term. Source: README, NOTICE",
+   "base_project": "Open Mapple",
+   "updated": "2026-11-22T23:49:37.256Z"
+  },
+  {
+   "repo": "open-mapple/mapple_loader",
+   "device_slug": "realme-8i",
+   "kind": "standalone",
+   "branch": "main",
+   "url": "https://github.com/open-mapple/mapple_loader",
+   "best_result": "Boot loaders: viva's shim (single boot), mtkloader (Android or XNU from one boot image), the Qualcomm shim",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Source: README, NOTICE",
+   "base_project": "Open Mapple",
+   "updated": "2026-11-22T23:49:37.307Z"
+  },
+  {
+   "repo": "open-mapple/mapple_releases",
+   "device_slug": "realme-8i",
+   "kind": "standalone",
+   "branch": "spaced",
+   "url": "https://github.com/open-mapple/mapple_releases",
+   "best_result": "Open Mapple 1.0 (spaced-1.0, 2026-11-18): iOS 16.7.16 (20H392) for the realme 8i, single boot or SplitBoot dual boot, assembled on the user's computer by mapple-assemble",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "One branch per device (spaced: the realme 8i); signed MANIFEST. The only release so far. Source: https://github.com/open-mapple/mapple_releases/releases/tag/spaced-1.0",
+   "base_project": "Open Mapple",
+   "updated": "2026-11-22T23:49:37.462Z"
+  },
+  {
+   "repo": "open-mapple/mapple_splitboot",
+   "device_slug": "realme-8i",
+   "kind": "standalone",
+   "branch": "main",
+   "url": "https://github.com/open-mapple/mapple_splitboot",
+   "best_result": "SplitBoot: Android and iOS on one phone (a darwin/xnusys partition carved from userdata, mtkloader chained in front of Android's kernel, a 15 s boot menu)",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "GPL-3.0-only; optional manifest group splitboot. Source: README, release notes of spaced-1.0",
+   "base_project": "Open Mapple",
+   "updated": "2026-11-22T23:49:37.360Z"
+  },
+  {
+   "repo": "open-mapple/xnu_device_google_sunfish",
+   "device_slug": null,
+   "kind": "standalone",
+   "branch": "main",
+   "url": "https://github.com/open-mapple/xnu_device_google_sunfish",
+   "best_result": "Pixel 4a (sunfish) device repo: build-only, the kernel has been built for it but never run",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Nobody on the project owns the phone. Source: README",
+   "base_project": "Open Mapple",
+   "updated": "2026-11-22T23:49:37.652Z"
+  },
+  {
+   "repo": "open-mapple/xnu_device_realme_spaced",
+   "device_slug": "realme-8i",
+   "kind": "standalone",
+   "branch": "main",
+   "url": "https://github.com/open-mapple/xnu_device_realme_spaced",
+   "best_result": "realme 8i device repo; device.conf (2026-11-20): Wi-Fi, buttons, haptics, Files, video, torch work; touch, Bluetooth, audio mostly; display, GPU, storage, battery, thermal partial; CPU scaling, sensors, camera, cellular missing",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Configuration, firmware list and tools of the realme 8i (spaced: MT6781, Mali-G57 MC2, 1080x2412); lunch mapple_spaced. Source: README, https://github.com/open-mapple/xnu_device_realme_spaced/blob/main/device.conf",
+   "base_project": "Open Mapple",
+   "updated": "2026-11-22T23:49:37.100Z"
+  },
+  {
+   "repo": "open-mapple/xnu_device_xiaomi_sweet",
+   "device_slug": null,
+   "kind": "standalone",
+   "branch": "main",
+   "url": "https://github.com/open-mapple/xnu_device_xiaomi_sweet",
+   "best_result": "Redmi Note 10 Pro (sweet) device repo: build-only, the kernel has been built for it but never run",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Nobody on the project owns the phone. Source: README",
+   "base_project": "Open Mapple",
+   "updated": "2026-11-22T23:49:37.609Z"
+  },
+  {
+   "repo": "open-mapple/xnu_kernel_mediatek_common",
+   "device_slug": "realme-8i",
+   "kind": "standalone",
+   "branch": "main",
+   "url": "https://github.com/open-mapple/xnu_kernel_mediatek_common",
+   "best_result": "XNU (xnu-8796.141.3) common to Open Mapple's MediaTek phones, with ios-sweet's and ios-viva's patch series; the kernel side of MappleGPU",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Built by mka kernel (macOS with Xcode); the SoC layer comes from kernel/mediatek/<soc>. Source: README, NOTICE",
+   "base_project": "Open Mapple",
+   "updated": "2026-11-22T23:49:37.159Z"
+  },
+  {
+   "repo": "open-mapple/xnu_kernel_mediatek_mt6781",
+   "device_slug": "realme-8i",
+   "kind": "standalone",
+   "branch": "main",
+   "url": "https://github.com/open-mapple/xnu_kernel_mediatek_mt6781",
+   "best_result": "The MT6781 (Helio G96) layer of the kernel: CPU DVFS and thermal, the GPU probe, MDP, scaler and JPEG",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Laid over kernel/mediatek/common when building. Source: README, NOTICE",
+   "base_project": "Open Mapple",
+   "updated": "2026-11-22T23:49:37.208Z"
+  },
+  {
+   "repo": "open-mapple/xnu_kernel_qcom_common",
+   "device_slug": null,
+   "kind": "standalone",
+   "branch": "main",
+   "url": "https://github.com/open-mapple/xnu_kernel_qcom_common",
+   "best_result": "XNU (xnu-8796.141.3) for Open Mapple's Qualcomm phones (Redmi Note 10 Pro sweet, Pixel 4a sunfish): built, never run by the project",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Manifest group qcom: \"build-only, not yet booted by anyone\". Source: manifest README, NOTICE, xnu_device_xiaomi_sweet README",
+   "base_project": "Open Mapple",
+   "updated": "2026-11-22T23:49:37.567Z"
+  },
+  {
+   "repo": "peiyuesheng666/UniXNU-PHY120",
+   "device_slug": "oppo-find-x7-ultra",
+   "kind": "standalone",
+   "branch": "main",
+   "url": "https://github.com/peiyuesheng666/UniXNU-PHY120",
+   "best_result": "UEFI bring-up: the Mu-Silicium firmware runs on the phone (1440x3168 panel, SEC/PrePi/MMU pass); stops at the inner FV's LZMA decode (SZ_ERROR_DATA)",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:142 (row 15), :200 (no licence); docs/PHY120-STATUS.md",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:52.221Z"
+  },
+  {
+   "repo": "SangLuoCN/UniXNU-Nubia-Z60U",
+   "device_slug": "nubia-z60-ultra",
+   "kind": "standalone",
+   "branch": "main",
+   "url": "https://github.com/SangLuoCN/UniXNU-Nubia-Z60U",
+   "best_result": "NX721J kernel bring-up baseline (board.toml 'kernel probe', iPadOS 17.7.11 21H461 IPSW); no result stated",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:142 (row 15). Its README is UniXNU-sheng's text; board.toml names the nubia Z60 Ultra NX721J.",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:52.164Z"
+  },
+  {
+   "repo": "tomaswarner/ios-dm3q",
+   "device_slug": "s23-ultra",
+   "kind": "standalone",
+   "branch": "main",
+   "url": "https://github.com/tomaswarner/ios-dm3q",
+   "best_result": "README still the upstream ios-sweet text, no recorded boot",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:155. Not a GitHub fork; GitHub description: ios-sweet port to the Galaxy S23 Ultra (SM-S918B, SM8550 dm3q).",
+   "base_project": "ios-sweet",
+   "updated": "2026-11-23T00:00:53.024Z"
+  },
+  {
+   "repo": "tycykp/UniXNU-OnePlus-Ace5",
+   "device_slug": "oneplus-ace-5",
+   "kind": "standalone",
+   "branch": "main",
+   "url": "https://github.com/tycykp/UniXNU-OnePlus-Ace5",
+   "best_result": "UEFI handoff, XNU on CPU0, native UFS, Hello/Setup starts with full-panel display and aligned touch (2026-10-23); no GPU execution or Metal",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:142 (row 15: bare-metal SM8650 boards, Wi-Fi on giulia, iOS 16 / iPadOS 17 desktop at best, CPU-rendered); README hardware table. Archived on GitHub.",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:51.891Z"
+  },
+  {
+   "repo": "UniXNU/UniXNU-sheng",
+   "device_slug": "xiaomi-pad-6s-pro",
+   "kind": "standalone",
+   "branch": "main",
+   "url": "https://github.com/UniXNU/UniXNU-sheng",
+   "best_result": "Native Metal GPU driver fully working on the Xiaomi Pad 6S Pro: the render server composites the system UI through the Adreno 740 (OS profiles 17, 26 and 27; 27 maintained)",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:105, :139 (\"Metal fully working on sheng\"), :165, scripts/setup/get-references.sh:72; the repo README",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:51.117Z"
   },
   {
    "repo": "xaxaapple/s25ver",
@@ -6634,10 +7844,24 @@
    "updated": "2026-11-22T19:52:45.004Z"
   },
   {
+   "repo": "YX2748198202-lab/UniXNU-shennong",
+   "device_slug": "xiaomi-14-pro",
+   "kind": "standalone",
+   "branch": "main",
+   "url": "https://github.com/YX2748198202-lab/UniXNU-shennong",
+   "best_result": "Stops in _arm_init on iOS 27 (iPhone17,1 iOS 27.0.1 24A446, the only other public iPhone iOS 27.0.1 profile); the earlier iPadOS 17.7.11 donor reached vfs_mountroot",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:118, :140, scripts/setup/get-references.sh:61, :69; README 当前状态 (2026-11-08)",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:51.777Z"
+  },
+  {
    "repo": "AdyaGMD/ios-spes",
    "device_slug": "redmi-note-11",
    "kind": "fork",
-   "branch": "",
+   "branch": "spes",
    "url": "https://github.com/AdyaGMD/ios-spes",
    "best_result": "iOS 16 with GPU, Safari, Wi-Fi, buttons",
    "ported": "",
@@ -6645,7 +7869,91 @@
    "verified": "fork-claim",
    "notes": "reddit claim (r/hackios 2026-10-25); source: https://www.reddit.com/r/hackios/comments/1xf7wk3/redmi_note_11_spes_gpu_safari_wifi_buttons_working",
    "base_project": "ios-sweet",
-   "updated": "2026-11-22T20:29:06.529Z"
+   "updated": "2026-11-23T00:00:53.799Z"
+  },
+  {
+   "repo": "akshaynexus/DarwinBoot",
+   "device_slug": null,
+   "kind": "fork",
+   "branch": "main",
+   "url": "https://github.com/akshaynexus/DarwinBoot",
+   "best_result": "iOSPlus10's DarwinBoot fork (main, with the boot-refused-on-screen debug), the UEFI driver that loads XNU",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: iOSPlus10 docs/external-repos.md:24, CREDITS.md:17",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:52.550Z"
+  },
+  {
+   "repo": "akshaynexus/ios-sweet",
+   "device_slug": null,
+   "kind": "fork",
+   "branch": "main",
+   "url": "https://github.com/akshaynexus/ios-sweet",
+   "best_result": "iOSPlus10's reference fork of the original sweet port (shim, mkadt, root tools), at the same commit as dipa-studio/ios-sweet (45263be)",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: iOSPlus10 README.md:75, docs/external-repos.md:33, scripts/setup/get-references.sh:15",
+   "base_project": "ios-sweet",
+   "updated": "2026-11-23T00:00:52.772Z"
+  },
+  {
+   "repo": "akshaynexus/Mu-Silicum-negroni",
+   "device_slug": null,
+   "kind": "fork",
+   "branch": "main",
+   "url": "https://github.com/akshaynexus/Mu-Silicum-negroni",
+   "best_result": "iOSPlus10's UEFI submodule: the Mu-Silicium tree with negroniPkg built into SILICIUM_UEFI.fd (Kernel RAM at 0x841000000 committed in the fork)",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: iOSPlus10 .gitmodules:7, docs/external-repos.md:23, CREDITS.md:18",
+   "base_project": "tooling",
+   "updated": "2026-11-23T00:02:32.874Z"
+  },
+  {
+   "repo": "akshaynexus/OneOS",
+   "device_slug": null,
+   "kind": "fork",
+   "branch": "oneios",
+   "url": "https://github.com/akshaynexus/OneOS",
+   "best_result": "OneiOS's switcher app: the OneOS fork's \"iOS 27 (OneiOS)\" card downloads the runtime, imports and verifies the image set and runs the session scripts (arm the way back, stop zygote, start xnuhost); an Android-to-Android switcher otherwise, not an iOS port",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/architecture.md:46, .gitmodules:3 (app submodule, branch oneios), README.md:110 (credits OneOS)",
+   "base_project": "tooling",
+   "updated": "2026-11-23T00:00:50.785Z"
+  },
+  {
+   "repo": "akshaynexus/slop",
+   "device_slug": null,
+   "kind": "fork",
+   "branch": "main",
+   "url": "https://github.com/akshaynexus/slop",
+   "best_result": "iOSPlus10's slop submodule: the negroni kernel patches, shim and root tools (required by the build)",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: iOSPlus10 .gitmodules:3, docs/external-repos.md:22, CREDITS.md:15",
+   "base_project": "ios-sweet",
+   "updated": "2026-11-23T00:02:32.778Z"
+  },
+  {
+   "repo": "akshaynexus/UniXNU",
+   "device_slug": null,
+   "kind": "fork",
+   "branch": "iosplus10",
+   "url": "https://github.com/akshaynexus/UniXNU",
+   "best_result": "iOSPlus10's UniXNU submodule: UniXNUPkg boot manager and the DarwinBoot submodule linked into the Mu build; branch iosplus10 = upstream main minus 30 commits + its DarwinBoot pointer",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: iOSPlus10 .gitmodules:11, docs/external-repos.md:24, CREDITS.md:16",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:02:32.827Z"
   },
   {
    "repo": "alpersamur3/asoft-ios-android",
@@ -6657,9 +7965,23 @@
    "ported": "",
    "fork_only": "",
    "verified": "fork-claim",
-   "notes": "reddit claim (r/hackios 2026-11-19); source: https://www.reddit.com/r/hackios/comments/1y0huvn/booted_ios_27_running_natively_on_s25_ultra_real",
+   "notes": "reddit claim (r/hackios 2026-11-19); source: https://www.reddit.com/r/hackios/comments/1y0huvn/booted_ios_27_running_natively_on_s25_ultra_real. Release 0.1.7 (2026-11-22, https://www.reddit.com/r/hackios/comments/1y31tor/asoftware_ios_017_for_android_older_snapdragons): Adreno 600 phones on older kernels (855, 888) get past the iOS 26 second boot (an 11T Pro finished iOS 26 setup with the test build); newer Malis no longer die with \"unsupported hostmemory\" (a Dimensity 9500 and a Pixel 8 Pro reached data migration); iOS 16's RAM is a setting (2 GB by default under 10 GB); native iOS 27 (rooted/unrooted) announced as coming soon",
    "base_project": "emulator",
-   "updated": "2026-11-22T18:19:56.436Z"
+   "updated": "2026-11-22T23:49:39.636Z"
+  },
+  {
+   "repo": "android-a5y7lte/ios-surya",
+   "device_slug": "poco-x3-nfc",
+   "kind": "fork",
+   "branch": "surya",
+   "url": "https://github.com/android-a5y7lte/ios-surya",
+   "best_result": "branch surya, 218 commits on ios-sweet: Adreno 618 GPU bring-up patches (G8-G10, 2026-11-22); the README is still ios-sweet's",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "reddit claim (r/hackios 2026-11-22): linked by u/jimmyxnu (OP); source: https://www.reddit.com/r/hackios/comments/1y24qxf/poco_x3_nfc",
+   "base_project": "ios-sweet",
+   "updated": "2026-11-22T23:49:37.738Z"
   },
   {
    "repo": "andyleenz/pixel3-ios",
@@ -6760,6 +8082,20 @@
    "updated": "2026-11-22T18:19:59.764Z"
   },
   {
+   "repo": "blake-lucas/LightTouch",
+   "device_slug": null,
+   "kind": "fork",
+   "branch": "main",
+   "url": "https://github.com/blake-lucas/LightTouch",
+   "best_result": "Android/desktop app: classic iPhone OS 1 to iOS 7 in a QEMU-based emulator (iPod touch 2G-4G, iPhone 3GS/4 tested); Android is the main test platform",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "reddit (r/hackios 2026-11-01, 2026-11-06, 2026-11-15 comments); source: https://www.reddit.com/r/hackios/comments/1xagnwo",
+   "base_project": "emulator",
+   "updated": "2026-11-22T23:55:07.400Z"
+  },
+  {
    "repo": "cappedcat1710/ios-d2s",
    "device_slug": "note10-plus",
    "kind": "fork",
@@ -6800,20 +8136,6 @@
    "notes": "reddit claim (r/hackios 2026-11-07); source: https://www.reddit.com/r/hackios/comments/1xq4elh/lg_v60_thinq_5g_xnu_kernel_and_ios_16716",
    "base_project": "ios-sweet",
    "updated": "2026-11-22T18:20:00.570Z"
-  },
-  {
-   "repo": "Chromitsune/Portsmith-iOS",
-   "device_slug": null,
-   "kind": "fork",
-   "branch": "",
-   "url": "https://github.com/Chromitsune/Portsmith-iOS",
-   "best_result": "Collection of HackiOS ports as submodules plus porting tools",
-   "ported": "",
-   "fork_only": "",
-   "verified": "fork-claim",
-   "notes": "reddit claim (r/hackios 2026-11-06); source: https://www.reddit.com/r/hackios/comments/1xpcawt/the_github_repo_with_a_bunch_of_repos_combined",
-   "base_project": "custom",
-   "updated": "2026-11-22T18:20:01.078Z"
   },
   {
    "repo": "console-ramoops/ios-santoni",
@@ -6998,18 +8320,18 @@
    "updated": "2026-11-22T18:19:56.333Z"
   },
   {
-   "repo": "dipa-studio/ios-sweet",
-   "device_slug": "redmi-note-10-pro",
+   "repo": "dmyslisz/ios-a71",
+   "device_slug": "a71",
    "kind": "fork",
-   "branch": "",
-   "url": "https://github.com/dipa-studio/ios-sweet",
-   "best_result": "The original ios-sweet port (Redmi Note 10 Pro) many forks start from",
+   "branch": "main",
+   "url": "https://github.com/dmyslisz/ios-a71",
+   "best_result": "ios-sweet adapted for the Galaxy A71 4G (SM-A715F, SM7150) with an A71 port guide; the README's boot results are the upstream sweet text",
    "ported": "",
    "fork_only": "",
    "verified": "fork-claim",
-   "notes": "reddit claim (r/hackios 2026-11-03); source: https://www.reddit.com/r/hackios/comments/1xmrsla/redmi_note_11_pro_4g",
+   "notes": "source: OneiOS docs/references.md:156",
    "base_project": "ios-sweet",
-   "updated": "2026-11-22T18:19:57.635Z"
+   "updated": "2026-11-23T00:00:53.147Z"
   },
   {
    "repo": "dristotle/ios-bluejay",
@@ -7024,6 +8346,62 @@
    "notes": "reddit claim (r/hackios 2026-10-23); source: https://www.reddit.com/r/hackios/comments/1xd0f4j/pixel_11_port_of_hackios_in_progress",
    "base_project": "ios-sweet",
    "updated": "2026-11-22T19:33:18.295Z"
+  },
+  {
+   "repo": "Droid-VM/NativeAdreno",
+   "device_slug": null,
+   "kind": "fork",
+   "branch": "wip/hackintosh",
+   "url": "https://github.com/Droid-VM/NativeAdreno",
+   "best_result": "Native XNU Adreno 740 GPU driver (Droid-VM's fork of UniXNU/Adreno740): OneiOS takes its user client, publish, submit and memory files and the ABI header",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:51, :129, docs/gpu.md:703, scripts/setup/get-references.sh:19-21, :44",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:51.164Z"
+  },
+  {
+   "repo": "Droid-VM/NativeMetal",
+   "device_slug": null,
+   "kind": "fork",
+   "branch": "wip/hackintosh",
+   "url": "https://github.com/Droid-VM/NativeMetal",
+   "best_result": "Metal plug-in (Droid-VM's fork of UniXNU/AdrenoMetal): frontend, metal2vulkan bridge, Turnip glue; MetalCheck 41/41 on A750, WebGL 2, WebGPU samples",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:53, :130, docs/gpu.md:1147, scripts/setup/get-references.sh:23, :47",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:51.200Z"
+  },
+  {
+   "repo": "Droid-VM/NativeMobileDisplay",
+   "device_slug": null,
+   "kind": "fork",
+   "branch": "wip/hackintosh",
+   "url": "https://github.com/Droid-VM/NativeMobileDisplay",
+   "best_result": "IOMobileFramebuffer backend, vsync and direct scanout (Droid-VM's fork of UniXNU/GopFramebuffer); OneiOS's guest display driver subclasses it",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:75, :132, docs/architecture.md:39, scripts/setup/get-references.sh:50",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:51.236Z"
+  },
+  {
+   "repo": "Droid-VM/UniXNU",
+   "device_slug": null,
+   "kind": "fork",
+   "branch": "wip/droidvm",
+   "url": "https://github.com/Droid-VM/UniXNU",
+   "best_result": "Droid-VM's UniXNU fork: the xnu-12377 arm64e series that, with UniXNU-droidvm's board patches, brought iPadOS 27.0.1 up to SpringBoard; OneiOS's XNU 12377 kernel base (pin 62d0b11, wip/droidvm)",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS kernel/pins.sh:20-25, docs/references.md:131, docs/architecture.md:34",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:50.962Z"
   },
   {
    "repo": "dvg987/twilight-xnu",
@@ -7124,8 +8502,22 @@
    "updated": "2026-11-22T18:19:55.328Z"
   },
   {
+   "repo": "HeliumStudio-Dev/hackios-xnu-kernel",
+   "device_slug": "redmi-k20-pro",
+   "kind": "fork",
+   "branch": "raphael-bringup",
+   "url": "https://github.com/HeliumStudio-Dev/hackios-xnu-kernel",
+   "best_result": "iOS 16.5 (20F66) from RAM on the Redmi K20 Pro: desktop, Control Center, touch, buttons, Safari; GLES on the Adreno 640 (no Metal); 5 GHz WPA3 Wi-Fi joins but does not reconnect after a toggle (README test 2026-10-27)",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Linked in a comment of https://www.reddit.com/r/hackios/comments/1xpemvy/anyone_made_ios_for_k20_pro_yet (2026-11-06); README (Chinese) is the porter's test guide",
+   "base_project": "HackiOS",
+   "updated": "2026-11-22T23:55:06.387Z"
+  },
+  {
    "repo": "HeliumStudio-Dev/ios-raphael",
-   "device_slug": null,
+   "device_slug": "redmi-k20-pro",
    "kind": "fork",
    "branch": "",
    "url": "https://github.com/HeliumStudio-Dev/ios-raphael",
@@ -7135,7 +8527,7 @@
    "verified": "fork-claim",
    "notes": "reddit claim (r/hackios 2026-11-06); source: https://www.reddit.com/r/hackios/comments/1xpemvy/anyone_made_ios_for_k20_pro_yet",
    "base_project": "ios-sweet",
-   "updated": "2026-11-22T18:24:25.769Z"
+   "updated": "2026-11-22T23:55:11.374Z"
   },
   {
    "repo": "hesm4tt/ios-cubs",
@@ -7376,6 +8768,20 @@
    "updated": "2026-11-22T18:19:58.551Z"
   },
   {
+   "repo": "MellysInformejtik/slop",
+   "device_slug": "oneplus-10-pro",
+   "kind": "fork",
+   "branch": "main",
+   "url": "https://github.com/MellysInformejtik/slop",
+   "best_result": "The negroni (OnePlus 10 Pro) source: 125 xnu-8796 kernel patches, the device shim, mkadt/adt, mkdarwinboot, root tools and UEFI patch tools",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: iOSPlus10 README.md:112 (Credits), CREDITS.md:15, docs/external-repos.md:22. Not a GitHub fork; README is ios-sweet's text.",
+   "base_project": "ios-sweet",
+   "updated": "2026-11-23T00:02:32.696Z"
+  },
+  {
    "repo": "mkukarin01/ios-kunzite-experiments",
    "device_slug": "poco-m8",
    "kind": "fork",
@@ -7502,6 +8908,20 @@
    "updated": "2026-11-22T19:52:35.802Z"
   },
   {
+   "repo": "none24smu/UniXNU",
+   "device_slug": "surface-duo-2",
+   "kind": "fork",
+   "branch": "ios26",
+   "url": "https://github.com/none24smu/UniXNU",
+   "best_result": "xnu-12377.121.6 (iOS 26) kernel work for the Surface Duo 2 (branch ios26): arm64e/PAC, shared-cache layout, kernel watchdog policies",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: iOSPlus10 docs/external-repos.md:36, CREDITS.md:44, scripts/setup/get-references.sh:17 (UniXNU-ios26)",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:52.368Z"
+  },
+  {
    "repo": "NWylynko/ios-flame",
    "device_slug": "pixel-4",
    "kind": "fork",
@@ -7514,48 +8934,6 @@
    "notes": "reddit claim (r/hackios 2026-10-22); source: https://www.reddit.com/r/hackios/comments/1xcmsy4/pixel_4_metal_gpu_acceleration_wifi_ssh_server",
    "base_project": "ios-sweet",
    "updated": "2026-11-22T18:19:57.235Z"
-  },
-  {
-   "repo": "oosexgang/hackios-xnu-userland",
-   "device_slug": null,
-   "kind": "fork",
-   "branch": "",
-   "url": "https://github.com/oosexgang/hackios-xnu-userland",
-   "best_result": "HackiOS userland, open-sourced with the HackiOS kernel (2026-10-22)",
-   "ported": "",
-   "fork_only": "",
-   "verified": "fork-claim",
-   "notes": "reddit claim (r/hackios 2026-10-22); source: https://www.reddit.com/r/hackios/comments/1xccd6m/hackios_project_just_open_sourced_now Named next to hackios-xnu-kernel with the org link github.com/oosexgang.",
-   "base_project": "HackiOS",
-   "updated": "2026-11-22T19:35:30.188Z"
-  },
-  {
-   "repo": "oosexgang/hakios-xnu-kernel",
-   "device_slug": null,
-   "kind": "fork",
-   "branch": "",
-   "url": "https://github.com/oosexgang/hakios-xnu-kernel",
-   "best_result": "HackiOS kernel (open-sourced 2026-10-22), the base of many ports",
-   "ported": "",
-   "fork_only": "",
-   "verified": "fork-claim",
-   "notes": "reddit claim (r/hackios 2026-10-22); source: https://www.reddit.com/r/hackios/comments/1xccd6m/hackios_project_just_open_sourced_now Linked as github.com/oosexgang + hackios-xnu-kernel; renamed on GitHub to hakios-xnu-kernel.",
-   "base_project": "HackiOS",
-   "updated": "2026-11-22T19:35:30.033Z"
-  },
-  {
-   "repo": "open-mapple/mapple_device_setup_scripts",
-   "device_slug": null,
-   "kind": "fork",
-   "branch": "",
-   "url": "https://github.com/open-mapple/mapple_device_setup_scripts",
-   "best_result": "Open Mapple device bring-up scripts",
-   "ported": "",
-   "fork_only": "",
-   "verified": "fork-claim",
-   "notes": "reddit claim (r/hackios 2026-11-18); source: https://www.reddit.com/r/hackios/comments/1xzmj80/release_introducing_open_mapple_a_stabilityfirst",
-   "base_project": "Open Mapple",
-   "updated": "2026-11-22T18:20:00.770Z"
   },
   {
    "repo": "orhunnx/beyond2lte-ios",
@@ -7600,6 +8978,20 @@
    "updated": "2026-11-22T18:19:56.730Z"
   },
   {
+   "repo": "palazik/ios-dodge",
+   "device_slug": "oneplus-13",
+   "kind": "fork",
+   "branch": "main",
+   "url": "https://github.com/palazik/ios-dodge",
+   "best_result": "XNU (xnu-8796) boots far enough to switch on the MMU and survive it (4 KiB pages: the SM8750's Oryon cores lack the 16 KiB granule); nothing boots to iOS yet",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:152; README Status",
+   "base_project": "ios-sweet",
+   "updated": "2026-11-23T00:00:52.865Z"
+  },
+  {
    "repo": "pawlickerr/Mu-Silicum-negroni",
    "device_slug": "oneplus-10-pro",
    "kind": "fork",
@@ -7611,21 +9003,49 @@
    "verified": "fork-claim",
    "notes": "reddit claim (r/hackios 2026-10-28); source: https://www.reddit.com/r/hackios/comments/1xhxiqm/misc_update_pausing_oneplus_10_pro_development",
    "base_project": "tooling",
-   "updated": "2026-11-22T19:33:17.474Z"
+   "updated": "2026-11-23T00:02:32.440Z"
   },
   {
    "repo": "pawlickerr/UniXNU-negroni",
    "device_slug": "oneplus-10-pro",
    "kind": "fork",
-   "branch": "",
+   "branch": "dev",
    "url": "https://github.com/pawlickerr/UniXNU-negroni",
    "best_result": "UniXNU bring-up for the OnePlus 10 Pro (negroni, SM8450): ios-sweet kernel + iPhone X iOS 16.7.16 userland to SpringBoard on CPU; credited as the port's starting point",
    "ported": "",
    "fork_only": "",
    "verified": "fork-claim",
    "notes": "reddit claim (r/hackios 2026-10-28); source: https://www.reddit.com/r/hackios/comments/1xhxiqm/misc_update_pausing_oneplus_10_pro_development",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:02:32.615Z"
+  },
+  {
+   "repo": "PixOS-Project/pixelios-kernel",
+   "device_slug": "pixel-6a",
+   "kind": "fork",
+   "branch": "main",
+   "url": "https://github.com/PixOS-Project/pixelios-kernel",
+   "best_result": "Pixel 6a shim and XNU patches: GPU (about 50 fps at 150 MHz), Wi-Fi with internet, Bluetooth pairing, touch; no audio, camera, cellular, sensors (README, 2026-11-15)",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "reddit claim (r/hackios 2026-10-23, 2026-11-15): the porter links the PixOS-Project org; source: https://www.reddit.com/r/hackios/comments/1xwz8fl/pixel_6a_wifi_and_gpu_working",
    "base_project": "ios-sweet",
-   "updated": "2026-11-22T19:33:17.981Z"
+   "updated": "2026-11-22T23:55:00.251Z"
+  },
+  {
+   "repo": "PixOS-Project/pixelios-userland",
+   "device_slug": "pixel-6a",
+   "kind": "fork",
+   "branch": "main",
+   "url": "https://github.com/PixOS-Project/pixelios-userland",
+   "best_result": "Builds the iOS 16.7 userdata root for PixOS on the Pixel 6a (scripts only, no Apple binaries)",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "reddit claim (r/hackios 2026-11-15); source: https://www.reddit.com/r/hackios/comments/1xwz8fl/pixel_6a_wifi_and_gpu_working",
+   "base_project": "ios-sweet",
+   "updated": "2026-11-22T23:55:01.438Z"
   },
   {
    "repo": "popovluka/ios-lemonadep",
@@ -7640,6 +9060,62 @@
    "notes": "reddit claim (r/hackios 2026-11-04); source: https://www.reddit.com/r/hackios/comments/1xnoclc/pixel_fold_malig710_mp7_tensor_g2_gpu_with_metal",
    "base_project": "ios-sweet",
    "updated": "2026-11-22T18:24:25.671Z"
+  },
+  {
+   "repo": "qdizax-w/hakios-sm7125",
+   "device_slug": "redmi-note-9s",
+   "kind": "fork",
+   "branch": "main",
+   "url": "https://github.com/qdizax-w/hakios-sm7125",
+   "best_result": "iOS 16.5 from the phone's flash: home screen, stock apps, touch, brightness, flashlight, battery level, Sileo, SSH and USB internet; no sound, vibration, Wi-Fi, camera, cellular (README)",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "HakiOS device repo for the miatoll family (made and tested on a 64 GB Redmi Note 9S, Huaxing panel). The porter (u/qdizax-w) links only the qdizax-w account; source: https://www.reddit.com/r/hackios/comments/1xie0kg/hackios_booted_on_redmi_note_9s_curtanamiatoll",
+   "base_project": "HackiOS",
+   "updated": "2026-11-22T23:55:03.381Z"
+  },
+  {
+   "repo": "qdizax-w/UniXNU-miatoll",
+   "device_slug": "redmi-note-9s",
+   "kind": "fork",
+   "branch": "main",
+   "url": "https://github.com/qdizax-w/UniXNU-miatoll",
+   "best_result": "UniXNU device repo for the miatoll family (iPadOS 17.7.11 target): builds, not yet booted on the phone (README)",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Same porter as qdizax-w/hakios-sm7125 (u/qdizax-w, account linked in https://www.reddit.com/r/hackios/comments/1xie0kg/hackios_booted_on_redmi_note_9s_curtanamiatoll)",
+   "base_project": "UniXNU",
+   "updated": "2026-11-22T23:55:04.598Z"
+  },
+  {
+   "repo": "rafsanbasunia/ios-garnet",
+   "device_slug": "poco-x6",
+   "kind": "fork",
+   "branch": "dev",
+   "url": "https://github.com/rafsanbasunia/ios-garnet",
+   "best_result": "iOS 16.5 from RAM with Metal on the Adreno 710, Wi-Fi, speakers, LTE data; Bluetooth without audio, calls without sound (README, dev branch)",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "reddit claim (r/hackios 2026-11-22): \"iOS 16 reference repo\"; source: https://www.reddit.com/r/hackios/comments/1y3036f/ios_16_reference_repo",
+   "base_project": "HackiOS",
+   "updated": "2026-11-22T23:49:37.844Z"
+  },
+  {
+   "repo": "RigoLigoRLC/unixnu-adreno6xx",
+   "device_slug": "tab-s7-fe",
+   "kind": "fork",
+   "branch": "unixnu-sm-t733",
+   "url": "https://github.com/RigoLigoRLC/unixnu-adreno6xx",
+   "best_result": "Adreno 642L GPU backend for the Tab S7 FE: hardware startup, Turnip offscreen fill, compute and triangle render pass with zero faults (build 50c, 2026-10-25); system Metal composition and DPU scanout pending",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:158 (\"RigoLigoRLC/unixnu-adreno6xx (Tab S7 FE, A642L)\"); README 'Build and current device status'",
+   "base_project": "UniXNU",
+   "updated": "2026-11-23T00:00:52.319Z"
   },
   {
    "repo": "riniki5/ios-sweet",
@@ -7659,7 +9135,7 @@
    "repo": "ry-diffusion/Bergamota",
    "device_slug": "poco-f1",
    "kind": "fork",
-   "branch": "",
+   "branch": "develop",
    "url": "https://github.com/ry-diffusion/Bergamota",
    "best_result": "iOS 18 with Metal GPU acceleration (some bugs)",
    "ported": "",
@@ -7667,7 +9143,7 @@
    "verified": "fork-claim",
    "notes": "reddit claim (r/hackios 2026-10-25); source: https://www.reddit.com/r/hackios/comments/1xeo0b5/ios_18_with_metal_gpu_acceleration_working_on",
    "base_project": "ios-sweet",
-   "updated": "2026-11-22T18:19:59.977Z"
+   "updated": "2026-11-23T00:00:53.762Z"
   },
   {
    "repo": "ry-diffusion/Chlorophyll",
@@ -7681,7 +9157,7 @@
    "verified": "fork-claim",
    "notes": "reddit claim (r/hackios 2026-10-25); source: https://www.reddit.com/r/hackios/comments/1xeo0b5/ios_18_with_metal_gpu_acceleration_working_on",
    "base_project": "ios-sweet",
-   "updated": "2026-11-22T18:20:00.077Z"
+   "updated": "2026-11-23T00:02:32.525Z"
   },
   {
    "repo": "Scion-Project/scion-crownlte",
@@ -7696,6 +9172,20 @@
    "notes": "reddit claim (r/hackios 2026-11-07); source: https://www.reddit.com/r/hackios/comments/1xqdxgy/ios_16_on_galaxy_note9_exynos_smn960n",
    "base_project": "Scion",
    "updated": "2026-11-22T18:19:54.930Z"
+  },
+  {
+   "repo": "Scion-Project/scion-installer",
+   "device_slug": "s9",
+   "kind": "fork",
+   "branch": "main",
+   "url": "https://github.com/Scion-Project/scion-installer",
+   "best_result": "Recovery-zip installers of Scion's iOS 16.5 for the Exynos Galaxy S9 (S9+ and Note9 test images), built locally from the user's IPSW",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "reddit (r/hackios 2026-11-14); source: https://www.reddit.com/r/hackios/comments/1xwbehd",
+   "base_project": "Scion",
+   "updated": "2026-11-22T23:55:08.690Z"
   },
   {
    "repo": "Scion-Project/scion-kernel",
@@ -7766,20 +9256,6 @@
    "notes": "reddit claim (r/hackios 2026-11-01); source: https://www.reddit.com/r/hackios/comments/1xl1eyk/ios_165_running_on_a_cheap_chinese_mp3_player",
    "base_project": "HackiOS",
    "updated": "2026-11-22T18:20:00.470Z"
-  },
-  {
-   "repo": "steelbrain/metal2vulkan",
-   "device_slug": null,
-   "kind": "fork",
-   "branch": "",
-   "url": "https://github.com/steelbrain/metal2vulkan",
-   "best_result": "Metal-to-Vulkan shader and Metal API translation, credited for GPU acceleration by the OnePlus 10 Pro port (also used by Xiaomi 17 Pro Max and OnePlus Open ports)",
-   "ported": "",
-   "fork_only": "",
-   "verified": "fork-claim",
-   "notes": "reddit claim (r/hackios 2026-10-28); source: https://www.reddit.com/r/hackios/comments/1xhxiqm/misc_update_pausing_oneplus_10_pro_development Org link github.com/steelbrain + the name Metal2Vulkan in the credits.",
-   "base_project": "tooling",
-   "updated": "2026-11-22T19:35:30.239Z"
   },
   {
    "repo": "stormtroopxyz/y2sios",
@@ -7894,6 +9370,20 @@
    "updated": "2026-11-22T18:25:36.266Z"
   },
   {
+   "repo": "trenrua-dotcom/hakios-bangkk",
+   "device_slug": "moto-g84",
+   "kind": "fork",
+   "branch": "main",
+   "url": "https://github.com/trenrua-dotcom/hakios-bangkk",
+   "best_result": "HakiOS for the Moto G84 5G (xnu-8796.121.2, iOS 16.5 SpringBoard from RAM per the README); announced as coming soon",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "reddit claim (r/hackios 2026-11-22); source: https://www.reddit.com/r/hackios/comments/1y30oeg/coming_soon_ios_on_moto_g84_5g",
+   "base_project": "HackiOS",
+   "updated": "2026-11-22T23:49:37.791Z"
+  },
+  {
    "repo": "tuxymuxy/ios-begonia",
    "device_slug": "redmi-note-8-pro",
    "kind": "fork",
@@ -7906,34 +9396,6 @@
    "notes": "reddit claim (r/hackios 2026-11-09); source: https://www.reddit.com/r/hackios/comments/1xrt548/begonia_github_repository",
    "base_project": "HackiOS",
    "updated": "2026-11-22T19:33:18.528Z"
-  },
-  {
-   "repo": "UniXNU/DarwinBoot",
-   "device_slug": null,
-   "kind": "fork",
-   "branch": "",
-   "url": "https://github.com/UniXNU/DarwinBoot",
-   "best_result": "DarwinBoot boot infrastructure credited by the OnePlus 10 Pro port",
-   "ported": "",
-   "fork_only": "",
-   "verified": "fork-claim",
-   "notes": "reddit claim (r/hackios 2026-10-28); source: https://www.reddit.com/r/hackios/comments/1xhxiqm/misc_update_pausing_oneplus_10_pro_development",
-   "base_project": "UniXNU",
-   "updated": "2026-11-22T18:24:26.163Z"
-  },
-  {
-   "repo": "UniXNU/UniXNU",
-   "device_slug": null,
-   "kind": "fork",
-   "branch": "",
-   "url": "https://github.com/UniXNU/UniXNU",
-   "best_result": "UniXNU, the XNU-on-Android base many ports credit",
-   "ported": "",
-   "fork_only": "",
-   "verified": "fork-claim",
-   "notes": "reddit claim (r/hackios 2026-10-28); source: https://www.reddit.com/r/hackios/comments/1xhxiqm/misc_update_pausing_oneplus_10_pro_development",
-   "base_project": "UniXNU",
-   "updated": "2026-11-22T18:24:26.066Z"
   },
   {
    "repo": "Veerhooda/iOS",
@@ -7964,18 +9426,32 @@
    "updated": "2026-11-22T18:19:57.030Z"
   },
   {
+   "repo": "vizPilot/ios-b4q",
+   "device_slug": "z-flip-4",
+   "kind": "fork",
+   "branch": "b4q",
+   "url": "https://github.com/vizPilot/ios-b4q",
+   "best_result": "README still the upstream ios-sweet text, no recorded boot",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:153, :155",
+   "base_project": "ios-sweet",
+   "updated": "2026-11-23T00:00:52.969Z"
+  },
+  {
    "repo": "wardevsa/ios-a5xelte",
    "device_slug": "s7",
    "kind": "fork",
    "branch": "herolte",
    "url": "https://github.com/wardevsa/ios-a5xelte",
-   "best_result": "iOS 16.7.16 to home screen with GPU (Panfrost GLES), Wi-Fi, speaker, front camera, BT scan, brightness",
+   "best_result": "iOS 16.7.16 to home screen with GPU (Panfrost GLES), Wi-Fi, speaker, front camera, BT scan, brightness (branch herolte); iOS 26.6.2 (23G90) to the home screen with Wi-Fi on CPU drawing (branch herolte-ios26)",
    "ported": "",
    "fork_only": "",
    "verified": "fork-claim",
-   "notes": "reddit claim (r/hackios 2026-11-15); source: https://www.reddit.com/r/hackios/comments/1xwzenw/ios_16716_on_a_galaxy_s7_exynos_8890_front_camera",
+   "notes": "reddit claim (r/hackios 2026-11-15, 2026-11-22); sources: https://www.reddit.com/r/hackios/comments/1xwzenw/ios_16716_on_a_galaxy_s7_exynos_8890_front_camera, https://www.reddit.com/r/hackios/comments/1y31zto/ios_2662_booting_on_a_samsung_galaxy_s7_exynos",
    "base_project": "ios-sweet",
-   "updated": "2026-11-22T18:19:54.116Z"
+   "updated": "2026-11-22T23:49:39.542Z"
   },
   {
    "repo": "winterballs/Easy-OneiOS-A56B-A56E",
@@ -7990,6 +9466,20 @@
    "notes": "A fork of Musicalista/OneiOS-A56: 18 own commits plus a merge of the A56 fork's v1.0.0. Source: OneiOS docs/forks.md",
    "base_project": "OneiOS",
    "updated": "2026-11-22T19:52:36.222Z"
+  },
+  {
+   "repo": "xNekom/ios-mondrian",
+   "device_slug": "poco-f5-pro",
+   "kind": "fork",
+   "branch": "mondrian",
+   "url": "https://github.com/xNekom/ios-mondrian",
+   "best_result": "iOS 16 userland boots to the home screen (CPU rendering, touch, Settings); command-mode AMOLED at 60 fps, UFS 3.1 read/write",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/references.md:153; README Status",
+   "base_project": "ios-sweet",
+   "updated": "2026-11-23T00:00:52.916Z"
   },
   {
    "repo": "xyz-sundram/hackios-xnu-kernel",
@@ -8020,6 +9510,20 @@
    "updated": "2026-11-22T19:52:36.559Z"
   },
   {
+   "repo": "YMGPwcca/OneOS",
+   "device_slug": null,
+   "kind": "fork",
+   "branch": "feat/sm8850-full-bridges-takeover",
+   "url": "https://github.com/YMGPwcca/OneOS",
+   "best_result": "The S26 Ultra fork's OneOS app fork: 165 commits over akshaynexus/OneOS oneios (46 behind), the app side of the Framework-takeover experiment; refuses the S26 Ultra switch. Its Gradle fixes and the early return's shmem restore were taken into the OneOS fork's sm8850-support (2026-11-23); the refusal, watchdog rewrite and key rule were not",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/forks.md:14, :18-28, docs/s26.md:8",
+   "base_project": "tooling",
+   "updated": "2026-11-23T00:00:50.880Z"
+  },
+  {
    "repo": "Yofuness/ios-sunfish",
    "device_slug": "pixel-4a",
    "kind": "fork",
@@ -8046,6 +9550,20 @@
    "notes": "A fork of YMGPwcca/OneiOS (the S26 fork): 31 own commits on s25-ultra-sm8750, ci/metal-plugin 14 (a subset). Phone: SM-S938B pa3qxeea, S938BXXSDDZJ1, One UI 9.0, root by an exploit on a locked bootloader. Source: OneiOS docs/forks.md, docs/s25.md",
    "base_project": "OneiOS",
    "updated": "2026-11-22T19:52:35.397Z"
+  },
+  {
+   "repo": "YumikoHayamato/OneOS",
+   "device_slug": null,
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/YumikoHayamato/OneOS",
+   "best_result": "The S25 Ultra fork's OneOS app fork: the OneOS-fork device gate (YumikoHayamato/OneiOS moved its app submodule here); not taken into OneiOS, that repo's to land",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "source: OneiOS docs/s25.md:234",
+   "base_project": "tooling",
+   "updated": "2026-11-23T00:00:50.920Z"
   },
   {
    "repo": "zenkernelsam/uniloader-S2I9100",
@@ -10092,6 +11610,51 @@
    "image_url": "https://preview.redd.it/w66axuzik03i1.jpeg?width=640&crop=smart&auto=webp&s=a278c4cb677a1a1c5da0317b5da8b33144f6aded",
    "image_width": 640,
    "image_height": 1280
+  },
+  {
+   "title": "Booted iOS 16.5 on a Samsung Galaxy A32 4G (Helio G80 / MT6768)",
+   "url": "https://www.reddit.com/r/hackios/comments/1y32x8p/booted_ios_165_on_a_samsung_galaxy_a32_4g_helio",
+   "published": "2026-11-22",
+   "note": "Galaxy A32 4G (SM-A325F, Helio G80): iOS 16.5 (Darwin 22.5.0) to SpringBoard with touch; CPU rendering, no cellular or audio yet",
+   "image_url": "https://preview.redd.it/pw42nf35z83i1.jpeg?width=640&crop=smart&auto=webp&s=db12c257b0739276c24f3f462257a193b853709d",
+   "image_width": 640,
+   "image_height": 853
+  },
+  {
+   "title": "iOS 26.6.2 booting on a Samsung Galaxy S7 (Exynos 8890): XNU built from Apple's open source, home screen, Settings and Wi-Fi working",
+   "url": "https://www.reddit.com/r/hackios/comments/1y31zto/ios_2662_booting_on_a_samsung_galaxy_s7_exynos",
+   "published": "2026-11-22",
+   "note": "Galaxy S7 (herolte): iOS 26.6.2 (23G90) to the home screen on xnu-12377 (Bergamota base) with Wi-Fi, CPU drawing (wardevsa/ios-a5xelte, branch herolte-ios26)",
+   "image_url": "https://preview.redd.it/yswl3jpcr83i1.png?width=471&format=png&auto=webp&s=35d2f41c5322baa4af8f7d328db3984e65c29945",
+   "image_width": 471,
+   "image_height": 649
+  },
+  {
+   "title": "asoftware ios 0.1.7 for android: older snapdragons and newer malis get past the gpu wall, ios 16 needs less ram",
+   "url": "https://www.reddit.com/r/hackios/comments/1y31tor/asoftware_ios_017_for_android_older_snapdragons",
+   "published": "2026-11-22",
+   "note": "asoft-ios-android 0.1.7 (emulator app): Adreno 600 phones on older kernels and newer Malis get past the GPU wall; iOS 16 RAM is a setting",
+   "image_url": "https://preview.redd.it/ck6knsh1q83i1.png?width=640&crop=smart&auto=webp&s=fe1c438b77649d0e847eed32016b0193d2f28065",
+   "image_width": 640,
+   "image_height": 360
+  },
+  {
+   "title": "Coming soon, iOS on moto g84 5g",
+   "url": "https://www.reddit.com/r/hackios/comments/1y30oeg/coming_soon_ios_on_moto_g84_5g",
+   "published": "2026-11-22",
+   "note": "Moto G84 5G (bangkk): HakiOS port announced as coming soon (trenrua-dotcom/hakios-bangkk)",
+   "image_url": "https://external-preview.redd.it/isbLtz0RL50j3SVH-GB66Agf0cEDtmSN740UmBoEknM.png?width=640&crop=smart&auto=webp&s=ef450732515202b6bdd6d1843be406436c759a8d",
+   "image_width": 640,
+   "image_height": 320
+  },
+  {
+   "title": "iOS 16 reference repo",
+   "url": "https://www.reddit.com/r/hackios/comments/1y3036f/ios_16_reference_repo",
+   "published": "2026-11-22",
+   "note": "POCO X6 5G (garnet): iOS 16.5 with Metal on the Adreno 710, Wi-Fi, speakers, LTE data; Bluetooth and cellular partial (rafsanbasunia/ios-garnet, branch dev)",
+   "image_url": "",
+   "image_width": null,
+   "image_height": null
   }
  ],
  "sources": [
@@ -10159,6 +11722,14 @@
    "updated": "2026-11-22T20:11:09.350Z"
   },
   {
+   "repo": "android-a5y7lte/ios-surya",
+   "device_slug": "poco-x3-nfc",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-22T23:49:37.750Z"
+  },
+  {
    "repo": "andyleenz/pixel3-ios",
    "device_slug": "pixel-3",
    "support": "claimed",
@@ -10167,12 +11738,28 @@
    "updated": "2026-11-22T19:43:50.003Z"
   },
   {
+   "repo": "Asultop/UniXNU-NX769J",
+   "device_slug": "redmagic-9-pro",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T00:00:52.025Z"
+  },
+  {
    "repo": "aTechGeekDev/ios-apollo",
    "device_slug": "mi-10t",
    "support": "claimed",
    "via": null,
    "note": "",
    "updated": "2026-11-22T19:43:50.003Z"
+  },
+  {
+   "repo": "Axiang-dev/UniXNU-caihong",
+   "device_slug": "oneplus-pad-pro",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T00:00:52.126Z"
   },
   {
    "repo": "Aymon-njz/hackios-xnu-kernel-Onyx",
@@ -10205,6 +11792,14 @@
    "via": null,
    "note": "",
    "updated": "2026-11-22T19:43:50.003Z"
+  },
+  {
+   "repo": "chenzikang/z3q-port",
+   "device_slug": "s20-ultra",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T00:00:53.095Z"
   },
   {
    "repo": "console-ramoops/ios-santoni",
@@ -10313,10 +11908,18 @@
   {
    "repo": "dipa-studio/ios-sweet",
    "device_slug": "redmi-note-10-pro",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T00:00:53.230Z"
+  },
+  {
+   "repo": "dmyslisz/ios-a71",
+   "device_slug": "a71",
    "support": "claimed",
    "via": null,
    "note": "",
-   "updated": "2026-11-22T19:43:50.003Z"
+   "updated": "2026-11-23T00:00:53.158Z"
   },
   {
    "repo": "dristotle/ios-bluejay",
@@ -10325,6 +11928,14 @@
    "via": null,
    "note": "",
    "updated": "2026-11-22T19:43:50.003Z"
+  },
+  {
+   "repo": "Droid-VM/UniXNU-droidvm",
+   "device_slug": "oneplus-pad-pro",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T00:00:51.013Z"
   },
   {
    "repo": "dvg987/twilight-xnu",
@@ -10359,6 +11970,14 @@
    "updated": "2026-11-22T19:43:50.003Z"
   },
   {
+   "repo": "Fearless109/hakios-sm8650",
+   "device_slug": "xiaomi-14-pro",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T00:00:52.826Z"
+  },
+  {
    "repo": "GFander/UniXNU-kebab",
    "device_slug": "oneplus-8t",
    "support": "claimed",
@@ -10373,6 +11992,22 @@
    "via": null,
    "note": "",
    "updated": "2026-11-22T19:43:50.003Z"
+  },
+  {
+   "repo": "HeliumStudio-Dev/hackios-xnu-kernel",
+   "device_slug": "redmi-k20-pro",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-22T23:55:06.423Z"
+  },
+  {
+   "repo": "HeliumStudio-Dev/ios-raphael",
+   "device_slug": "redmi-k20-pro",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-22T23:55:11.464Z"
   },
   {
    "repo": "hesm4tt/ios-cubs",
@@ -10431,6 +12066,22 @@
    "updated": "2026-11-22T19:43:50.003Z"
   },
   {
+   "repo": "kerrinz/UniXNU-zorn",
+   "device_slug": "redmi-k80",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T00:00:51.976Z"
+  },
+  {
+   "repo": "kmu1757/UniXNU-t970",
+   "device_slug": "tab-s7-plus",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T00:00:52.280Z"
+  },
+  {
    "repo": "leh0726/G986N-iOS",
    "device_slug": "s20-plus",
    "support": "claimed",
@@ -10455,6 +12106,22 @@
    "updated": "2026-11-22T19:43:50.003Z"
   },
   {
+   "repo": "lonzzi/UniXNU-houji",
+   "device_slug": "xiaomi-14",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T00:00:51.850Z"
+  },
+  {
+   "repo": "loolooc/UniXNU-meizu21",
+   "device_slug": "meizu-21",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T00:00:52.076Z"
+  },
+  {
    "repo": "malthiscode/ios-b1lte",
    "device_slug": "s10",
    "support": "claimed",
@@ -10477,6 +12144,14 @@
    "via": null,
    "note": "",
    "updated": "2026-11-22T19:43:50.003Z"
+  },
+  {
+   "repo": "MellysInformejtik/slop",
+   "device_slug": "oneplus-10-pro",
+   "support": "claimed",
+   "via": null,
+   "note": "negroni kernel patches, shim and root tools iOSPlus10 builds on (iOSPlus10 CREDITS.md:15); akshaynexus/iOSPlus10 is the phone's furthest port",
+   "updated": "2026-11-23T00:02:32.740Z"
   },
   {
    "repo": "mkukarin01/ios-kunzite-experiments",
@@ -10551,12 +12226,124 @@
    "updated": "2026-11-22T19:52:35.818Z"
   },
   {
+   "repo": "none24smu/UniXNU",
+   "device_slug": "surface-duo-2",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T00:00:52.379Z"
+  },
+  {
+   "repo": "none24smu/UniXNU-zeta",
+   "device_slug": "surface-duo-2",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T00:00:52.435Z"
+  },
+  {
    "repo": "NWylynko/ios-flame",
    "device_slug": "pixel-4",
    "support": "claimed",
    "via": null,
    "note": "",
    "updated": "2026-11-22T19:43:50.003Z"
+  },
+  {
+   "repo": "open-mapple/manifest",
+   "device_slug": "realme-8i",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-22T23:49:37.041Z"
+  },
+  {
+   "repo": "open-mapple/mapple_build",
+   "device_slug": "realme-8i",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-22T23:49:37.420Z"
+  },
+  {
+   "repo": "open-mapple/mapple_device_setup_scripts",
+   "device_slug": "realme-8i",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-22T23:49:37.528Z"
+  },
+  {
+   "repo": "open-mapple/mapple_gpu_mali",
+   "device_slug": "realme-8i",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-22T23:49:37.269Z"
+  },
+  {
+   "repo": "open-mapple/mapple_loader",
+   "device_slug": "realme-8i",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-22T23:49:37.318Z"
+  },
+  {
+   "repo": "open-mapple/mapple_releases",
+   "device_slug": "realme-8i",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-22T23:49:37.473Z"
+  },
+  {
+   "repo": "open-mapple/mapple_splitboot",
+   "device_slug": "realme-8i",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-22T23:49:37.370Z"
+  },
+  {
+   "repo": "open-mapple/xnu_device_google_sunfish",
+   "device_slug": "pixel-4a",
+   "support": "claimed",
+   "via": null,
+   "note": "build-only (README: built, never run)",
+   "updated": "2026-11-22T23:49:39.126Z"
+  },
+  {
+   "repo": "open-mapple/xnu_device_realme_spaced",
+   "device_slug": "realme-8i",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-22T23:49:37.112Z"
+  },
+  {
+   "repo": "open-mapple/xnu_device_xiaomi_sweet",
+   "device_slug": "redmi-note-10-pro",
+   "support": "claimed",
+   "via": null,
+   "note": "build-only (README: built, never run)",
+   "updated": "2026-11-22T23:49:39.045Z"
+  },
+  {
+   "repo": "open-mapple/xnu_kernel_mediatek_common",
+   "device_slug": "realme-8i",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-22T23:49:37.169Z"
+  },
+  {
+   "repo": "open-mapple/xnu_kernel_mediatek_mt6781",
+   "device_slug": "realme-8i",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-22T23:49:37.218Z"
   },
   {
    "repo": "orhunnx/beyond2lte-ios",
@@ -10583,20 +12370,52 @@
    "updated": "2026-11-22T19:43:50.003Z"
   },
   {
+   "repo": "palazik/ios-dodge",
+   "device_slug": "oneplus-13",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T00:00:52.876Z"
+  },
+  {
    "repo": "pawlickerr/Mu-Silicum-negroni",
    "device_slug": "oneplus-10-pro",
    "support": "claimed",
    "via": null,
-   "note": "",
-   "updated": "2026-11-22T19:43:50.003Z"
+   "note": "UEFI tree iOSPlus10 starts from (iOSPlus10 CREDITS.md:18); a base of the port, not the port",
+   "updated": "2026-11-23T00:02:32.488Z"
   },
   {
    "repo": "pawlickerr/UniXNU-negroni",
    "device_slug": "oneplus-10-pro",
    "support": "claimed",
    "via": null,
+   "note": "initial device port and board definition (iOSPlus10 CREDITS.md:38); akshaynexus/iOSPlus10 is the phone's furthest port",
+   "updated": "2026-11-23T00:02:32.655Z"
+  },
+  {
+   "repo": "peiyuesheng666/UniXNU-PHY120",
+   "device_slug": "oppo-find-x7-ultra",
+   "support": "primary",
+   "via": null,
    "note": "",
-   "updated": "2026-11-22T19:43:50.003Z"
+   "updated": "2026-11-23T00:00:52.231Z"
+  },
+  {
+   "repo": "PixOS-Project/pixelios-kernel",
+   "device_slug": "pixel-6a",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-22T23:55:00.295Z"
+  },
+  {
+   "repo": "PixOS-Project/pixelios-userland",
+   "device_slug": "pixel-6a",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-22T23:55:01.667Z"
   },
   {
    "repo": "popovluka/ios-lemonadep",
@@ -10605,6 +12424,46 @@
    "via": null,
    "note": "",
    "updated": "2026-11-22T19:43:50.003Z"
+  },
+  {
+   "repo": "qdizax-w/hakios-sm7125",
+   "device_slug": "redmi-note-9-pro",
+   "support": "claimed",
+   "via": null,
+   "note": "README: covers the phones sharing the SM7125 (Redmi Note 9S / 9 Pro / 9 Pro Max, Note 10 Lite, POCO M2 Pro); tested on a Note 9S only",
+   "updated": "2026-11-22T23:55:04.107Z"
+  },
+  {
+   "repo": "qdizax-w/hakios-sm7125",
+   "device_slug": "redmi-note-9s",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-22T23:55:03.466Z"
+  },
+  {
+   "repo": "qdizax-w/UniXNU-miatoll",
+   "device_slug": "redmi-note-9s",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-22T23:55:04.627Z"
+  },
+  {
+   "repo": "rafsanbasunia/ios-garnet",
+   "device_slug": "poco-x6",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-22T23:49:37.854Z"
+  },
+  {
+   "repo": "RigoLigoRLC/unixnu-adreno6xx",
+   "device_slug": "tab-s7-fe",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T00:00:52.330Z"
   },
   {
    "repo": "riniki5/ios-sweet",
@@ -10627,8 +12486,16 @@
    "device_slug": "poco-f1",
    "support": "claimed",
    "via": null,
+   "note": "Bergamota's Metal driver (iOSPlus10 CREDITS.md:35); the POCO F1 port is ry-diffusion/Bergamota",
+   "updated": "2026-11-23T00:02:32.563Z"
+  },
+  {
+   "repo": "SangLuoCN/UniXNU-Nubia-Z60U",
+   "device_slug": "nubia-z60-ultra",
+   "support": "primary",
+   "via": null,
    "note": "",
-   "updated": "2026-11-22T19:43:50.003Z"
+   "updated": "2026-11-23T00:00:52.175Z"
   },
   {
    "repo": "Scion-Project/scion-crownlte",
@@ -10637,6 +12504,30 @@
    "via": null,
    "note": "",
    "updated": "2026-11-22T19:43:50.003Z"
+  },
+  {
+   "repo": "Scion-Project/scion-installer",
+   "device_slug": "note9",
+   "support": "claimed",
+   "via": null,
+   "note": "README: Note9 test image",
+   "updated": "2026-11-22T23:55:10.314Z"
+  },
+  {
+   "repo": "Scion-Project/scion-installer",
+   "device_slug": "s9",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-22T23:55:08.724Z"
+  },
+  {
+   "repo": "Scion-Project/scion-installer",
+   "device_slug": "s9-plus",
+   "support": "claimed",
+   "via": null,
+   "note": "README: S9+ test image",
+   "updated": "2026-11-22T23:55:09.472Z"
   },
   {
    "repo": "Scion-Project/scion-starlte",
@@ -10719,12 +12610,44 @@
    "updated": "2026-11-22T19:43:50.003Z"
   },
   {
+   "repo": "tomaswarner/ios-dm3q",
+   "device_slug": "s23-ultra",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T00:00:53.035Z"
+  },
+  {
+   "repo": "trenrua-dotcom/hakios-bangkk",
+   "device_slug": "moto-g84",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-22T23:49:37.802Z"
+  },
+  {
    "repo": "tuxymuxy/ios-begonia",
    "device_slug": "redmi-note-8-pro",
    "support": "claimed",
    "via": null,
    "note": "",
    "updated": "2026-11-22T19:43:50.003Z"
+  },
+  {
+   "repo": "tycykp/UniXNU-OnePlus-Ace5",
+   "device_slug": "oneplus-ace-5",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T00:00:51.901Z"
+  },
+  {
+   "repo": "UniXNU/UniXNU-sheng",
+   "device_slug": "xiaomi-pad-6s-pro",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T00:00:51.127Z"
   },
   {
    "repo": "Veerhooda/iOS",
@@ -10741,6 +12664,14 @@
    "via": null,
    "note": "",
    "updated": "2026-11-22T19:43:50.003Z"
+  },
+  {
+   "repo": "vizPilot/ios-b4q",
+   "device_slug": "z-flip-4",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T00:00:52.982Z"
   },
   {
    "repo": "wardevsa/ios-a5xelte",
@@ -10775,6 +12706,14 @@
    "updated": "2026-11-22T19:43:50.003Z"
   },
   {
+   "repo": "xNekom/ios-mondrian",
+   "device_slug": "poco-f5-pro",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T00:00:52.926Z"
+  },
+  {
    "repo": "xyz-sundram/hackios-xnu-kernel",
    "device_slug": "nothing-phone-1",
    "support": "claimed",
@@ -10807,6 +12746,14 @@
    "updated": "2026-11-22T19:52:35.412Z"
   },
   {
+   "repo": "YX2748198202-lab/UniXNU-shennong",
+   "device_slug": "xiaomi-14-pro",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T00:00:51.790Z"
+  },
+  {
    "repo": "zenkernelsam/uniloader-S2I9100",
    "device_slug": "s2",
    "support": "claimed",
@@ -10824,13 +12771,6 @@
   }
  ],
  "lineage_repos": [
-  {
-   "repo": "akshaynexus/UniXNU",
-   "base_project": "UniXNU",
-   "repo_exists": 1,
-   "description": "Run iOS and macOS on non-Apple ARM64 hardware through UEFI.",
-   "note": ""
-  },
   {
    "repo": "alpersamur3/asoft-ios",
    "base_project": "emulator",
@@ -10888,6 +12828,55 @@
    "note": ""
   },
   {
+   "repo": "api-test/fork-mwsbixu7usavs4",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "api-test/fork-mwscpljse6nof7",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "api-test/fork-mwscrtfrdh56jk",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "api-test/fork-mwscsliqb0gh9m",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "api-test/fork-mwscwu160i5649",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "api-test/fork-mwsdggkju1eepq",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "api-test/fork-mwse1l2jmzprk8",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
    "repo": "api-test/sync-mwsa10rc8xykrv",
    "base_project": "",
    "repo_exists": 1,
@@ -10937,18 +12926,60 @@
    "note": ""
   },
   {
+   "repo": "api-test/sync-mwsbixu7usavs4",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "api-test/sync-mwscpljse6nof7",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "api-test/sync-mwscrtfrdh56jk",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "api-test/sync-mwscsliqb0gh9m",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "api-test/sync-mwscwu160i5649",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "api-test/sync-mwsdggkju1eepq",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "api-test/sync-mwse1l2jmzprk8",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
    "repo": "arabaci0711-ux/ios-vince",
    "base_project": "unknown",
    "repo_exists": 1,
    "description": "Apple XNU-8796 kernel port and boot shim for Xiaomi Redmi 5 Plus (vince / MSM8953) targeting iOS 16 userland",
    "note": "README names no base (\"Apple XNU-8796 kernel port and Vince Boot Shim\"); base of the TODOCRACK daisy repos"
-  },
-  {
-   "repo": "blake-lucas/LightTouch",
-   "base_project": "emulator",
-   "repo_exists": 1,
-   "description": "Run classic iPhone, iPod touch and iPad firmware on Android, Linux, Windows, and macOS (iPhone OS 1 to iOS 7), built on qemu-ios",
-   "note": ""
   },
   {
    "repo": "Chengdong-Yu/UniXNU-pong",
@@ -11042,13 +13073,6 @@
    "note": "intermediate parent of the SM6225 line (spes, sapphire, fog, rain, santoni, kunzite)"
   },
   {
-   "repo": "MellysInformejtik/slop",
-   "base_project": "ios-sweet",
-   "repo_exists": 1,
-   "description": "",
-   "note": "inferred; iOSPlus10's kernel-patch source (submodule akshaynexus/slop)"
-  },
-  {
    "repo": "mytiantian001/iPadOS-nabu",
    "base_project": "ios-sweet",
    "repo_exists": 1,
@@ -11061,13 +13085,6 @@
    "repo_exists": 0,
    "description": "",
    "note": "named in HakiOS READMEs as the new home of kernel + user space (\"until it is renamed\"); GitHub returns 404"
-  },
-  {
-   "repo": "open-mapple/manifest",
-   "base_project": "Open Mapple",
-   "repo_exists": 1,
-   "description": "",
-   "note": "family root: repo manifest for Open Mapple (loader, userland, Mali Metal driver, devices incl. sweet/sunfish); its credits are on an external page not read here"
   },
   {
    "repo": "orhunnx/beyond2lte-uefi",
@@ -11120,6 +13137,55 @@
   },
   {
    "repo": "other-mwsaj3kftdax/port-2",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "other-mwsbim6s4aps/port-2",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "other-mwscl6mdr3xn/port-2",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "other-mwscql4g8npx/port-2",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "other-mwscs4v7s6ks/port-2",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "other-mwscwdxknb58/port-2",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "other-mwsdg7v6a30h/port-2",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "other-mwse1cgyzlgd/port-2",
    "base_project": "",
    "repo_exists": 1,
    "description": "",
@@ -11203,6 +13269,55 @@
    "note": ""
   },
   {
+   "repo": "tghmwsbim6s4aps/port-mwsbim6s4aps",
+   "base_project": "fam-mwsbim6s4aps",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "tghmwscl6mdr3xn/port-mwscl6mdr3xn",
+   "base_project": "fam-mwscl6mdr3xn",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "tghmwscql4g8npx/port-mwscql4g8npx",
+   "base_project": "fam-mwscql4g8npx",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "tghmwscs4v7s6ks/port-mwscs4v7s6ks",
+   "base_project": "fam-mwscs4v7s6ks",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "tghmwscwdxknb58/port-mwscwdxknb58",
+   "base_project": "fam-mwscwdxknb58",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "tghmwsdg7v6a30h/port-mwsdg7v6a30h",
+   "base_project": "fam-mwsdg7v6a30h",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "tghmwse1cgyzlgd/port-mwse1cgyzlgd",
+   "base_project": "fam-mwse1cgyzlgd",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
    "repo": "tlfares/iOS16-on-A40",
    "base_project": "ios-sweet",
    "repo_exists": 1,
@@ -11275,6 +13390,30 @@
    "base_exists": 1
   },
   {
+   "repo": "akshaynexus/DarwinBoot",
+   "base": "UniXNU/DarwinBoot",
+   "relation": "fork-of",
+   "note": "GitHub parent",
+   "source": "github:parent",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/ios-sweet",
+   "base": "dipa-studio/ios-sweet",
+   "relation": "fork-of",
+   "note": "GitHub parent",
+   "source": "github:parent",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/iOSPlus10",
+   "base": "AdyaGMD/ios-spes",
+   "relation": "ported-from",
+   "note": "iOSPlus10 CREDITS.md:59: Redmi Note 11 (SM6225) port reference",
+   "source": "https://github.com/akshaynexus/iOSPlus10",
+   "base_exists": 1
+  },
+  {
    "repo": "akshaynexus/iOSPlus10",
    "base": "Chengdong-Yu/UniXNU-pong",
    "relation": "ported-from",
@@ -11300,6 +13439,14 @@
   },
   {
    "repo": "akshaynexus/iOSPlus10",
+   "base": "NWylynko/ios-flame",
+   "relation": "uses",
+   "note": "iOSPlus10 .gitmodules:15, docs/external-repos.md:26: submodule external/ios-flame (the userland build reads it)",
+   "source": "https://github.com/akshaynexus/iOSPlus10",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/iOSPlus10",
    "base": "UniXNU/DarwinBoot",
    "relation": "uses",
    "note": "description: \"via Mu UEFI + UniXNU/DarwinBoot + XNU\"",
@@ -11312,6 +13459,46 @@
    "relation": "uses",
    "note": "Credits: \"UniXNU & DarwinBoot: Unified UEFI boot manager and XNU loader on ARM64\"; submodule external/UniXNU = akshaynexus/UniXNU (branch iosplus10): boot manager, DarwinBoot, NativeAdreno, NativeMetal, AirNir",
    "source": "https://github.com/akshaynexus/iOSPlus10#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/iOSPlus10",
+   "base": "aTechGeekDev/ios-apollo",
+   "relation": "ported-from",
+   "note": "iOSPlus10 CREDITS.md:53, docs/external-repos.md:42: hypervisor-safe MMIO accessors, staged GPU zap ladder",
+   "source": "https://github.com/akshaynexus/iOSPlus10",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/iOSPlus10",
+   "base": "akshaynexus/DarwinBoot",
+   "relation": "uses",
+   "note": "iOSPlus10 docs/external-repos.md:24: DarwinBoot fork nested in the UniXNU submodule",
+   "source": "https://github.com/akshaynexus/iOSPlus10",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/iOSPlus10",
+   "base": "akshaynexus/Mu-Silicum-negroni",
+   "relation": "uses",
+   "note": "iOSPlus10 .gitmodules:7, docs/external-repos.md:23: submodule external/Mu-Silicium-negroni, required",
+   "source": "https://github.com/akshaynexus/iOSPlus10",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/iOSPlus10",
+   "base": "akshaynexus/UniXNU",
+   "relation": "uses",
+   "note": "iOSPlus10 .gitmodules:11, docs/external-repos.md:24: submodule external/UniXNU (branch iosplus10), required",
+   "source": "https://github.com/akshaynexus/iOSPlus10",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/iOSPlus10",
+   "base": "akshaynexus/slop",
+   "relation": "uses",
+   "note": "iOSPlus10 .gitmodules:3, docs/external-repos.md:22: submodule external/slop, required",
+   "source": "https://github.com/akshaynexus/iOSPlus10",
    "base_exists": 1
   },
   {
@@ -11332,10 +13519,34 @@
   },
   {
    "repo": "akshaynexus/iOSPlus10",
+   "base": "none24smu/UniXNU",
+   "relation": "ported-from",
+   "note": "iOSPlus10 CREDITS.md:44, docs/external-repos.md:36: UniXNU-ios26, xnu-12377 (iOS 26) kernel work, starting point for the iOS 26 phase",
+   "source": "https://github.com/akshaynexus/iOSPlus10",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/iOSPlus10",
+   "base": "none24smu/UniXNU-zeta",
+   "relation": "ported-from",
+   "note": "iOSPlus10 CREDITS.md:44, docs/external-repos.md:37: shared-cache PAC rewrite, lite job list, boot watchdog policy",
+   "source": "https://github.com/akshaynexus/iOSPlus10",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/iOSPlus10",
    "base": "oosexgang/hackios-xnu-userland",
    "relation": "ported-from",
    "note": "Credits: \"HackiOS userland integration and Mesa/EAGL userspace\"; submodule external/hackios-xnu-userland",
    "source": "https://github.com/akshaynexus/iOSPlus10#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/iOSPlus10",
+   "base": "oosexgang/hackios-xnu-userland",
+   "relation": "uses",
+   "note": "iOSPlus10 .gitmodules:19, docs/external-repos.md:25: submodule external/hackios-xnu-userland, required",
+   "source": "https://github.com/akshaynexus/iOSPlus10",
    "base_exists": 1
   },
   {
@@ -11387,11 +13598,179 @@
    "base_exists": 1
   },
   {
+   "repo": "akshaynexus/iOSPlus10",
+   "base": "syncmodz/ios-s9",
+   "relation": "ported-from",
+   "note": "iOSPlus10 CREDITS.md:56: driver and kernel adaptations for Snapdragon 845 (reference)",
+   "source": "https://github.com/akshaynexus/iOSPlus10",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/Mu-Silicum-negroni",
+   "base": "pawlickerr/Mu-Silicum-negroni",
+   "relation": "fork-of",
+   "note": "GitHub parent",
+   "source": "github:parent",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/OneiOS",
+   "base": "Droid-VM/NativeAdreno",
+   "relation": "uses",
+   "note": "docs/references.md:51: the guest accelerator files and the ABI header, Direct",
+   "source": "https://github.com/akshaynexus/OneiOS",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/OneiOS",
+   "base": "Droid-VM/NativeMetal",
+   "relation": "uses",
+   "note": "docs/references.md:53: the Metal plug-in, Direct",
+   "source": "https://github.com/akshaynexus/OneiOS",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/OneiOS",
+   "base": "Droid-VM/NativeMobileDisplay",
+   "relation": "uses",
+   "note": "docs/references.md:75, docs/architecture.md:39: the guest display driver",
+   "source": "https://github.com/akshaynexus/OneiOS",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/OneiOS",
+   "base": "Droid-VM/UniXNU",
+   "relation": "uses",
+   "note": "kernel/pins.sh:20-25: the kernel base, XNU 12377 from Droid-VM's UniXNU fork (pin 62d0b11, wip/droidvm); docs/architecture.md:34",
+   "source": "https://github.com/akshaynexus/OneiOS",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/OneiOS",
+   "base": "Droid-VM/UniXNU-droidvm",
+   "relation": "uses",
+   "note": "kernel/pins.sh:26: board patches on that fork's series (pin f9121cd); docs/references.md:127 \"Direct (the kernel base)\"; guest drivers and the ADT (docs/booter.md:1785)",
+   "source": "https://github.com/akshaynexus/OneiOS",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/OneiOS",
+   "base": "Droid-VM/applebox",
+   "relation": "uses",
+   "note": "docs/references.md:119: debug tools in the guest",
+   "source": "https://github.com/akshaynexus/OneiOS",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/OneiOS",
+   "base": "Droid-VM/ownervisor",
+   "relation": "uses",
+   "note": "docs/references.md:119, docs/userland.md:75: debug shell in the guest",
+   "source": "https://github.com/akshaynexus/OneiOS",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/OneiOS",
+   "base": "MysticGSI/mysticgsi",
+   "relation": "uses",
+   "note": "README.md:112 Credits: \"MysticGSI: the image build model\"",
+   "source": "https://github.com/akshaynexus/OneiOS#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/OneiOS",
+   "base": "UniXNU/ArmCpu",
+   "relation": "uses",
+   "note": "docs/booter.md:1786, docs/agents.md:148: board driver linked; its requirements define xnuhost's machine",
+   "source": "https://github.com/akshaynexus/OneiOS",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/OneiOS",
+   "base": "UniXNU/ArmDTPlatform",
+   "relation": "uses",
+   "note": "docs/booter.md:1786, docs/agents.md:148: board driver linked",
+   "source": "https://github.com/akshaynexus/OneiOS",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/OneiOS",
+   "base": "UniXNU/DarwinBoot",
+   "relation": "ported-from",
+   "note": "docs/booter.md:1784: DarwinBoot 8544957 DarwinBoot.c, BootArgs.h, PackedRamdisk.h -> runtime/loader/src/macho.c, boot.c",
+   "source": "https://github.com/akshaynexus/OneiOS",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/OneiOS",
+   "base": "UniXNU/QcaBluetooth",
+   "relation": "ported-from",
+   "note": "docs/references.md:106: the Skywalk UART pipe adapted into drivers/bluetooth/oneios_bt_sk.c",
+   "source": "https://github.com/akshaynexus/OneiOS",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/OneiOS",
+   "base": "UniXNU/RamBlock",
+   "relation": "uses",
+   "note": "docs/booter.md:1788: the role (seed + persistent store)",
+   "source": "https://github.com/akshaynexus/OneiOS",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/OneiOS",
+   "base": "UniXNU/ShengHidInput",
+   "relation": "uses",
+   "note": "docs/references.md:84: Used, kernel/patches/oneios-hosted/hid stages it",
+   "source": "https://github.com/akshaynexus/OneiOS",
+   "base_exists": 1
+  },
+  {
    "repo": "akshaynexus/OneiOS",
    "base": "UniXNU/UniXNU",
    "relation": "uses",
    "note": "Credits: \"UniXNU and Droid-VM: XNU on non-Apple ARM64, drm2kgsl, the guest drivers\"; kernel is \"XNU 12377 (UniXNU / Droid-VM fork)\"",
    "source": "https://github.com/akshaynexus/OneiOS#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/OneiOS",
+   "base": "UniXNU/UniXNU-sheng",
+   "relation": "ported-from",
+   "note": "docs/references.md:105: WifiNet.cpp layouts and numbers taken into kernel/patches/oneios-hosted/net/OneiOSWifi.cpp",
+   "source": "https://github.com/akshaynexus/OneiOS",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/OneiOS",
+   "base": "UniXNU/VirtioMmioBlock",
+   "relation": "uses",
+   "note": "docs/booter.md:1787, docs/references.md:114: Direct against xnuhost's virtio_blk",
+   "source": "https://github.com/akshaynexus/OneiOS",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/OneiOS",
+   "base": "UniXNU/XnuPrelink",
+   "relation": "uses",
+   "note": "docs/references.md:138: kernel/prelink/build.sh's matcher and fileset emitter, Use it",
+   "source": "https://github.com/akshaynexus/OneiOS",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/OneiOS",
+   "base": "WeWaffles/OneLineage",
+   "relation": "uses",
+   "note": "README.md:111 Credits: \"OneOS (fahadalijaved) and OneLineage (WeWaffles): the container hot-switch\"",
+   "source": "https://github.com/akshaynexus/OneiOS#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/OneiOS",
+   "base": "akshaynexus/OneOS",
+   "relation": "uses",
+   "note": "docs/architecture.md:46, .gitmodules:3: the OneOS fork (branch oneios) is the switcher app, submodule app/",
+   "source": "https://github.com/akshaynexus/OneiOS",
    "base_exists": 1
   },
   {
@@ -11419,11 +13798,59 @@
    "base_exists": 1
   },
   {
+   "repo": "akshaynexus/OneiOS",
+   "base": "steelbrain/metal2vulkan",
+   "relation": "uses",
+   "note": "docs/references.md:54, scripts/setup/get-references.sh:48: the Metal plug-in's translator (userland/metal/build.sh)",
+   "source": "https://github.com/akshaynexus/OneiOS",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/OneOS",
+   "base": "MysticGSI/mysticgsi",
+   "relation": "uses",
+   "note": "README: \"builds its guest images with MysticGSI\"",
+   "source": "https://github.com/akshaynexus/OneOS#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/OneOS",
+   "base": "WeWaffles/OneLineage",
+   "relation": "derived-from",
+   "note": "README: \"OneOS started from OneLineage by WeWaffles\"",
+   "source": "https://github.com/akshaynexus/OneOS#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/OneOS",
+   "base": "fahadalijaved/OneOS",
+   "relation": "fork-of",
+   "note": "GitHub parent",
+   "source": "github:parent",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/slop",
+   "base": "MellysInformejtik/slop",
+   "relation": "fork-of",
+   "note": "GitHub parent",
+   "source": "github:parent",
+   "base_exists": 1
+  },
+  {
    "repo": "akshaynexus/UniXNU",
    "base": "UniXNU/UniXNU",
    "relation": "fork-of",
-   "note": "GitHub parent; iOSPlus10's external/UniXNU submodule (branch iosplus10)",
+   "note": "GitHub parent",
    "source": "github:parent",
+   "base_exists": 1
+  },
+  {
+   "repo": "akshaynexus/UniXNU",
+   "base": "akshaynexus/DarwinBoot",
+   "relation": "uses",
+   "note": "iOSPlus10 docs/external-repos.md:24: drivers/DarwinBoot submodule on the akshaynexus fork",
+   "source": "https://github.com/akshaynexus/iOSPlus10",
    "base_exists": 1
   },
   {
@@ -11432,6 +13859,14 @@
    "relation": "derived-from",
    "note": "description: \"Companion of ASoftware iOS for Windows\" (QEMU + a native EL0 engine)",
    "source": "https://github.com/alpersamur3/asoft-ios-android#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "android-a5y7lte/ios-surya",
+   "base": "dipa-studio/ios-sweet",
+   "relation": "fork-of",
+   "note": "GitHub parent and root of the fork network",
+   "source": "https://github.com/android-a5y7lte/ios-surya",
    "base_exists": 1
   },
   {
@@ -11515,6 +13950,14 @@
    "base_exists": 1
   },
   {
+   "repo": "Asultop/UniXNU-NX769J",
+   "base": "UniXNU/UniXNU",
+   "relation": "uses",
+   "note": "README: shared code lives in UniXNU",
+   "source": "https://github.com/Asultop/UniXNU-NX769J#readme",
+   "base_exists": 1
+  },
+  {
    "repo": "aTechGeekDev/ios-apollo",
    "base": "JopangJovan/hackios-xnu-kernel-umi",
    "relation": "ported-from",
@@ -11571,6 +14014,14 @@
    "base_exists": 1
   },
   {
+   "repo": "Axiang-dev/UniXNU-caihong",
+   "base": "UniXNU/UniXNU",
+   "relation": "uses",
+   "note": "UniXNU board port (GitHub description)",
+   "source": "https://github.com/Axiang-dev/UniXNU-caihong#readme",
+   "base_exists": 1
+  },
+  {
    "repo": "Aymon-njz/hackios-xnu-kernel-Onyx",
    "base": "oosexgang/hakios-xnu-kernel",
    "relation": "fork-of",
@@ -11622,8 +14073,8 @@
    "repo": "blake-lucas/LightTouch",
    "base": "samhenrigold/LightTouchMac",
    "relation": "fork-of",
-   "note": "GitHub parent; \"It is a fork of Light Touch for Mac\"",
-   "source": "github:parent",
+   "note": "GitHub parent (\"a fork of Light Touch for Mac\")",
+   "source": "https://github.com/blake-lucas/LightTouch",
    "base_exists": 1
   },
   {
@@ -11696,6 +14147,14 @@
    "relation": "uses",
    "note": "\"The new HackiOS kernel reached APFS and PID 1 on the V60\"; a \"new-base GUI1 candidate\" (migration to HackiOS under way)",
    "source": "https://github.com/ch1tmdgus/ios-v60#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "chenzikang/z3q-port",
+   "base": "dipa-studio/ios-sweet",
+   "relation": "derived-from",
+   "note": "GitHub description: \"port of ios-sweet\"; README is ios-sweet's text",
+   "source": "https://github.com/chenzikang/z3q-port#readme",
    "base_exists": 1
   },
   {
@@ -12003,11 +14462,99 @@
    "base_exists": 1
   },
   {
+   "repo": "dmyslisz/ios-a71",
+   "base": "dipa-studio/ios-sweet",
+   "relation": "fork-of",
+   "note": "GitHub parent",
+   "source": "github:parent",
+   "base_exists": 1
+  },
+  {
    "repo": "dristotle/ios-bluejay",
    "base": "dipa-studio/ios-sweet",
    "relation": "fork-of",
    "note": "GitHub parent; \"It builds on dipa-studio/ios-sweet\"",
    "source": "github:parent",
+   "base_exists": 1
+  },
+  {
+   "repo": "Droid-VM/droidvm-meta-repo",
+   "base": "Droid-VM/UniXNU-droidvm",
+   "relation": "uses",
+   "note": "the guest it builds (OneiOS docs/references.md:17-27)",
+   "source": "https://github.com/akshaynexus/OneiOS",
+   "base_exists": 1
+  },
+  {
+   "repo": "Droid-VM/NativeAdreno",
+   "base": "UniXNU/Adreno740",
+   "relation": "fork-of",
+   "note": "GitHub parent",
+   "source": "github:parent",
+   "base_exists": 1
+  },
+  {
+   "repo": "Droid-VM/NativeAdreno",
+   "base": "UniXNU/AdrenoPM4",
+   "relation": "uses",
+   "note": "get-references.sh: \"the two kits NativeAdreno's sources include\"",
+   "source": "https://github.com/akshaynexus/OneiOS",
+   "base_exists": 1
+  },
+  {
+   "repo": "Droid-VM/NativeAdreno",
+   "base": "UniXNU/ArmSmmu4K",
+   "relation": "uses",
+   "note": "get-references.sh: \"the two kits NativeAdreno's sources include\"",
+   "source": "https://github.com/akshaynexus/OneiOS",
+   "base_exists": 1
+  },
+  {
+   "repo": "Droid-VM/NativeMetal",
+   "base": "UniXNU/AdrenoMetal",
+   "relation": "fork-of",
+   "note": "GitHub parent",
+   "source": "github:parent",
+   "base_exists": 1
+  },
+  {
+   "repo": "Droid-VM/NativeMetal",
+   "base": "steelbrain/metal2vulkan",
+   "relation": "uses",
+   "note": "the plug-in's translator (OneiOS docs/references.md:54)",
+   "source": "https://github.com/akshaynexus/OneiOS",
+   "base_exists": 1
+  },
+  {
+   "repo": "Droid-VM/NativeMobileDisplay",
+   "base": "UniXNU/GopFramebuffer",
+   "relation": "fork-of",
+   "note": "GitHub parent",
+   "source": "github:parent",
+   "base_exists": 1
+  },
+  {
+   "repo": "Droid-VM/UniXNU",
+   "base": "UniXNU/UniXNU",
+   "relation": "fork-of",
+   "note": "GitHub parent",
+   "source": "github:parent",
+   "base_exists": 1
+  },
+  {
+   "repo": "Droid-VM/UniXNU-droidvm",
+   "base": "Droid-VM/UniXNU",
+   "relation": "uses",
+   "note": "README: built with the UniXNU fork Droid-VM/UniXNU (branch wip/hackintosh)",
+   "source": "https://github.com/Droid-VM/UniXNU-droidvm#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "Droid-VM/UniXNU-droidvm",
+   "base": "UniXNU/UniXNU",
+   "relation": "derived-from",
+   "note": "README: \"Device repository of UniXNU for a DroidVM guest\"",
+   "source": "https://github.com/Droid-VM/UniXNU-droidvm#readme",
    "base_exists": 1
   },
   {
@@ -12147,6 +14694,38 @@
    "base_exists": 1
   },
   {
+   "repo": "fahadalijaved/OneOS",
+   "base": "MysticGSI/mysticgsi",
+   "relation": "uses",
+   "note": "README: \"builds its guest images with MysticGSI\"",
+   "source": "https://github.com/fahadalijaved/OneOS#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "fahadalijaved/OneOS",
+   "base": "WeWaffles/OneLineage",
+   "relation": "derived-from",
+   "note": "README: \"OneOS started from OneLineage by WeWaffles\"",
+   "source": "https://github.com/fahadalijaved/OneOS#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "Fearless109/hakios-sm8650",
+   "base": "YX2748198202-lab/UniXNU-shennong",
+   "relation": "ported-from",
+   "note": "README: \"Reference bring-up (UniXNU)\"",
+   "source": "https://github.com/Fearless109/hakios-sm8650#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "Fearless109/hakios-sm8650",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "uses",
+   "note": "README: the kernel, loader, drivers and tools are the common HakiOS repository's",
+   "source": "https://github.com/Fearless109/hakios-sm8650#readme",
+   "base_exists": 1
+  },
+  {
    "repo": "Floppikrob/ios-galaxy-s8",
    "base": "dipa-studio/ios-sweet",
    "relation": "derived-from",
@@ -12240,6 +14819,14 @@
    "relation": "derived-from",
    "note": "Credits: \"the Galaxy A5 2016 port (4 KiB pages, Exynos, S-Boot) this project is based on\"",
    "source": "https://github.com/gorkemoji/ios-d2s#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "HeliumStudio-Dev/hackios-xnu-kernel",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "derived-from",
+   "note": "README: \"本分支基于上游 HakiOS\" (this branch is based on upstream HakiOS); not a GitHub fork",
+   "source": "https://github.com/HeliumStudio-Dev/hackios-xnu-kernel/tree/raphael-bringup",
    "base_exists": 1
   },
   {
@@ -12347,6 +14934,14 @@
    "base_exists": 1
   },
   {
+   "repo": "kerrinz/UniXNU-zorn",
+   "base": "UniXNU/UniXNU",
+   "relation": "uses",
+   "note": "UniXNU device repository (README)",
+   "source": "https://github.com/kerrinz/UniXNU-zorn#readme",
+   "base_exists": 1
+  },
+  {
    "repo": "KlugKlugTG/Un1box",
    "base": "blake-lucas/LightTouch",
    "relation": "fork-of",
@@ -12368,6 +14963,22 @@
    "relation": "fork-of",
    "note": "root of the GitHub fork network (source); \"and of Light Touch for Mac before it\"",
    "source": "github:source",
+   "base_exists": 1
+  },
+  {
+   "repo": "kmu1757/UniXNU-t970",
+   "base": "Chengdong-Yu/UniXNU-pong",
+   "relation": "derived-from",
+   "note": "GitHub description: \"based on UniXNU-pong\" (that repo answers 404)",
+   "source": "https://github.com/kmu1757/UniXNU-t970#readme",
+   "base_exists": 0
+  },
+  {
+   "repo": "kmu1757/UniXNU-t970",
+   "base": "UniXNU/UniXNU",
+   "relation": "uses",
+   "note": "UniXNU format-2 device repo (README)",
+   "source": "https://github.com/kmu1757/UniXNU-t970#readme",
    "base_exists": 1
   },
   {
@@ -12440,6 +15051,22 @@
    "relation": "derived-from",
    "note": "\"Mainline HakiOS ... This port is based on the original HackiOS/Mi 10 Ultra tree and follows the mainline where it applies\"",
    "source": "https://github.com/Liquidation0619/hakios-thyme-mi10s#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "lonzzi/UniXNU-houji",
+   "base": "UniXNU/UniXNU",
+   "relation": "derived-from",
+   "note": "README: built on the UniXNU ecosystem (基于 UniXNU 生态)",
+   "source": "https://github.com/lonzzi/UniXNU-houji#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "loolooc/UniXNU-meizu21",
+   "base": "UniXNU/UniXNU",
+   "relation": "uses",
+   "note": "UniXNU port (README, format-2 device repo)",
+   "source": "https://github.com/loolooc/UniXNU-meizu21#readme",
    "base_exists": 1
   },
   {
@@ -12779,6 +15406,30 @@
    "base_exists": 1
   },
   {
+   "repo": "none24smu/UniXNU",
+   "base": "UniXNU/UniXNU",
+   "relation": "fork-of",
+   "note": "GitHub parent",
+   "source": "github:parent",
+   "base_exists": 1
+  },
+  {
+   "repo": "none24smu/UniXNU-zeta",
+   "base": "UniXNU/UniXNU",
+   "relation": "uses",
+   "note": "UniXNU device repository (README)",
+   "source": "https://github.com/none24smu/UniXNU-zeta#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "none24smu/UniXNU-zeta",
+   "base": "none24smu/UniXNU",
+   "relation": "uses",
+   "note": "iOSPlus10 docs: UniXNU-ios26 is the iOS 26 kernel work of the Surface Duo 2",
+   "source": "https://github.com/akshaynexus/iOSPlus10",
+   "base_exists": 1
+  },
+  {
    "repo": "NWylynko/ios-flame",
    "base": "MakrSas/ios-topaz",
    "relation": "ported-from",
@@ -12819,6 +15470,22 @@
    "base_exists": 1
   },
   {
+   "repo": "open-mapple/mapple_build",
+   "base": "Nik300/ios-viva",
+   "relation": "ported-from",
+   "note": "NOTICE: tools/ (ADT, boot image, root image, USB link tools) from ios-viva",
+   "source": "https://github.com/open-mapple/mapple_build/blob/main/NOTICE",
+   "base_exists": 1
+  },
+  {
+   "repo": "open-mapple/mapple_build",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "ported-from",
+   "note": "NOTICE: ios165/fetch-from-ipsw.py and tools/mkxnup.py from HakiOS",
+   "source": "https://github.com/open-mapple/mapple_build/blob/main/NOTICE",
+   "base_exists": 1
+  },
+  {
    "repo": "open-mapple/mapple_device_setup_scripts",
    "base": "oosexgang/hakios-xnu-kernel",
    "relation": "uses",
@@ -12830,8 +15497,200 @@
    "repo": "open-mapple/mapple_device_setup_scripts",
    "base": "open-mapple/manifest",
    "relation": "uses",
-   "note": "matches against \"Open Mapple's drivers\" from a repo sync of the open-mapple/manifest",
-   "source": "https://github.com/open-mapple/mapple_device_setup_scripts#readme",
+   "note": "README: --ours takes folders of a repo sync of the open-mapple/manifest",
+   "source": "https://github.com/open-mapple/mapple_device_setup_scripts",
+   "base_exists": 1
+  },
+  {
+   "repo": "open-mapple/mapple_gpu_adreno",
+   "base": "open-mapple/mapple_gpu_mali",
+   "relation": "uses",
+   "note": "README: \"an overlay on mapple_gpu_mali\"",
+   "source": "https://github.com/open-mapple/mapple_gpu_adreno",
+   "base_exists": 1
+  },
+  {
+   "repo": "open-mapple/mapple_gpu_mali",
+   "base": "Nik300/viva-gpu",
+   "relation": "derived-from",
+   "note": "NOTICE: \"Based on viva-gpu by Nicola Leone Ciardi ... a modified version of viva-gpu\"",
+   "source": "https://github.com/open-mapple/mapple_gpu_mali/blob/main/NOTICE",
+   "base_exists": 1
+  },
+  {
+   "repo": "open-mapple/mapple_loader",
+   "base": "Nik300/ios-viva",
+   "relation": "ported-from",
+   "note": "NOTICE: shim/, viva's boot shim",
+   "source": "https://github.com/open-mapple/mapple_loader/blob/main/NOTICE",
+   "base_exists": 1
+  },
+  {
+   "repo": "open-mapple/mapple_loader",
+   "base": "dipa-studio/ios-sweet",
+   "relation": "ported-from",
+   "note": "NOTICE: shim/qcom/ from ios-sweet",
+   "source": "https://github.com/open-mapple/mapple_loader/blob/main/NOTICE",
+   "base_exists": 1
+  },
+  {
+   "repo": "open-mapple/mapple_loader",
+   "base": "hellagarage/ios-sweet-pixel",
+   "relation": "ported-from",
+   "note": "NOTICE: the Pixel 4a's board support in shim/qcom/",
+   "source": "https://github.com/open-mapple/mapple_loader/blob/main/NOTICE",
+   "base_exists": 1
+  },
+  {
+   "repo": "open-mapple/mapple_loader",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "ported-from",
+   "note": "NOTICE: mtk/loader/ (mtkloader) from HakiOS",
+   "source": "https://github.com/open-mapple/mapple_loader/blob/main/NOTICE",
+   "base_exists": 1
+  },
+  {
+   "repo": "open-mapple/mapple_releases",
+   "base": "open-mapple/manifest",
+   "relation": "uses",
+   "note": "manifest spaced-1.0.xml: Release 1's sources",
+   "source": "https://github.com/open-mapple/manifest/blob/main/spaced-1.0.xml",
+   "base_exists": 1
+  },
+  {
+   "repo": "open-mapple/mapple_splitboot",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "ported-from",
+   "note": "README: \"The files marked MIT come from HakiOS\"",
+   "source": "https://github.com/open-mapple/mapple_splitboot",
+   "base_exists": 1
+  },
+  {
+   "repo": "open-mapple/xnu_device_google_sunfish",
+   "base": "open-mapple/xnu_kernel_qcom_common",
+   "relation": "uses",
+   "note": "README: the kernel is built from xnu_kernel_qcom_common",
+   "source": "https://github.com/open-mapple/xnu_device_google_sunfish",
+   "base_exists": 1
+  },
+  {
+   "repo": "open-mapple/xnu_device_realme_spaced",
+   "base": "0xBEEBAD/hakios-mt6768",
+   "relation": "derived-from",
+   "note": "NOTICE: \"This repository carries on hakios-mt6768's history for the realme 8i\" (HakiOS for the Infinix Hot 20)",
+   "source": "https://github.com/open-mapple/xnu_device_realme_spaced/blob/main/NOTICE",
+   "base_exists": 1
+  },
+  {
+   "repo": "open-mapple/xnu_device_realme_spaced",
+   "base": "open-mapple/xnu_kernel_mediatek_mt6781",
+   "relation": "uses",
+   "note": "device.conf: \"Its SoC layer is kernel/mediatek/mt6781\"",
+   "source": "https://github.com/open-mapple/xnu_device_realme_spaced/blob/main/device.conf",
+   "base_exists": 1
+  },
+  {
+   "repo": "open-mapple/xnu_device_xiaomi_sweet",
+   "base": "open-mapple/xnu_kernel_qcom_common",
+   "relation": "uses",
+   "note": "README: the kernel is built from xnu_kernel_qcom_common",
+   "source": "https://github.com/open-mapple/xnu_device_xiaomi_sweet",
+   "base_exists": 1
+  },
+  {
+   "repo": "open-mapple/xnu_kernel_mediatek_common",
+   "base": "Nik300/ios-viva",
+   "relation": "derived-from",
+   "note": "README/NOTICE: ios-viva's patch series as commits",
+   "source": "https://github.com/open-mapple/xnu_kernel_mediatek_common",
+   "base_exists": 1
+  },
+  {
+   "repo": "open-mapple/xnu_kernel_mediatek_common",
+   "base": "blacktop/darwin-xnu-build",
+   "relation": "uses",
+   "note": "NOTICE: its build fixes and patches",
+   "source": "https://github.com/open-mapple/xnu_kernel_mediatek_common/blob/main/NOTICE",
+   "base_exists": 1
+  },
+  {
+   "repo": "open-mapple/xnu_kernel_mediatek_common",
+   "base": "dipa-studio/ios-sweet",
+   "relation": "derived-from",
+   "note": "README/NOTICE: \"the patch series of ios-sweet and ios-viva as commits, each naming its origin\"",
+   "source": "https://github.com/open-mapple/xnu_kernel_mediatek_common",
+   "base_exists": 1
+  },
+  {
+   "repo": "open-mapple/xnu_kernel_mediatek_common",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "ported-from",
+   "note": "NOTICE: HakiOS's speaker guard, Bluetooth and fuel gauge code (files listed with upstream commits)",
+   "source": "https://github.com/open-mapple/xnu_kernel_mediatek_common/blob/main/NOTICE",
+   "base_exists": 1
+  },
+  {
+   "repo": "open-mapple/xnu_kernel_mediatek_mt6781",
+   "base": "Nik300/ios-viva",
+   "relation": "ported-from",
+   "note": "NOTICE: viva_cpufreq.c and the Viva MDP/Scaler/JPEG drivers from ios-viva",
+   "source": "https://github.com/open-mapple/xnu_kernel_mediatek_mt6781/blob/main/NOTICE",
+   "base_exists": 1
+  },
+  {
+   "repo": "open-mapple/xnu_kernel_mediatek_mt6781",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "derived-from",
+   "note": "NOTICE: mtk/mt6781/ \"Started in HakiOS\"; README: HakiOS's earlier MT6781 drivers are in the history up to 4d59e97",
+   "source": "https://github.com/open-mapple/xnu_kernel_mediatek_mt6781",
+   "base_exists": 1
+  },
+  {
+   "repo": "open-mapple/xnu_kernel_mediatek_mt6781",
+   "base": "open-mapple/xnu_kernel_mediatek_common",
+   "relation": "uses",
+   "note": "README: laid over kernel/mediatek/common",
+   "source": "https://github.com/open-mapple/xnu_kernel_mediatek_mt6781",
+   "base_exists": 1
+  },
+  {
+   "repo": "open-mapple/xnu_kernel_qcom_common",
+   "base": "bangprovn/ios-fuxi",
+   "relation": "ported-from",
+   "note": "NOTICE: its changes to Apple's files only",
+   "source": "https://github.com/open-mapple/xnu_kernel_qcom_common/blob/main/NOTICE",
+   "base_exists": 1
+  },
+  {
+   "repo": "open-mapple/xnu_kernel_qcom_common",
+   "base": "blacktop/darwin-xnu-build",
+   "relation": "uses",
+   "note": "NOTICE: its build fixes",
+   "source": "https://github.com/open-mapple/xnu_kernel_qcom_common/blob/main/NOTICE",
+   "base_exists": 1
+  },
+  {
+   "repo": "open-mapple/xnu_kernel_qcom_common",
+   "base": "dipa-studio/ios-sweet",
+   "relation": "derived-from",
+   "note": "NOTICE: ios-sweet's patch series for the Redmi Note 10 Pro",
+   "source": "https://github.com/open-mapple/xnu_kernel_qcom_common/blob/main/NOTICE",
+   "base_exists": 1
+  },
+  {
+   "repo": "open-mapple/xnu_kernel_qcom_common",
+   "base": "edi194/ios-fajita",
+   "relation": "ported-from",
+   "note": "NOTICE: its changes to Apple's files only",
+   "source": "https://github.com/open-mapple/xnu_kernel_qcom_common/blob/main/NOTICE",
+   "base_exists": 1
+  },
+  {
+   "repo": "open-mapple/xnu_kernel_qcom_common",
+   "base": "hellagarage/ios-sweet-pixel",
+   "relation": "ported-from",
+   "note": "NOTICE: the Pixel 4a and Adreno 618 work (branch sunfish)",
+   "source": "https://github.com/open-mapple/xnu_kernel_qcom_common/blob/main/NOTICE",
    "base_exists": 1
   },
   {
@@ -12871,6 +15730,14 @@
    "base": "dipa-studio/ios-sweet",
    "relation": "fork-of",
    "note": "GitHub parent (README is ios-sweet's unchanged)",
+   "source": "github:parent",
+   "base_exists": 1
+  },
+  {
+   "repo": "palazik/ios-dodge",
+   "base": "dipa-studio/ios-sweet",
+   "relation": "fork-of",
+   "note": "GitHub parent",
    "source": "github:parent",
    "base_exists": 1
   },
@@ -12915,6 +15782,38 @@
    "base_exists": 1
   },
   {
+   "repo": "peiyuesheng666/UniXNU-PHY120",
+   "base": "UniXNU/UniXNU",
+   "relation": "uses",
+   "note": "README: device port of UniXNU",
+   "source": "https://github.com/peiyuesheng666/UniXNU-PHY120#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "PixOS-Project/pixelios-kernel",
+   "base": "dipa-studio/ios-sweet",
+   "relation": "derived-from",
+   "note": "README: \"inspired by, and builds on, ios-sweet\" (not a GitHub fork)",
+   "source": "https://github.com/PixOS-Project/pixelios-kernel",
+   "base_exists": 1
+  },
+  {
+   "repo": "PixOS-Project/pixelios-userland",
+   "base": "PixOS-Project/pixelios-kernel",
+   "relation": "uses",
+   "note": "README: boots with the kernel repository's shim and XNU patches",
+   "source": "https://github.com/PixOS-Project/pixelios-userland",
+   "base_exists": 1
+  },
+  {
+   "repo": "PixOS-Project/pixelios-userland",
+   "base": "dipa-studio/ios-sweet",
+   "relation": "derived-from",
+   "note": "README: \"it is based on ios-sweet\"; sweet-root-tweaks.py is a clean-room rewrite",
+   "source": "https://github.com/PixOS-Project/pixelios-userland",
+   "base_exists": 1
+  },
+  {
    "repo": "popovluka/ios-lemonadep",
    "base": "dipa-studio/ios-sweet",
    "relation": "fork-of",
@@ -12928,6 +15827,86 @@
    "relation": "fork-of",
    "note": "GitHub parent; \"Daisy port of the ios-vince XNU-8796 / iOS 16 bring-up\"",
    "source": "github:parent",
+   "base_exists": 1
+  },
+  {
+   "repo": "qdizax-w/hakios-sm7125",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "derived-from",
+   "note": "README: \"One HakiOS device repository\"; the porter's qdizax-w/hakios-xnu-kernel is a GitHub fork of it",
+   "source": "https://github.com/qdizax-w/hakios-sm7125",
+   "base_exists": 1
+  },
+  {
+   "repo": "qdizax-w/UniXNU-miatoll",
+   "base": "UniXNU/UniXNU",
+   "relation": "uses",
+   "note": "README: a UniXNU device repository",
+   "source": "https://github.com/qdizax-w/UniXNU-miatoll",
+   "base_exists": 1
+  },
+  {
+   "repo": "qdizax-w/UniXNU-miatoll",
+   "base": "qdizax-w/UniXNU-sm7125-common",
+   "relation": "uses",
+   "note": "README: its SoC layer",
+   "source": "https://github.com/qdizax-w/UniXNU-miatoll",
+   "base_exists": 1
+  },
+  {
+   "repo": "qdizax-w/UniXNU-miatoll",
+   "base": "qdizax-w/uefi-miatoll",
+   "relation": "uses",
+   "note": "README: Mu-Silicium miatollPkg with UniXNU and DarwinBoot",
+   "source": "https://github.com/qdizax-w/UniXNU-miatoll",
+   "base_exists": 1
+  },
+  {
+   "repo": "rafsanbasunia/ios-garnet",
+   "base": "JosephMontfort/hakios-sm7435",
+   "relation": "derived-from",
+   "note": "README Credits: the POCO X6 5G port (Montfort, Jotan)",
+   "source": "https://github.com/rafsanbasunia/ios-garnet/tree/dev",
+   "base_exists": 1
+  },
+  {
+   "repo": "rafsanbasunia/ios-garnet",
+   "base": "JosephMontfort/hakios-xnu-kernel-garnet",
+   "relation": "derived-from",
+   "note": "README Credits: the POCO X6 5G port (Montfort, Jotan)",
+   "source": "https://github.com/rafsanbasunia/ios-garnet/tree/dev",
+   "base_exists": 1
+  },
+  {
+   "repo": "rafsanbasunia/ios-garnet",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "derived-from",
+   "note": "README Credits: \"the XNU port, loader, drivers, tools and documentation this project is built on\" (not a GitHub fork)",
+   "source": "https://github.com/rafsanbasunia/ios-garnet/tree/dev",
+   "base_exists": 1
+  },
+  {
+   "repo": "RigoLigoRLC/unixnu-adreno6xx",
+   "base": "UniXNU/Adreno740",
+   "relation": "fork-of",
+   "note": "GitHub parent",
+   "source": "github:parent",
+   "base_exists": 1
+  },
+  {
+   "repo": "RigoLigoRLC/unixnu-adreno6xx",
+   "base": "UniXNU/AdrenoPM4",
+   "relation": "uses",
+   "note": "README: the build compiles the ArmSmmu4K/AdrenoPM4 sources",
+   "source": "https://github.com/RigoLigoRLC/unixnu-adreno6xx#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "RigoLigoRLC/unixnu-adreno6xx",
+   "base": "UniXNU/ArmSmmu4K",
+   "relation": "uses",
+   "note": "README: the build compiles the ArmSmmu4K/AdrenoPM4 sources",
+   "source": "https://github.com/RigoLigoRLC/unixnu-adreno6xx#readme",
    "base_exists": 1
   },
   {
@@ -12979,6 +15958,14 @@
    "base_exists": 1
   },
   {
+   "repo": "SangLuoCN/UniXNU-Nubia-Z60U",
+   "base": "UniXNU/UniXNU-sheng",
+   "relation": "derived-from",
+   "note": "README and layout copied from UniXNU-sheng",
+   "source": "https://github.com/SangLuoCN/UniXNU-Nubia-Z60U#readme",
+   "base_exists": 1
+  },
+  {
    "repo": "Scion-Project/scion-crownlte",
    "base": "Scion-Project/scion-kernel",
    "relation": "uses",
@@ -12992,6 +15979,14 @@
    "relation": "derived-from",
    "note": "\"written from Samsung's device trees and the Galaxy S9 port (scion-starlte)\"",
    "source": "https://github.com/Scion-Project/scion-crownlte#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "Scion-Project/scion-installer",
+   "base": "Scion-Project/scion-kernel",
+   "relation": "uses",
+   "note": "README: everything an installer carries is built from the kernel repository",
+   "source": "https://github.com/Scion-Project/scion-installer",
    "base_exists": 1
   },
   {
@@ -13235,11 +16230,51 @@
    "base_exists": 1
   },
   {
+   "repo": "tomaswarner/ios-dm3q",
+   "base": "dipa-studio/ios-sweet",
+   "relation": "derived-from",
+   "note": "GitHub description: \"ios-sweet port\"; README is ios-sweet's text",
+   "source": "https://github.com/tomaswarner/ios-dm3q#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "trenrua-dotcom/hakios-bangkk",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "root of the GitHub fork network; README: \"Upstream project\"",
+   "source": "https://github.com/trenrua-dotcom/hakios-bangkk",
+   "base_exists": 1
+  },
+  {
+   "repo": "trenrua-dotcom/hakios-bangkk",
+   "base": "pixelpixys/hakios-malmo",
+   "relation": "fork-of",
+   "note": "GitHub parent",
+   "source": "https://github.com/trenrua-dotcom/hakios-bangkk",
+   "base_exists": 1
+  },
+  {
    "repo": "tuxymuxy/ios-begonia",
    "base": "oosexgang/hakios-xnu-kernel",
    "relation": "derived-from",
    "note": "\"This project combines ... HakiOS XNU fork (Mali-G76 support, iOS 16 compatibility patches)\"; upstream/ pins HakiOS",
    "source": "https://github.com/tuxymuxy/ios-begonia#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "tycykp/UniXNU-OnePlus-Ace5",
+   "base": "UniXNU/UniXNU",
+   "relation": "uses",
+   "note": "UniXNU UEFI and Darwin/XNU port (README)",
+   "source": "https://github.com/tycykp/UniXNU-OnePlus-Ace5#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "UniXNU/UniXNU-sheng",
+   "base": "UniXNU/UniXNU",
+   "relation": "uses",
+   "note": "README: built with the unixnu driver of UniXNU",
+   "source": "https://github.com/UniXNU/UniXNU-sheng#readme",
    "base_exists": 1
   },
   {
@@ -13267,6 +16302,14 @@
    "base_exists": 1
   },
   {
+   "repo": "vizPilot/ios-b4q",
+   "base": "dipa-studio/ios-sweet",
+   "relation": "fork-of",
+   "note": "GitHub parent",
+   "source": "github:parent",
+   "base_exists": 1
+  },
+  {
    "repo": "wardevsa/ios-a5xelte",
    "base": "dipa-studio/ios-sweet",
    "relation": "fork-of",
@@ -13280,6 +16323,14 @@
    "relation": "fork-of",
    "note": "GitHub parent (README is ios-sweet's)",
    "source": "github:parent",
+   "base_exists": 1
+  },
+  {
+   "repo": "wardevsa/ios-a5xelte",
+   "base": "ry-diffusion/Bergamota",
+   "relation": "derived-from",
+   "note": "branch herolte-ios26: the kernel base is the port of Bergamota to xnu-12377 (post, 2026-11-22)",
+   "source": "https://www.reddit.com/r/hackios/comments/1y31zto/ios_2662_booting_on_a_samsung_galaxy_s7_exynos",
    "base_exists": 1
   },
   {
@@ -13307,6 +16358,14 @@
    "base_exists": 1
   },
   {
+   "repo": "xNekom/ios-mondrian",
+   "base": "dipa-studio/ios-sweet",
+   "relation": "fork-of",
+   "note": "GitHub parent",
+   "source": "github:parent",
+   "base_exists": 1
+  },
+  {
    "repo": "xyz-sundram/hackios-xnu-kernel",
    "base": "oosexgang/hakios-xnu-kernel",
    "relation": "fork-of",
@@ -13324,6 +16383,14 @@
   },
   {
    "repo": "YMGPwcca/OneiOS",
+   "base": "YMGPwcca/OneOS",
+   "relation": "uses",
+   "note": "OneiOS docs/forks.md:13-14, docs/s26.md:7-8: its app fork",
+   "source": "https://github.com/akshaynexus/OneiOS",
+   "base_exists": 1
+  },
+  {
+   "repo": "YMGPwcca/OneiOS",
    "base": "akshaynexus/OneiOS",
    "relation": "fork-of",
    "note": "GitHub parent; S26 Ultra (SM8850) branch feat/oneios-sm8850-m3q",
@@ -13336,6 +16403,14 @@
    "relation": "ported-from",
    "note": "Credits: \"iOSPlus10: XNU and iOS userland on Qualcomm phones, haptics and brightness\" (inherited from OneiOS)",
    "source": "https://github.com/YMGPwcca/OneiOS#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "YMGPwcca/OneOS",
+   "base": "akshaynexus/OneOS",
+   "relation": "fork-of",
+   "note": "GitHub parent",
+   "source": "github:parent",
    "base_exists": 1
   },
   {
@@ -13396,10 +16471,34 @@
   },
   {
    "repo": "YumikoHayamato/OneiOS",
+   "base": "YumikoHayamato/OneOS",
+   "relation": "uses",
+   "note": "OneiOS docs/s25.md:234: its app submodule moved to YumikoHayamato/OneOS",
+   "source": "https://github.com/akshaynexus/OneiOS",
+   "base_exists": 1
+  },
+  {
+   "repo": "YumikoHayamato/OneiOS",
    "base": "akshaynexus/OneiOS",
    "relation": "fork-of",
    "note": "root of the GitHub fork network (source)",
    "source": "github:source",
+   "base_exists": 1
+  },
+  {
+   "repo": "YumikoHayamato/OneOS",
+   "base": "YMGPwcca/OneOS",
+   "relation": "fork-of",
+   "note": "GitHub parent (root fahadalijaved/OneOS)",
+   "source": "github:parent",
+   "base_exists": 1
+  },
+  {
+   "repo": "YX2748198202-lab/UniXNU-shennong",
+   "base": "UniXNU/UniXNU",
+   "relation": "uses",
+   "note": "UniXNU port of the Xiaomi 14 Pro (README)",
+   "source": "https://github.com/YX2748198202-lab/UniXNU-shennong#readme",
    "base_exists": 1
   },
   {
