@@ -148,6 +148,70 @@
  "claims": [],
  "device_status": [
   {
+   "device_slug": "a03s",
+   "area_slug": "audio",
+   "state": "broken",
+   "detail": "HakiOS registry: audio no (wyruzz/ios-SM-A037F)",
+   "source": "https://hakios-developers.com/#/port/a03s",
+   "updated": "2026-11-23T07:14:01.232Z"
+  },
+  {
+   "device_slug": "a03s",
+   "area_slug": "battery",
+   "state": "broken",
+   "detail": "HakiOS registry: charging no (wyruzz/ios-SM-A037F)",
+   "source": "https://hakios-developers.com/#/port/a03s",
+   "updated": "2026-11-23T07:14:01.323Z"
+  },
+  {
+   "device_slug": "a03s",
+   "area_slug": "bluetooth",
+   "state": "broken",
+   "detail": "HakiOS registry: bluetooth no (wyruzz/ios-SM-A037F)",
+   "source": "https://hakios-developers.com/#/port/a03s",
+   "updated": "2026-11-23T07:14:01.192Z"
+  },
+  {
+   "device_slug": "a03s",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (wyruzz/ios-SM-A037F, Darwin 16.5)",
+   "source": "https://hakios-developers.com/#/port/a03s",
+   "updated": "2026-11-23T07:14:01.035Z"
+  },
+  {
+   "device_slug": "a03s",
+   "area_slug": "gpu",
+   "state": "broken",
+   "detail": "HakiOS registry: gpu no (wyruzz/ios-SM-A037F)",
+   "source": "https://hakios-developers.com/#/port/a03s",
+   "updated": "2026-11-23T07:14:01.113Z"
+  },
+  {
+   "device_slug": "a03s",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (wyruzz/ios-SM-A037F)",
+   "source": "https://hakios-developers.com/#/port/a03s",
+   "updated": "2026-11-23T07:14:01.270Z"
+  },
+  {
+   "device_slug": "a03s",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (wyruzz/ios-SM-A037F)",
+   "source": "https://hakios-developers.com/#/port/a03s",
+   "updated": "2026-11-23T07:14:01.077Z"
+  },
+  {
+   "device_slug": "a03s",
+   "area_slug": "wifi",
+   "state": "broken",
+   "detail": "HakiOS registry: wifi no (wyruzz/ios-SM-A037F)",
+   "source": "https://hakios-developers.com/#/port/a03s",
+   "updated": "2026-11-23T07:14:01.151Z"
+  },
+  {
    "device_slug": "a13",
    "area_slug": "boot",
    "state": "works",
@@ -220,6 +284,70 @@
    "updated": "2026-11-22T18:20:11.926Z"
   },
   {
+   "device_slug": "a22",
+   "area_slug": "audio",
+   "state": "broken",
+   "detail": "HakiOS registry: audio no (david7xw/hakios-a22)",
+   "source": "https://hakios-developers.com/#/port/a22",
+   "updated": "2026-11-23T07:13:59.547Z"
+  },
+  {
+   "device_slug": "a22",
+   "area_slug": "battery",
+   "state": "in-progress",
+   "detail": "HakiOS registry: charging partial (david7xw/hakios-a22)",
+   "source": "https://hakios-developers.com/#/port/a22",
+   "updated": "2026-11-23T07:13:59.618Z"
+  },
+  {
+   "device_slug": "a22",
+   "area_slug": "bluetooth",
+   "state": "broken",
+   "detail": "HakiOS registry: bluetooth no (david7xw/hakios-a22)",
+   "source": "https://hakios-developers.com/#/port/a22",
+   "updated": "2026-11-23T07:13:59.510Z"
+  },
+  {
+   "device_slug": "a22",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (david7xw/hakios-a22, Darwin 22.5.0 (iOS 16.5, 20F66))",
+   "source": "https://hakios-developers.com/#/port/a22",
+   "updated": "2026-11-23T07:13:59.361Z"
+  },
+  {
+   "device_slug": "a22",
+   "area_slug": "gpu",
+   "state": "in-progress",
+   "detail": "HakiOS registry: gpu partial (david7xw/hakios-a22)",
+   "source": "https://hakios-developers.com/#/port/a22",
+   "updated": "2026-11-23T07:13:59.433Z"
+  },
+  {
+   "device_slug": "a22",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (david7xw/hakios-a22)",
+   "source": "https://hakios-developers.com/#/port/a22",
+   "updated": "2026-11-23T07:13:59.583Z"
+  },
+  {
+   "device_slug": "a22",
+   "area_slug": "touch",
+   "state": "in-progress",
+   "detail": "HakiOS registry: touch yes, buttons partial (david7xw/hakios-a22)",
+   "source": "https://hakios-developers.com/#/port/a22",
+   "updated": "2026-11-23T07:13:59.396Z"
+  },
+  {
+   "device_slug": "a22",
+   "area_slug": "wifi",
+   "state": "broken",
+   "detail": "HakiOS registry: wifi no (david7xw/hakios-a22)",
+   "source": "https://hakios-developers.com/#/port/a22",
+   "updated": "2026-11-23T07:13:59.471Z"
+  },
+  {
    "device_slug": "a3-2017",
    "area_slug": "boot",
    "state": "in-progress",
@@ -237,6 +365,14 @@
   },
   {
    "device_slug": "a32",
+   "area_slug": "battery",
+   "state": "works",
+   "detail": "HakiOS registry: charging yes (Luminous418/hakios-a32)",
+   "source": "https://hakios-developers.com/#/port/a32",
+   "updated": "2026-11-23T07:13:59.145Z"
+  },
+  {
+   "device_slug": "a32",
    "area_slug": "boot",
    "state": "works",
    "detail": "reddit claim (2026-11-22): iOS 16.5 (Darwin 22.5.0) to the lock screen and SpringBoard; Phone app and Control Center open (\"still tentative\")",
@@ -246,10 +382,10 @@
   {
    "device_slug": "a32",
    "area_slug": "gpu",
-   "state": "broken",
-   "detail": "reddit claim (2026-11-22): CPU software rendering, no GPU acceleration yet",
-   "source": "https://www.reddit.com/r/hackios/comments/1y32x8p/booted_ios_165_on_a_samsung_galaxy_a32_4g_helio",
-   "updated": "2026-11-22T23:49:39.744Z"
+   "state": "works",
+   "detail": "HakiOS registry: gpu yes (Luminous418/hakios-a32)",
+   "source": "https://hakios-developers.com/#/port/a32",
+   "updated": "2026-11-23T07:13:59.108Z"
   },
   {
    "device_slug": "a32",
@@ -274,6 +410,70 @@
    "detail": "reddit claim (2026-10-20): XNU/iOS booted (gallery post, no feature list)",
    "source": "https://www.reddit.com/r/hackios/comments/1xap9ao/galaxy_a52016_exynos7580_booted",
    "updated": "2026-11-22T19:33:20.833Z"
+  },
+  {
+   "device_slug": "a51",
+   "area_slug": "audio",
+   "state": "broken",
+   "detail": "HakiOS registry: audio no (speedyg2200/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/a51",
+   "updated": "2026-11-23T07:13:58.711Z"
+  },
+  {
+   "device_slug": "a51",
+   "area_slug": "battery",
+   "state": "broken",
+   "detail": "HakiOS registry: charging no (speedyg2200/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/a51",
+   "updated": "2026-11-23T07:13:58.782Z"
+  },
+  {
+   "device_slug": "a51",
+   "area_slug": "bluetooth",
+   "state": "broken",
+   "detail": "HakiOS registry: bluetooth no (speedyg2200/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/a51",
+   "updated": "2026-11-23T07:13:58.677Z"
+  },
+  {
+   "device_slug": "a51",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (speedyg2200/hakios-xnu-kernel, Darwin 16.5 (20F66))",
+   "source": "https://hakios-developers.com/#/port/a51",
+   "updated": "2026-11-23T07:13:58.533Z"
+  },
+  {
+   "device_slug": "a51",
+   "area_slug": "gpu",
+   "state": "in-progress",
+   "detail": "HakiOS registry: gpu partial (speedyg2200/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/a51",
+   "updated": "2026-11-23T07:13:58.607Z"
+  },
+  {
+   "device_slug": "a51",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (speedyg2200/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/a51",
+   "updated": "2026-11-23T07:13:58.746Z"
+  },
+  {
+   "device_slug": "a51",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (speedyg2200/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/a51",
+   "updated": "2026-11-23T07:13:58.570Z"
+  },
+  {
+   "device_slug": "a51",
+   "area_slug": "wifi",
+   "state": "works",
+   "detail": "HakiOS registry: wifi yes (speedyg2200/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/a51",
+   "updated": "2026-11-23T07:13:58.643Z"
   },
   {
    "device_slug": "a52s",
@@ -372,6 +572,110 @@
    "updated": "2026-11-22T19:33:26.433Z"
   },
   {
+   "device_slug": "infinix-gt-10-pro",
+   "area_slug": "battery",
+   "state": "works",
+   "detail": "HakiOS registry: charging yes (Xia-s-Projekt/hakios-x6739)",
+   "source": "https://hakios-developers.com/#/port/x6739",
+   "updated": "2026-11-23T07:14:01.516Z"
+  },
+  {
+   "device_slug": "infinix-gt-10-pro",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (Xia-s-Projekt/hakios-x6739, Darwin 22.5.0)",
+   "source": "https://hakios-developers.com/#/port/x6739",
+   "updated": "2026-11-23T07:14:01.371Z"
+  },
+  {
+   "device_slug": "infinix-gt-10-pro",
+   "area_slug": "gpu",
+   "state": "in-progress",
+   "detail": "HakiOS registry: gpu partial (Xia-s-Projekt/hakios-x6739)",
+   "source": "https://hakios-developers.com/#/port/x6739",
+   "updated": "2026-11-23T07:14:01.443Z"
+  },
+  {
+   "device_slug": "infinix-gt-10-pro",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons unknown (Xia-s-Projekt/hakios-x6739)",
+   "source": "https://hakios-developers.com/#/port/x6739",
+   "updated": "2026-11-23T07:14:01.407Z"
+  },
+  {
+   "device_slug": "infinix-gt-10-pro",
+   "area_slug": "wifi",
+   "state": "in-progress",
+   "detail": "HakiOS registry: wifi partial (Xia-s-Projekt/hakios-x6739)",
+   "source": "https://hakios-developers.com/#/port/x6739",
+   "updated": "2026-11-23T07:14:01.479Z"
+  },
+  {
+   "device_slug": "infinix-hot-20",
+   "area_slug": "audio",
+   "state": "broken",
+   "detail": "HakiOS registry: audio no (oosexgang/hakios-mt6768)",
+   "source": "https://hakios-developers.com/#/port/x6826",
+   "updated": "2026-11-23T07:14:02.579Z"
+  },
+  {
+   "device_slug": "infinix-hot-20",
+   "area_slug": "battery",
+   "state": "broken",
+   "detail": "HakiOS registry: charging no (oosexgang/hakios-mt6768)",
+   "source": "https://hakios-developers.com/#/port/x6826",
+   "updated": "2026-11-23T07:14:02.723Z"
+  },
+  {
+   "device_slug": "infinix-hot-20",
+   "area_slug": "bluetooth",
+   "state": "works",
+   "detail": "HakiOS registry: bluetooth yes (oosexgang/hakios-mt6768)",
+   "source": "https://hakios-developers.com/#/port/x6826",
+   "updated": "2026-11-23T07:14:02.519Z"
+  },
+  {
+   "device_slug": "infinix-hot-20",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (oosexgang/hakios-mt6768, Darwin 27.2)",
+   "source": "https://hakios-developers.com/#/port/x6826",
+   "updated": "2026-11-23T07:14:02.388Z"
+  },
+  {
+   "device_slug": "infinix-hot-20",
+   "area_slug": "gpu",
+   "state": "works",
+   "detail": "HakiOS registry: gpu yes (oosexgang/hakios-mt6768)",
+   "source": "https://hakios-developers.com/#/port/x6826",
+   "updated": "2026-11-23T07:14:02.452Z"
+  },
+  {
+   "device_slug": "infinix-hot-20",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (oosexgang/hakios-mt6768)",
+   "source": "https://hakios-developers.com/#/port/x6826",
+   "updated": "2026-11-23T07:14:02.663Z"
+  },
+  {
+   "device_slug": "infinix-hot-20",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (oosexgang/hakios-mt6768)",
+   "source": "https://hakios-developers.com/#/port/x6826",
+   "updated": "2026-11-23T07:14:02.420Z"
+  },
+  {
+   "device_slug": "infinix-hot-20",
+   "area_slug": "wifi",
+   "state": "works",
+   "detail": "HakiOS registry: wifi yes (oosexgang/hakios-mt6768)",
+   "source": "https://hakios-developers.com/#/port/x6826",
+   "updated": "2026-11-23T07:14:02.485Z"
+  },
+  {
    "device_slug": "infinix-note-12",
    "area_slug": "boot",
    "state": "in-progress",
@@ -405,6 +709,14 @@
   },
   {
    "device_slug": "j7-prime",
+   "area_slug": "battery",
+   "state": "in-progress",
+   "detail": "HakiOS registry: charging partial (hoaan1911/ios-on7xelte)",
+   "source": "https://hakios-developers.com/#/port/on7xelte",
+   "updated": "2026-11-23T07:13:53.573Z"
+  },
+  {
+   "device_slug": "j7-prime",
    "area_slug": "boot",
    "state": "works",
    "detail": "reddit claim (2026-10-28): iOS 16 booted; lags heavily",
@@ -418,6 +730,14 @@
    "detail": "reddit claim (2026-10-28): partial GPU working (porter's comment 2026-10-31); still laggy",
    "source": "https://www.reddit.com/r/hackios/comments/1xh9oxa/ios_16_booted_on_j7_prime",
    "updated": "2026-11-22T19:33:18.715Z"
+  },
+  {
+   "device_slug": "j7-prime",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (hoaan1911/ios-on7xelte)",
+   "source": "https://hakios-developers.com/#/port/on7xelte",
+   "updated": "2026-11-23T07:13:53.537Z"
   },
   {
    "device_slug": "j7-prime",
@@ -477,11 +797,51 @@
   },
   {
    "device_slug": "lg-v60",
-   "area_slug": "boot",
+   "area_slug": "audio",
+   "state": "broken",
+   "detail": "HakiOS registry: audio no (ch1tmdgus/ios-v60)",
+   "source": "https://hakios-developers.com/#/port/timelm",
+   "updated": "2026-11-23T07:13:56.596Z"
+  },
+  {
+   "device_slug": "lg-v60",
+   "area_slug": "battery",
    "state": "in-progress",
-   "detail": "reddit claim (2026-10-19): iOS 16.7.16 kernel booted; only display and touch",
-   "source": "https://www.reddit.com/r/hackios/comments/1x9y0v2/lg_v60_booted",
-   "updated": "2026-11-22T18:20:30.028Z"
+   "detail": "HakiOS registry: charging partial (ch1tmdgus/ios-v60)",
+   "source": "https://hakios-developers.com/#/port/timelm",
+   "updated": "2026-11-23T07:13:56.664Z"
+  },
+  {
+   "device_slug": "lg-v60",
+   "area_slug": "bluetooth",
+   "state": "broken",
+   "detail": "HakiOS registry: bluetooth no (ch1tmdgus/ios-v60)",
+   "source": "https://hakios-developers.com/#/port/timelm",
+   "updated": "2026-11-23T07:13:56.559Z"
+  },
+  {
+   "device_slug": "lg-v60",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (ch1tmdgus/ios-v60, Darwin 16.7.10)",
+   "source": "https://hakios-developers.com/#/port/timelm",
+   "updated": "2026-11-23T07:13:56.456Z"
+  },
+  {
+   "device_slug": "lg-v60",
+   "area_slug": "gpu",
+   "state": "in-progress",
+   "detail": "HakiOS registry: gpu partial (ch1tmdgus/ios-v60)",
+   "source": "https://hakios-developers.com/#/port/timelm",
+   "updated": "2026-11-23T07:13:56.490Z"
+  },
+  {
+   "device_slug": "lg-v60",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (ch1tmdgus/ios-v60)",
+   "source": "https://hakios-developers.com/#/port/timelm",
+   "updated": "2026-11-23T07:13:56.630Z"
   },
   {
    "device_slug": "lg-v60",
@@ -490,6 +850,14 @@
    "detail": "reddit claim (2026-10-19): touch works",
    "source": "https://www.reddit.com/r/hackios/comments/1x9y0v2/lg_v60_booted",
    "updated": "2026-11-22T18:20:30.178Z"
+  },
+  {
+   "device_slug": "lg-v60",
+   "area_slug": "wifi",
+   "state": "broken",
+   "detail": "HakiOS registry: wifi no (ch1tmdgus/ios-v60)",
+   "source": "https://hakios-developers.com/#/port/timelm",
+   "updated": "2026-11-23T07:13:56.525Z"
   },
   {
    "device_slug": "m30",
@@ -638,10 +1006,10 @@
   {
    "device_slug": "mi-11-lite-5g",
    "area_slug": "boot",
-   "state": "in-progress",
-   "detail": "reddit claim (2026-11-06): iOS 16.5 running, quite buggy (video)",
-   "source": "https://www.reddit.com/r/hackios/comments/1xp0h7a/ios_165_running_on_xiaomi_mi_11_lite_5g",
-   "updated": "2026-11-22T19:33:33.796Z"
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (shimoku74/hakios-xnu-kernel, Darwin 27.2 (24B119))",
+   "source": "https://hakios-developers.com/#/port/renoir",
+   "updated": "2026-11-23T07:13:52.621Z"
   },
   {
    "device_slug": "mi-11-lite-5g",
@@ -650,6 +1018,14 @@
    "detail": "reddit claim (2026-11-06): no GPU acceleration yet",
    "source": "https://www.reddit.com/r/hackios/comments/1xp0h7a/ios_165_running_on_xiaomi_mi_11_lite_5g",
    "updated": "2026-11-22T19:33:33.846Z"
+  },
+  {
+   "device_slug": "mi-11-lite-5g",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (shimoku74/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/renoir",
+   "updated": "2026-11-23T07:13:52.673Z"
   },
   {
    "device_slug": "mi-11-lite-5g-ne",
@@ -738,6 +1114,70 @@
    "detail": "reddit claim (2026-11-12): Wi-Fi",
    "source": "https://www.reddit.com/r/hackios/comments/1xuj4j3/ios_2652_rodando_num_xiaomi_11_lite_5g_ne",
    "updated": "2026-11-22T18:20:22.761Z"
+  },
+  {
+   "device_slug": "mi-8",
+   "area_slug": "audio",
+   "state": "in-progress",
+   "detail": "HakiOS registry: audio partial (youzjuzi/dipper-xnu)",
+   "source": "https://hakios-developers.com/#/port/dipper",
+   "updated": "2026-11-23T07:13:58.105Z"
+  },
+  {
+   "device_slug": "mi-8",
+   "area_slug": "battery",
+   "state": "in-progress",
+   "detail": "HakiOS registry: charging partial (youzjuzi/dipper-xnu)",
+   "source": "https://hakios-developers.com/#/port/dipper",
+   "updated": "2026-11-23T07:13:58.175Z"
+  },
+  {
+   "device_slug": "mi-8",
+   "area_slug": "bluetooth",
+   "state": "in-progress",
+   "detail": "HakiOS registry: bluetooth partial (youzjuzi/dipper-xnu)",
+   "source": "https://hakios-developers.com/#/port/dipper",
+   "updated": "2026-11-23T07:13:58.070Z"
+  },
+  {
+   "device_slug": "mi-8",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (youzjuzi/dipper-xnu, Darwin 22.5.0 (20F66))",
+   "source": "https://hakios-developers.com/#/port/dipper",
+   "updated": "2026-11-23T07:13:57.929Z"
+  },
+  {
+   "device_slug": "mi-8",
+   "area_slug": "gpu",
+   "state": "in-progress",
+   "detail": "HakiOS registry: gpu partial (youzjuzi/dipper-xnu)",
+   "source": "https://hakios-developers.com/#/port/dipper",
+   "updated": "2026-11-23T07:13:57.999Z"
+  },
+  {
+   "device_slug": "mi-8",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (youzjuzi/dipper-xnu)",
+   "source": "https://hakios-developers.com/#/port/dipper",
+   "updated": "2026-11-23T07:13:58.139Z"
+  },
+  {
+   "device_slug": "mi-8",
+   "area_slug": "touch",
+   "state": "in-progress",
+   "detail": "HakiOS registry: touch yes, buttons partial (youzjuzi/dipper-xnu)",
+   "source": "https://hakios-developers.com/#/port/dipper",
+   "updated": "2026-11-23T07:13:57.966Z"
+  },
+  {
+   "device_slug": "mi-8",
+   "area_slug": "wifi",
+   "state": "in-progress",
+   "detail": "HakiOS registry: wifi partial (youzjuzi/dipper-xnu)",
+   "source": "https://hakios-developers.com/#/port/dipper",
+   "updated": "2026-11-23T07:13:58.034Z"
   },
   {
    "device_slug": "mi-a2-lite",
@@ -930,6 +1370,118 @@
    "detail": "reddit claim (2026-11-05): touch works",
    "source": "https://www.reddit.com/r/hackios/comments/1xor9r5/moto_g34_sm6375_running_ios_16_from_iphone_x",
    "updated": "2026-11-22T19:33:26.531Z"
+  },
+  {
+   "device_slug": "moto-g60",
+   "area_slug": "audio",
+   "state": "works",
+   "detail": "HakiOS registry: audio yes (filipdanielisback-commits/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/hanoip-3",
+   "updated": "2026-11-23T07:13:54.087Z"
+  },
+  {
+   "device_slug": "moto-g60",
+   "area_slug": "battery",
+   "state": "works",
+   "detail": "HakiOS registry: charging yes (filipdanielisback-commits/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/hanoip-3",
+   "updated": "2026-11-23T07:13:54.158Z"
+  },
+  {
+   "device_slug": "moto-g60",
+   "area_slug": "bluetooth",
+   "state": "works",
+   "detail": "HakiOS registry: bluetooth yes (filipdanielisback-commits/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/hanoip-2",
+   "updated": "2026-11-23T07:13:54.035Z"
+  },
+  {
+   "device_slug": "moto-g60",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (filipdanielisback-commits/hakios-xnu-kernel, Darwin 24.0.0)",
+   "source": "https://hakios-developers.com/#/port/hanoip-2",
+   "updated": "2026-11-23T07:13:53.888Z"
+  },
+  {
+   "device_slug": "moto-g60",
+   "area_slug": "gpu",
+   "state": "works",
+   "detail": "HakiOS registry: gpu yes (filipdanielisback-commits/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/hanoip-3",
+   "updated": "2026-11-23T07:13:53.958Z"
+  },
+  {
+   "device_slug": "moto-g60",
+   "area_slug": "modem",
+   "state": "works",
+   "detail": "HakiOS registry: cellular yes (filipdanielisback-commits/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/hanoip-3",
+   "updated": "2026-11-23T07:13:54.122Z"
+  },
+  {
+   "device_slug": "moto-g60",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (filipdanielisback-commits/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/hanoip-3",
+   "updated": "2026-11-23T07:13:53.922Z"
+  },
+  {
+   "device_slug": "moto-g60",
+   "area_slug": "wifi",
+   "state": "works",
+   "detail": "HakiOS registry: wifi yes (filipdanielisback-commits/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/hanoip-3",
+   "updated": "2026-11-23T07:13:53.995Z"
+  },
+  {
+   "device_slug": "moto-g84",
+   "area_slug": "boot",
+   "state": "in-progress",
+   "detail": "HakiOS registry: work in progress (trenrua-dotcom/hakios-bangkk, Darwin 22.5.0)",
+   "source": "https://hakios-developers.com/#/port/bangkk-2",
+   "updated": "2026-11-23T07:13:53.396Z"
+  },
+  {
+   "device_slug": "moto-g85",
+   "area_slug": "audio",
+   "state": "in-progress",
+   "detail": "HakiOS registry: audio partial (pixelpixys/hakios-malmo)",
+   "source": "https://hakios-developers.com/#/port/malmo",
+   "updated": "2026-11-23T07:14:01.686Z"
+  },
+  {
+   "device_slug": "moto-g85",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (pixelpixys/hakios-malmo, Darwin 16.5)",
+   "source": "https://hakios-developers.com/#/port/malmo",
+   "updated": "2026-11-23T07:14:01.551Z"
+  },
+  {
+   "device_slug": "moto-g85",
+   "area_slug": "gpu",
+   "state": "works",
+   "detail": "HakiOS registry: gpu yes (pixelpixys/hakios-malmo)",
+   "source": "https://hakios-developers.com/#/port/malmo",
+   "updated": "2026-11-23T07:14:01.619Z"
+  },
+  {
+   "device_slug": "moto-g85",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (pixelpixys/hakios-malmo)",
+   "source": "https://hakios-developers.com/#/port/malmo",
+   "updated": "2026-11-23T07:14:01.585Z"
+  },
+  {
+   "device_slug": "moto-g85",
+   "area_slug": "wifi",
+   "state": "works",
+   "detail": "HakiOS registry: wifi yes (pixelpixys/hakios-malmo)",
+   "source": "https://hakios-developers.com/#/port/malmo",
+   "updated": "2026-11-23T07:14:01.653Z"
   },
   {
    "device_slug": "nokia-5-3",
@@ -1229,19 +1781,67 @@
   },
   {
    "device_slug": "nothing-phone-1",
+   "area_slug": "audio",
+   "state": "works",
+   "detail": "HakiOS registry: audio yes (nitheshd30/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/spacewar",
+   "updated": "2026-11-23T07:13:58.999Z"
+  },
+  {
+   "device_slug": "nothing-phone-1",
+   "area_slug": "battery",
+   "state": "works",
+   "detail": "HakiOS registry: charging yes (nitheshd30/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/spacewar",
+   "updated": "2026-11-23T07:13:59.070Z"
+  },
+  {
+   "device_slug": "nothing-phone-1",
+   "area_slug": "bluetooth",
+   "state": "broken",
+   "detail": "HakiOS registry: bluetooth no (nitheshd30/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/spacewar",
+   "updated": "2026-11-23T07:13:58.963Z"
+  },
+  {
+   "device_slug": "nothing-phone-1",
    "area_slug": "boot",
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (nitheshd30/hakios-xnu-kernel, Darwin 16.5)",
+   "source": "https://hakios-developers.com/#/port/spacewar",
+   "updated": "2026-11-23T07:13:58.817Z"
+  },
+  {
+   "device_slug": "nothing-phone-1",
+   "area_slug": "gpu",
    "state": "in-progress",
-   "detail": "reddit claim (2026-11-03): booted, very early stage",
-   "source": "https://www.reddit.com/r/hackios/comments/1xn1bo5/booted_on_nothing_phone_1",
-   "updated": "2026-11-22T18:20:27.817Z"
+   "detail": "HakiOS registry: gpu partial (nitheshd30/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/spacewar",
+   "updated": "2026-11-23T07:13:58.888Z"
+  },
+  {
+   "device_slug": "nothing-phone-1",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (nitheshd30/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/spacewar",
+   "updated": "2026-11-23T07:13:59.036Z"
   },
   {
    "device_slug": "nothing-phone-1",
    "area_slug": "touch",
-   "state": "broken",
-   "detail": "reddit claim (2026-11-03): touch is dead",
-   "source": "https://www.reddit.com/r/hackios/comments/1xn1bo5/booted_on_nothing_phone_1",
-   "updated": "2026-11-22T18:20:27.964Z"
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (nitheshd30/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/spacewar",
+   "updated": "2026-11-23T07:13:58.852Z"
+  },
+  {
+   "device_slug": "nothing-phone-1",
+   "area_slug": "wifi",
+   "state": "works",
+   "detail": "HakiOS registry: wifi yes (nitheshd30/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/spacewar",
+   "updated": "2026-11-23T07:13:58.927Z"
   },
   {
    "device_slug": "oneplus-10-pro",
@@ -1340,6 +1940,150 @@
    "updated": "2026-11-22T19:14:47.952Z"
   },
   {
+   "device_slug": "oneplus-12",
+   "area_slug": "audio",
+   "state": "broken",
+   "detail": "HakiOS registry: audio no (qarzis/ios-waffle)",
+   "source": "https://hakios-developers.com/#/port/waffle",
+   "updated": "2026-11-23T07:14:00.712Z"
+  },
+  {
+   "device_slug": "oneplus-12",
+   "area_slug": "battery",
+   "state": "broken",
+   "detail": "HakiOS registry: charging no (qarzis/ios-waffle)",
+   "source": "https://hakios-developers.com/#/port/waffle",
+   "updated": "2026-11-23T07:14:00.782Z"
+  },
+  {
+   "device_slug": "oneplus-12",
+   "area_slug": "bluetooth",
+   "state": "broken",
+   "detail": "HakiOS registry: bluetooth no (qarzis/ios-waffle)",
+   "source": "https://hakios-developers.com/#/port/waffle",
+   "updated": "2026-11-23T07:14:00.675Z"
+  },
+  {
+   "device_slug": "oneplus-12",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (qarzis/ios-waffle, Darwin 16.5)",
+   "source": "https://hakios-developers.com/#/port/waffle",
+   "updated": "2026-11-23T07:14:00.525Z"
+  },
+  {
+   "device_slug": "oneplus-12",
+   "area_slug": "gpu",
+   "state": "in-progress",
+   "detail": "HakiOS registry: gpu partial (qarzis/ios-waffle)",
+   "source": "https://hakios-developers.com/#/port/waffle",
+   "updated": "2026-11-23T07:14:00.600Z"
+  },
+  {
+   "device_slug": "oneplus-12",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (qarzis/ios-waffle)",
+   "source": "https://hakios-developers.com/#/port/waffle",
+   "updated": "2026-11-23T07:14:00.746Z"
+  },
+  {
+   "device_slug": "oneplus-12",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (qarzis/ios-waffle)",
+   "source": "https://hakios-developers.com/#/port/waffle",
+   "updated": "2026-11-23T07:14:00.562Z"
+  },
+  {
+   "device_slug": "oneplus-12",
+   "area_slug": "wifi",
+   "state": "broken",
+   "detail": "HakiOS registry: wifi no (qarzis/ios-waffle)",
+   "source": "https://hakios-developers.com/#/port/waffle",
+   "updated": "2026-11-23T07:14:00.638Z"
+  },
+  {
+   "device_slug": "oneplus-13",
+   "area_slug": "audio",
+   "state": "works",
+   "detail": "HakiOS registry: audio yes (wuxianlin/hakios_devices_dodge)",
+   "source": "https://hakios-developers.com/#/port/dodge",
+   "updated": "2026-11-23T07:13:53.785Z"
+  },
+  {
+   "device_slug": "oneplus-13",
+   "area_slug": "battery",
+   "state": "in-progress",
+   "detail": "HakiOS registry: charging partial (wuxianlin/hakios_devices_dodge)",
+   "source": "https://hakios-developers.com/#/port/dodge",
+   "updated": "2026-11-23T07:13:53.853Z"
+  },
+  {
+   "device_slug": "oneplus-13",
+   "area_slug": "bluetooth",
+   "state": "works",
+   "detail": "HakiOS registry: bluetooth yes (wuxianlin/hakios_devices_dodge)",
+   "source": "https://hakios-developers.com/#/port/dodge",
+   "updated": "2026-11-23T07:13:53.752Z"
+  },
+  {
+   "device_slug": "oneplus-13",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (wuxianlin/hakios_devices_dodge, Darwin 27.2 (24B119))",
+   "source": "https://hakios-developers.com/#/port/dodge",
+   "updated": "2026-11-23T07:13:53.611Z"
+  },
+  {
+   "device_slug": "oneplus-13",
+   "area_slug": "gpu",
+   "state": "in-progress",
+   "detail": "HakiOS registry: gpu partial (wuxianlin/hakios_devices_dodge)",
+   "source": "https://hakios-developers.com/#/port/dodge",
+   "updated": "2026-11-23T07:13:53.683Z"
+  },
+  {
+   "device_slug": "oneplus-13",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (wuxianlin/hakios_devices_dodge)",
+   "source": "https://hakios-developers.com/#/port/dodge",
+   "updated": "2026-11-23T07:13:53.820Z"
+  },
+  {
+   "device_slug": "oneplus-13",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (wuxianlin/hakios_devices_dodge)",
+   "source": "https://hakios-developers.com/#/port/dodge",
+   "updated": "2026-11-23T07:13:53.648Z"
+  },
+  {
+   "device_slug": "oneplus-13",
+   "area_slug": "wifi",
+   "state": "works",
+   "detail": "HakiOS registry: wifi yes (wuxianlin/hakios_devices_dodge)",
+   "source": "https://hakios-developers.com/#/port/dodge",
+   "updated": "2026-11-23T07:13:53.719Z"
+  },
+  {
+   "device_slug": "oneplus-2",
+   "area_slug": "battery",
+   "state": "works",
+   "detail": "HakiOS registry: charging yes (Veerhooda/xnu)",
+   "source": "https://hakios-developers.com/#/port/oneplus2-2",
+   "updated": "2026-11-23T07:13:53.500Z"
+  },
+  {
+   "device_slug": "oneplus-2",
+   "area_slug": "bluetooth",
+   "state": "broken",
+   "detail": "HakiOS registry: bluetooth no (Veerhooda/xnu)",
+   "source": "https://hakios-developers.com/#/port/oneplus2-2",
+   "updated": "2026-11-23T07:13:53.465Z"
+  },
+  {
    "device_slug": "oneplus-2",
    "area_slug": "boot",
    "state": "works",
@@ -1362,6 +2106,14 @@
    "detail": "reddit claim (2026-11-11): capacitive Home button works; navigation keys do not (porter's comment)",
    "source": "https://www.reddit.com/r/hackios/comments/1xtjsfe/ios_1257_running_on_a_oneplus2",
    "updated": "2026-11-22T19:33:21.736Z"
+  },
+  {
+   "device_slug": "oneplus-2",
+   "area_slug": "wifi",
+   "state": "broken",
+   "detail": "HakiOS registry: wifi no (Veerhooda/xnu)",
+   "source": "https://hakios-developers.com/#/port/oneplus2-2",
+   "updated": "2026-11-23T07:13:53.431Z"
   },
   {
    "device_slug": "oneplus-5",
@@ -1621,11 +2373,43 @@
   },
   {
    "device_slug": "oneplus-8-pro",
+   "area_slug": "audio",
+   "state": "works",
+   "detail": "HakiOS registry: audio yes (dekefake/hackios-op8pro)",
+   "source": "https://hakios-developers.com/#/port/instantnoodlep",
+   "updated": "2026-11-23T07:14:00.373Z"
+  },
+  {
+   "device_slug": "oneplus-8-pro",
+   "area_slug": "battery",
+   "state": "works",
+   "detail": "HakiOS registry: charging yes (dekefake/hackios-op8pro)",
+   "source": "https://hakios-developers.com/#/port/instantnoodlep",
+   "updated": "2026-11-23T07:14:00.410Z"
+  },
+  {
+   "device_slug": "oneplus-8-pro",
+   "area_slug": "bluetooth",
+   "state": "works",
+   "detail": "HakiOS registry: bluetooth yes (dekefake/hackios-op8pro)",
+   "source": "https://hakios-developers.com/#/port/instantnoodlep",
+   "updated": "2026-11-23T07:14:00.315Z"
+  },
+  {
+   "device_slug": "oneplus-8-pro",
    "area_slug": "boot",
    "state": "works",
    "detail": "reddit claim (2026-11-12): iOS running (photo of the cellular settings)",
    "source": "https://www.reddit.com/r/hackios/comments/1xuh1cl/dual_sim_5g_cellular_data_is_working",
    "updated": "2026-11-22T19:33:28.518Z"
+  },
+  {
+   "device_slug": "oneplus-8-pro",
+   "area_slug": "gpu",
+   "state": "works",
+   "detail": "HakiOS registry: gpu yes (dekefake/hackios-op8pro)",
+   "source": "https://hakios-developers.com/#/port/instantnoodlep",
+   "updated": "2026-11-23T07:14:00.242Z"
   },
   {
    "device_slug": "oneplus-8-pro",
@@ -1636,12 +2420,60 @@
    "updated": "2026-11-22T19:33:28.569Z"
   },
   {
+   "device_slug": "oneplus-8-pro",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (dekefake/hackios-op8pro)",
+   "source": "https://hakios-developers.com/#/port/instantnoodlep",
+   "updated": "2026-11-23T07:14:00.204Z"
+  },
+  {
+   "device_slug": "oneplus-8-pro",
+   "area_slug": "wifi",
+   "state": "works",
+   "detail": "HakiOS registry: wifi yes (dekefake/hackios-op8pro)",
+   "source": "https://hakios-developers.com/#/port/instantnoodlep",
+   "updated": "2026-11-23T07:14:00.280Z"
+  },
+  {
+   "device_slug": "oneplus-8t",
+   "area_slug": "audio",
+   "state": "works",
+   "detail": "HakiOS registry: audio yes (timeroute/hakios-op8t)",
+   "source": "https://hakios-developers.com/#/port/kona",
+   "updated": "2026-11-23T07:13:56.109Z"
+  },
+  {
+   "device_slug": "oneplus-8t",
+   "area_slug": "bluetooth",
+   "state": "broken",
+   "detail": "HakiOS registry: bluetooth no (timeroute/hakios-op8t)",
+   "source": "https://hakios-developers.com/#/port/kona",
+   "updated": "2026-11-23T07:13:56.074Z"
+  },
+  {
    "device_slug": "oneplus-8t",
    "area_slug": "boot",
-   "state": "in-progress",
-   "detail": "reddit claim (2026-11-04): iOS 16.7.16 runs; only the power button and touch work so far",
-   "source": "https://www.reddit.com/r/hackios/comments/1xnm27t/oneplus_8t_ios_16716",
-   "updated": "2026-11-22T19:33:30.770Z"
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (timeroute/hakios-op8t, Darwin 16.5)",
+   "source": "https://hakios-developers.com/#/port/kona",
+   "updated": "2026-11-23T07:13:55.966Z"
+  },
+  {
+   "device_slug": "oneplus-8t",
+   "area_slug": "gpu",
+   "state": "works",
+   "detail": "HakiOS registry: gpu yes (timeroute/hakios-op8t)",
+   "source": "https://hakios-developers.com/#/port/kona",
+   "updated": "2026-11-23T07:13:56.003Z"
+  },
+  {
+   "device_slug": "oneplus-8t",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (timeroute/hakios-op8t)",
+   "source": "https://hakios-developers.com/#/port/kona",
+   "updated": "2026-11-23T07:13:56.143Z"
   },
   {
    "device_slug": "oneplus-8t",
@@ -1650,6 +2482,14 @@
    "detail": "reddit claim (2026-11-04): touch and power button work",
    "source": "https://www.reddit.com/r/hackios/comments/1xnm27t/oneplus_8t_ios_16716",
    "updated": "2026-11-22T19:33:30.825Z"
+  },
+  {
+   "device_slug": "oneplus-8t",
+   "area_slug": "wifi",
+   "state": "works",
+   "detail": "HakiOS registry: wifi yes (timeroute/hakios-op8t)",
+   "source": "https://hakios-developers.com/#/port/kona",
+   "updated": "2026-11-23T07:13:56.039Z"
   },
   {
    "device_slug": "oneplus-9-pro",
@@ -1676,12 +2516,156 @@
    "updated": "2026-11-22T18:24:29.756Z"
   },
   {
+   "device_slug": "oneplus-ace-3-pro",
+   "area_slug": "audio",
+   "state": "broken",
+   "detail": "HakiOS registry: audio no (SakuraKyuo/hackios-xnu-kernel_corvette)",
+   "source": "https://hakios-developers.com/#/port/corvette",
+   "updated": "2026-11-23T07:13:57.824Z"
+  },
+  {
+   "device_slug": "oneplus-ace-3-pro",
+   "area_slug": "battery",
+   "state": "broken",
+   "detail": "HakiOS registry: charging no (SakuraKyuo/hackios-xnu-kernel_corvette)",
+   "source": "https://hakios-developers.com/#/port/corvette",
+   "updated": "2026-11-23T07:13:57.893Z"
+  },
+  {
+   "device_slug": "oneplus-ace-3-pro",
+   "area_slug": "bluetooth",
+   "state": "broken",
+   "detail": "HakiOS registry: bluetooth no (SakuraKyuo/hackios-xnu-kernel_corvette)",
+   "source": "https://hakios-developers.com/#/port/corvette",
+   "updated": "2026-11-23T07:13:57.789Z"
+  },
+  {
+   "device_slug": "oneplus-ace-3-pro",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (SakuraKyuo/hackios-xnu-kernel_corvette, Darwin 16.5)",
+   "source": "https://hakios-developers.com/#/port/corvette",
+   "updated": "2026-11-23T07:13:57.649Z"
+  },
+  {
+   "device_slug": "oneplus-ace-3-pro",
+   "area_slug": "gpu",
+   "state": "works",
+   "detail": "HakiOS registry: gpu yes (SakuraKyuo/hackios-xnu-kernel_corvette)",
+   "source": "https://hakios-developers.com/#/port/corvette",
+   "updated": "2026-11-23T07:13:57.719Z"
+  },
+  {
+   "device_slug": "oneplus-ace-3-pro",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (SakuraKyuo/hackios-xnu-kernel_corvette)",
+   "source": "https://hakios-developers.com/#/port/corvette",
+   "updated": "2026-11-23T07:13:57.857Z"
+  },
+  {
+   "device_slug": "oneplus-ace-3-pro",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (SakuraKyuo/hackios-xnu-kernel_corvette)",
+   "source": "https://hakios-developers.com/#/port/corvette",
+   "updated": "2026-11-23T07:13:57.683Z"
+  },
+  {
+   "device_slug": "oneplus-ace-3-pro",
+   "area_slug": "wifi",
+   "state": "broken",
+   "detail": "HakiOS registry: wifi no (SakuraKyuo/hackios-xnu-kernel_corvette)",
+   "source": "https://hakios-developers.com/#/port/corvette",
+   "updated": "2026-11-23T07:13:57.754Z"
+  },
+  {
+   "device_slug": "oneplus-ace-6t",
+   "area_slug": "audio",
+   "state": "broken",
+   "detail": "HakiOS registry: audio no (shimoku74/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/macan",
+   "updated": "2026-11-23T07:13:52.897Z"
+  },
+  {
+   "device_slug": "oneplus-ace-6t",
+   "area_slug": "battery",
+   "state": "in-progress",
+   "detail": "HakiOS registry: charging partial (shimoku74/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/macan",
+   "updated": "2026-11-23T07:13:52.967Z"
+  },
+  {
+   "device_slug": "oneplus-ace-6t",
+   "area_slug": "bluetooth",
+   "state": "in-progress",
+   "detail": "HakiOS registry: bluetooth partial (shimoku74/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/macan",
+   "updated": "2026-11-23T07:13:52.863Z"
+  },
+  {
+   "device_slug": "oneplus-ace-6t",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (shimoku74/hakios-xnu-kernel, Darwin 27.2 (24B119))",
+   "source": "https://hakios-developers.com/#/port/macan",
+   "updated": "2026-11-23T07:13:52.717Z"
+  },
+  {
+   "device_slug": "oneplus-ace-6t",
+   "area_slug": "gpu",
+   "state": "in-progress",
+   "detail": "HakiOS registry: gpu partial (shimoku74/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/macan",
+   "updated": "2026-11-23T07:13:52.790Z"
+  },
+  {
+   "device_slug": "oneplus-ace-6t",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (shimoku74/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/macan",
+   "updated": "2026-11-23T07:13:52.933Z"
+  },
+  {
+   "device_slug": "oneplus-ace-6t",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (shimoku74/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/macan",
+   "updated": "2026-11-23T07:13:52.752Z"
+  },
+  {
+   "device_slug": "oneplus-ace-6t",
+   "area_slug": "wifi",
+   "state": "works",
+   "detail": "HakiOS registry: wifi yes (shimoku74/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/macan",
+   "updated": "2026-11-23T07:13:52.827Z"
+  },
+  {
    "device_slug": "oneplus-nord",
    "area_slug": "boot",
    "state": "in-progress",
    "detail": "reddit claim (2026-11-15): iOS barely running (image only)",
    "source": "https://www.reddit.com/r/hackios/comments/1xwqxw2/ios_barely_running_on_oneplus_nord",
    "updated": "2026-11-22T19:33:31.409Z"
+  },
+  {
+   "device_slug": "oneplus-nord-4",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (SathiyaSenpai/hakios-avalon, Darwin 22.5.0)",
+   "source": "https://hakios-developers.com/#/port/avalon",
+   "updated": "2026-11-23T07:14:00.448Z"
+  },
+  {
+   "device_slug": "oneplus-nord-4",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (SathiyaSenpai/hakios-avalon)",
+   "source": "https://hakios-developers.com/#/port/avalon",
+   "updated": "2026-11-23T07:14:00.487Z"
   },
   {
    "device_slug": "oneplus-open",
@@ -2044,6 +3028,126 @@
    "updated": "2026-11-22T19:33:25.163Z"
   },
   {
+   "device_slug": "pixel-7a",
+   "area_slug": "audio",
+   "state": "works",
+   "detail": "HakiOS registry: audio yes (ArThirtyFour/hakios-devices-lynx)",
+   "source": "https://hakios-developers.com/#/port/lynx",
+   "updated": "2026-11-23T07:13:58.393Z"
+  },
+  {
+   "device_slug": "pixel-7a",
+   "area_slug": "battery",
+   "state": "works",
+   "detail": "HakiOS registry: charging yes (ArThirtyFour/hakios-devices-lynx)",
+   "source": "https://hakios-developers.com/#/port/lynx",
+   "updated": "2026-11-23T07:13:58.485Z"
+  },
+  {
+   "device_slug": "pixel-7a",
+   "area_slug": "bluetooth",
+   "state": "works",
+   "detail": "HakiOS registry: bluetooth yes (ArThirtyFour/hakios-devices-lynx)",
+   "source": "https://hakios-developers.com/#/port/lynx",
+   "updated": "2026-11-23T07:13:58.356Z"
+  },
+  {
+   "device_slug": "pixel-7a",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (ArThirtyFour/hakios-devices-lynx, Darwin 16.5)",
+   "source": "https://hakios-developers.com/#/port/lynx",
+   "updated": "2026-11-23T07:13:58.210Z"
+  },
+  {
+   "device_slug": "pixel-7a",
+   "area_slug": "gpu",
+   "state": "works",
+   "detail": "HakiOS registry: gpu yes (ArThirtyFour/hakios-devices-lynx)",
+   "source": "https://hakios-developers.com/#/port/lynx",
+   "updated": "2026-11-23T07:13:58.282Z"
+  },
+  {
+   "device_slug": "pixel-7a",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (ArThirtyFour/hakios-devices-lynx)",
+   "source": "https://hakios-developers.com/#/port/lynx",
+   "updated": "2026-11-23T07:13:58.429Z"
+  },
+  {
+   "device_slug": "pixel-7a",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (ArThirtyFour/hakios-devices-lynx)",
+   "source": "https://hakios-developers.com/#/port/lynx",
+   "updated": "2026-11-23T07:13:58.247Z"
+  },
+  {
+   "device_slug": "pixel-7a",
+   "area_slug": "wifi",
+   "state": "in-progress",
+   "detail": "HakiOS registry: wifi partial (ArThirtyFour/hakios-devices-lynx)",
+   "source": "https://hakios-developers.com/#/port/lynx",
+   "updated": "2026-11-23T07:13:58.319Z"
+  },
+  {
+   "device_slug": "pixel-8a",
+   "area_slug": "audio",
+   "state": "works",
+   "detail": "HakiOS registry: audio yes (Martinvlba/hakios-devices-akita)",
+   "source": "https://hakios-developers.com/#/port/akita",
+   "updated": "2026-11-23T07:13:59.841Z"
+  },
+  {
+   "device_slug": "pixel-8a",
+   "area_slug": "battery",
+   "state": "works",
+   "detail": "HakiOS registry: charging yes (Martinvlba/hakios-devices-akita)",
+   "source": "https://hakios-developers.com/#/port/akita",
+   "updated": "2026-11-23T07:13:59.877Z"
+  },
+  {
+   "device_slug": "pixel-8a",
+   "area_slug": "bluetooth",
+   "state": "works",
+   "detail": "HakiOS registry: bluetooth yes (Martinvlba/hakios-devices-akita)",
+   "source": "https://hakios-developers.com/#/port/akita",
+   "updated": "2026-11-23T07:13:59.806Z"
+  },
+  {
+   "device_slug": "pixel-8a",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (Martinvlba/hakios-devices-akita, Darwin 16.6.1 (20G81))",
+   "source": "https://hakios-developers.com/#/port/akita",
+   "updated": "2026-11-23T07:13:59.656Z"
+  },
+  {
+   "device_slug": "pixel-8a",
+   "area_slug": "gpu",
+   "state": "works",
+   "detail": "HakiOS registry: gpu yes (Martinvlba/hakios-devices-akita)",
+   "source": "https://hakios-developers.com/#/port/akita",
+   "updated": "2026-11-23T07:13:59.729Z"
+  },
+  {
+   "device_slug": "pixel-8a",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (Martinvlba/hakios-devices-akita)",
+   "source": "https://hakios-developers.com/#/port/akita",
+   "updated": "2026-11-23T07:13:59.693Z"
+  },
+  {
+   "device_slug": "pixel-8a",
+   "area_slug": "wifi",
+   "state": "works",
+   "detail": "HakiOS registry: wifi yes (Martinvlba/hakios-devices-akita)",
+   "source": "https://hakios-developers.com/#/port/akita",
+   "updated": "2026-11-23T07:13:59.768Z"
+  },
+  {
    "device_slug": "pixel-fold",
    "area_slug": "battery",
    "state": "works",
@@ -2125,11 +3229,219 @@
   },
   {
    "device_slug": "poco-f3",
+   "area_slug": "audio",
+   "state": "works",
+   "detail": "HakiOS registry: audio yes (xiongnemo/hakios-alioth)",
+   "source": "https://hakios-developers.com/#/port/alioth",
+   "updated": "2026-11-23T07:13:55.862Z"
+  },
+  {
+   "device_slug": "poco-f3",
+   "area_slug": "battery",
+   "state": "works",
+   "detail": "HakiOS registry: charging yes (xiongnemo/hakios-alioth)",
+   "source": "https://hakios-developers.com/#/port/alioth",
+   "updated": "2026-11-23T07:13:55.932Z"
+  },
+  {
+   "device_slug": "poco-f3",
+   "area_slug": "bluetooth",
+   "state": "works",
+   "detail": "HakiOS registry: bluetooth yes (xiongnemo/hakios-alioth)",
+   "source": "https://hakios-developers.com/#/port/alioth",
+   "updated": "2026-11-23T07:13:55.828Z"
+  },
+  {
+   "device_slug": "poco-f3",
    "area_slug": "boot",
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (xiongnemo/hakios-alioth, Darwin 16.5)",
+   "source": "https://hakios-developers.com/#/port/alioth",
+   "updated": "2026-11-23T07:13:55.530Z"
+  },
+  {
+   "device_slug": "poco-f3",
+   "area_slug": "gpu",
+   "state": "works",
+   "detail": "HakiOS registry: gpu yes (xiongnemo/hakios-alioth)",
+   "source": "https://hakios-developers.com/#/port/alioth",
+   "updated": "2026-11-23T07:13:55.756Z"
+  },
+  {
+   "device_slug": "poco-f3",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (xiongnemo/hakios-alioth)",
+   "source": "https://hakios-developers.com/#/port/alioth",
+   "updated": "2026-11-23T07:13:55.897Z"
+  },
+  {
+   "device_slug": "poco-f3",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (xiongnemo/hakios-alioth)",
+   "source": "https://hakios-developers.com/#/port/alioth",
+   "updated": "2026-11-23T07:13:55.565Z"
+  },
+  {
+   "device_slug": "poco-f3",
+   "area_slug": "wifi",
+   "state": "works",
+   "detail": "HakiOS registry: wifi yes (xiongnemo/hakios-alioth)",
+   "source": "https://hakios-developers.com/#/port/alioth",
+   "updated": "2026-11-23T07:13:55.791Z"
+  },
+  {
+   "device_slug": "poco-f4",
+   "area_slug": "audio",
+   "state": "works",
+   "detail": "HakiOS registry: audio yes (Akhdaa/hakios-xiaomi-munch)",
+   "source": "https://hakios-developers.com/#/port/munch",
+   "updated": "2026-11-23T07:13:56.868Z"
+  },
+  {
+   "device_slug": "poco-f4",
+   "area_slug": "battery",
+   "state": "works",
+   "detail": "HakiOS registry: charging yes (Akhdaa/hakios-xiaomi-munch)",
+   "source": "https://hakios-developers.com/#/port/munch",
+   "updated": "2026-11-23T07:13:56.937Z"
+  },
+  {
+   "device_slug": "poco-f4",
+   "area_slug": "bluetooth",
+   "state": "works",
+   "detail": "HakiOS registry: bluetooth yes (Akhdaa/hakios-xiaomi-munch)",
+   "source": "https://hakios-developers.com/#/port/munch",
+   "updated": "2026-11-23T07:13:56.833Z"
+  },
+  {
+   "device_slug": "poco-f4",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (Akhdaa/hakios-xiaomi-munch, Darwin 16.5)",
+   "source": "https://hakios-developers.com/#/port/munch",
+   "updated": "2026-11-23T07:13:56.697Z"
+  },
+  {
+   "device_slug": "poco-f4",
+   "area_slug": "gpu",
    "state": "in-progress",
-   "detail": "reddit claim (2026-11-02): iOS 16 booted (video only, no feature list)",
-   "source": "https://www.reddit.com/r/hackios/comments/1xlt3jz/booted_ios_16_in_mi_11x_aka_poco_f3redmi_k40",
-   "updated": "2026-11-22T19:33:19.787Z"
+   "detail": "HakiOS registry: gpu partial (Akhdaa/hakios-xiaomi-munch)",
+   "source": "https://hakios-developers.com/#/port/munch",
+   "updated": "2026-11-23T07:13:56.764Z"
+  },
+  {
+   "device_slug": "poco-f4",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (Akhdaa/hakios-xiaomi-munch)",
+   "source": "https://hakios-developers.com/#/port/munch",
+   "updated": "2026-11-23T07:13:56.903Z"
+  },
+  {
+   "device_slug": "poco-f4",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (Akhdaa/hakios-xiaomi-munch)",
+   "source": "https://hakios-developers.com/#/port/munch",
+   "updated": "2026-11-23T07:13:56.730Z"
+  },
+  {
+   "device_slug": "poco-f4",
+   "area_slug": "wifi",
+   "state": "works",
+   "detail": "HakiOS registry: wifi yes (Akhdaa/hakios-xiaomi-munch)",
+   "source": "https://hakios-developers.com/#/port/munch",
+   "updated": "2026-11-23T07:13:56.798Z"
+  },
+  {
+   "device_slug": "poco-f5",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (mhamzates/ios-port-marble, Darwin 16)",
+   "source": "https://hakios-developers.com/#/port/marble",
+   "updated": "2026-11-23T07:14:00.817Z"
+  },
+  {
+   "device_slug": "poco-f5",
+   "area_slug": "gpu",
+   "state": "works",
+   "detail": "HakiOS registry: gpu yes (mhamzates/ios-port-marble)",
+   "source": "https://hakios-developers.com/#/port/marble",
+   "updated": "2026-11-23T07:14:00.888Z"
+  },
+  {
+   "device_slug": "poco-f5",
+   "area_slug": "touch",
+   "state": "broken",
+   "detail": "HakiOS registry: touch no, buttons no (mhamzates/ios-port-marble)",
+   "source": "https://hakios-developers.com/#/port/marble",
+   "updated": "2026-11-23T07:14:00.852Z"
+  },
+  {
+   "device_slug": "poco-f6",
+   "area_slug": "audio",
+   "state": "broken",
+   "detail": "HakiOS registry: audio no (slayedkaito/xnu-kernel-peridot-amiaxf)",
+   "source": "https://hakios-developers.com/#/port/peridot",
+   "updated": "2026-11-23T07:13:57.424Z"
+  },
+  {
+   "device_slug": "poco-f6",
+   "area_slug": "battery",
+   "state": "broken",
+   "detail": "HakiOS registry: charging no (slayedkaito/xnu-kernel-peridot-amiaxf)",
+   "source": "https://hakios-developers.com/#/port/peridot",
+   "updated": "2026-11-23T07:13:57.503Z"
+  },
+  {
+   "device_slug": "poco-f6",
+   "area_slug": "bluetooth",
+   "state": "broken",
+   "detail": "HakiOS registry: bluetooth no (slayedkaito/xnu-kernel-peridot-amiaxf)",
+   "source": "https://hakios-developers.com/#/port/peridot",
+   "updated": "2026-11-23T07:13:57.387Z"
+  },
+  {
+   "device_slug": "poco-f6",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (slayedkaito/xnu-kernel-peridot-amiaxf, Darwin 22.5)",
+   "source": "https://hakios-developers.com/#/port/peridot",
+   "updated": "2026-11-23T07:13:57.243Z"
+  },
+  {
+   "device_slug": "poco-f6",
+   "area_slug": "gpu",
+   "state": "in-progress",
+   "detail": "HakiOS registry: gpu partial (slayedkaito/xnu-kernel-peridot-amiaxf)",
+   "source": "https://hakios-developers.com/#/port/peridot",
+   "updated": "2026-11-23T07:13:57.313Z"
+  },
+  {
+   "device_slug": "poco-f6",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (slayedkaito/xnu-kernel-peridot-amiaxf)",
+   "source": "https://hakios-developers.com/#/port/peridot",
+   "updated": "2026-11-23T07:13:57.462Z"
+  },
+  {
+   "device_slug": "poco-f6",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (slayedkaito/xnu-kernel-peridot-amiaxf)",
+   "source": "https://hakios-developers.com/#/port/peridot",
+   "updated": "2026-11-23T07:13:57.276Z"
+  },
+  {
+   "device_slug": "poco-f6",
+   "area_slug": "wifi",
+   "state": "broken",
+   "detail": "HakiOS registry: wifi no (slayedkaito/xnu-kernel-peridot-amiaxf)",
+   "source": "https://hakios-developers.com/#/port/peridot",
+   "updated": "2026-11-23T07:13:57.349Z"
   },
   {
    "device_slug": "poco-f7",
@@ -2157,6 +3469,22 @@
   },
   {
    "device_slug": "poco-m3",
+   "area_slug": "audio",
+   "state": "broken",
+   "detail": "HakiOS registry: audio no (denis0001-dev/hackios-xnu-citrus)",
+   "source": "https://hakios-developers.com/#/port/citrus",
+   "updated": "2026-11-23T07:13:54.570Z"
+  },
+  {
+   "device_slug": "poco-m3",
+   "area_slug": "bluetooth",
+   "state": "broken",
+   "detail": "HakiOS registry: bluetooth no (denis0001-dev/hackios-xnu-citrus)",
+   "source": "https://hakios-developers.com/#/port/citrus",
+   "updated": "2026-11-23T07:13:54.536Z"
+  },
+  {
+   "device_slug": "poco-m3",
    "area_slug": "boot",
    "state": "works",
    "detail": "reddit claim (2026-10-22): iOS 16 booted",
@@ -2173,6 +3501,14 @@
   },
   {
    "device_slug": "poco-m3",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (denis0001-dev/hackios-xnu-citrus)",
+   "source": "https://hakios-developers.com/#/port/citrus",
+   "updated": "2026-11-23T07:13:54.604Z"
+  },
+  {
+   "device_slug": "poco-m3",
    "area_slug": "touch",
    "state": "in-progress",
    "detail": "reddit claim (2026-10-22): touch and buttons work, touch glitchy",
@@ -2180,20 +3516,124 @@
    "updated": "2026-11-22T18:20:27.063Z"
   },
   {
+   "device_slug": "poco-m3",
+   "area_slug": "wifi",
+   "state": "broken",
+   "detail": "HakiOS registry: wifi no (denis0001-dev/hackios-xnu-citrus)",
+   "source": "https://hakios-developers.com/#/port/citrus",
+   "updated": "2026-11-23T07:13:54.499Z"
+  },
+  {
+   "device_slug": "poco-m8",
+   "area_slug": "audio",
+   "state": "broken",
+   "detail": "HakiOS registry: audio no (unix-qv/hakios-sm6475)",
+   "source": "https://hakios-developers.com/#/port/kunzite",
+   "updated": "2026-11-23T07:13:54.993Z"
+  },
+  {
+   "device_slug": "poco-m8",
+   "area_slug": "bluetooth",
+   "state": "broken",
+   "detail": "HakiOS registry: bluetooth no (unix-qv/hakios-sm6475)",
+   "source": "https://hakios-developers.com/#/port/kunzite",
+   "updated": "2026-11-23T07:13:54.959Z"
+  },
+  {
    "device_slug": "poco-m8",
    "area_slug": "boot",
-   "state": "in-progress",
-   "detail": "reddit claim (2026-10-21): iOS 16.7.16 WIP",
-   "source": "https://www.reddit.com/r/hackios/comments/1xc0ypc/poco_m8_5g",
-   "updated": "2026-11-22T18:20:27.353Z"
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (unix-qv/hakios-sm6475, Darwin 22.5.0 (20F66))",
+   "source": "https://hakios-developers.com/#/port/kunzite",
+   "updated": "2026-11-23T07:13:54.816Z"
+  },
+  {
+   "device_slug": "poco-m8",
+   "area_slug": "gpu",
+   "state": "broken",
+   "detail": "HakiOS registry: gpu no (unix-qv/hakios-sm6475)",
+   "source": "https://hakios-developers.com/#/port/kunzite",
+   "updated": "2026-11-23T07:13:54.890Z"
+  },
+  {
+   "device_slug": "poco-m8",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (unix-qv/hakios-sm6475)",
+   "source": "https://hakios-developers.com/#/port/kunzite",
+   "updated": "2026-11-23T07:13:55.029Z"
+  },
+  {
+   "device_slug": "poco-m8",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (unix-qv/hakios-sm6475)",
+   "source": "https://hakios-developers.com/#/port/kunzite",
+   "updated": "2026-11-23T07:13:54.853Z"
+  },
+  {
+   "device_slug": "poco-m8",
+   "area_slug": "wifi",
+   "state": "broken",
+   "detail": "HakiOS registry: wifi no (unix-qv/hakios-sm6475)",
+   "source": "https://hakios-developers.com/#/port/kunzite",
+   "updated": "2026-11-23T07:13:54.924Z"
+  },
+  {
+   "device_slug": "poco-x3-nfc",
+   "area_slug": "audio",
+   "state": "works",
+   "detail": "HakiOS registry: audio yes (yavuzhanozyer/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/surya",
+   "updated": "2026-11-23T07:14:02.254Z"
+  },
+  {
+   "device_slug": "poco-x3-nfc",
+   "area_slug": "bluetooth",
+   "state": "broken",
+   "detail": "HakiOS registry: bluetooth no (yavuzhanozyer/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/surya",
+   "updated": "2026-11-23T07:14:02.223Z"
   },
   {
    "device_slug": "poco-x3-nfc",
    "area_slug": "boot",
-   "state": "in-progress",
-   "detail": "reddit claim (2026-11-21): iOS from the ios-sweet base running (image only)",
-   "source": "https://www.reddit.com/r/hackios/comments/1y24qxf/poco_x3_nfc",
-   "updated": "2026-11-22T19:33:35.134Z"
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (yavuzhanozyer/hakios-xnu-kernel, Darwin 16.5)",
+   "source": "https://hakios-developers.com/#/port/surya",
+   "updated": "2026-11-23T07:14:02.091Z"
+  },
+  {
+   "device_slug": "poco-x3-nfc",
+   "area_slug": "gpu",
+   "state": "broken",
+   "detail": "HakiOS registry: gpu no (yavuzhanozyer/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/surya",
+   "updated": "2026-11-23T07:14:02.158Z"
+  },
+  {
+   "device_slug": "poco-x3-nfc",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (yavuzhanozyer/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/surya",
+   "updated": "2026-11-23T07:14:02.287Z"
+  },
+  {
+   "device_slug": "poco-x3-nfc",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (yavuzhanozyer/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/surya",
+   "updated": "2026-11-23T07:14:02.125Z"
+  },
+  {
+   "device_slug": "poco-x3-nfc",
+   "area_slug": "wifi",
+   "state": "broken",
+   "detail": "HakiOS registry: wifi no (yavuzhanozyer/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/surya",
+   "updated": "2026-11-23T07:14:02.191Z"
   },
   {
    "device_slug": "poco-x3-pro",
@@ -2205,11 +3645,19 @@
   },
   {
    "device_slug": "poco-x3-pro",
+   "area_slug": "battery",
+   "state": "works",
+   "detail": "HakiOS registry: charging yes (nomorecoolnicknames/hackios-xnu-kernel-vayu)",
+   "source": "https://hakios-developers.com/#/port/vayu",
+   "updated": "2026-11-23T07:13:57.615Z"
+  },
+  {
+   "device_slug": "poco-x3-pro",
    "area_slug": "bluetooth",
-   "state": "broken",
-   "detail": "reddit claim (2026-10-28): BT still not working",
-   "source": "https://www.reddit.com/r/hackios/comments/1xi1sx3/ios_165_on_poco_x3_pro_hakios",
-   "updated": "2026-11-22T18:24:29.319Z"
+   "state": "in-progress",
+   "detail": "HakiOS registry: bluetooth partial (nomorecoolnicknames/hackios-xnu-kernel-vayu)",
+   "source": "https://hakios-developers.com/#/port/vayu",
+   "updated": "2026-11-23T07:13:57.579Z"
   },
   {
    "device_slug": "poco-x3-pro",
@@ -2278,10 +3726,10 @@
   {
    "device_slug": "poco-x3-pro",
    "area_slug": "wifi",
-   "state": "broken",
-   "detail": "reddit claim (2026-10-28): Wi-Fi still not working",
-   "source": "https://www.reddit.com/r/hackios/comments/1xi1sx3/ios_165_on_poco_x3_pro_hakios",
-   "updated": "2026-11-22T18:24:29.170Z"
+   "state": "works",
+   "detail": "HakiOS registry: wifi yes (nomorecoolnicknames/hackios-xnu-kernel-vayu)",
+   "source": "https://hakios-developers.com/#/port/vayu",
+   "updated": "2026-11-23T07:13:57.542Z"
   },
   {
    "device_slug": "poco-x5-5g",
@@ -2300,28 +3748,92 @@
    "updated": "2026-11-22T19:33:35.086Z"
   },
   {
+   "device_slug": "poco-x5-pro",
+   "area_slug": "audio",
+   "state": "works",
+   "detail": "HakiOS registry: audio yes (shimoku74/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/redwood",
+   "updated": "2026-11-23T07:13:53.183Z"
+  },
+  {
+   "device_slug": "poco-x5-pro",
+   "area_slug": "battery",
+   "state": "in-progress",
+   "detail": "HakiOS registry: charging partial (shimoku74/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/redwood",
+   "updated": "2026-11-23T07:13:53.252Z"
+  },
+  {
+   "device_slug": "poco-x5-pro",
+   "area_slug": "bluetooth",
+   "state": "broken",
+   "detail": "HakiOS registry: bluetooth no (shimoku74/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/redwood",
+   "updated": "2026-11-23T07:13:53.147Z"
+  },
+  {
+   "device_slug": "poco-x5-pro",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (shimoku74/hakios-xnu-kernel, Darwin 16.5)",
+   "source": "https://hakios-developers.com/#/port/redwood",
+   "updated": "2026-11-23T07:13:53.005Z"
+  },
+  {
+   "device_slug": "poco-x5-pro",
+   "area_slug": "gpu",
+   "state": "works",
+   "detail": "HakiOS registry: gpu yes (shimoku74/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/redwood",
+   "updated": "2026-11-23T07:13:53.077Z"
+  },
+  {
+   "device_slug": "poco-x5-pro",
+   "area_slug": "modem",
+   "state": "works",
+   "detail": "HakiOS registry: cellular yes (shimoku74/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/redwood",
+   "updated": "2026-11-23T07:13:53.218Z"
+  },
+  {
+   "device_slug": "poco-x5-pro",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (shimoku74/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/redwood",
+   "updated": "2026-11-23T07:13:53.041Z"
+  },
+  {
+   "device_slug": "poco-x5-pro",
+   "area_slug": "wifi",
+   "state": "works",
+   "detail": "HakiOS registry: wifi yes (shimoku74/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/redwood",
+   "updated": "2026-11-23T07:13:53.110Z"
+  },
+  {
    "device_slug": "poco-x6",
    "area_slug": "audio",
-   "state": "in-progress",
-   "detail": "reddit claim (2026-11-22): both speakers through the audio DSP (system sounds, music, video); no microphones, headphones or earpiece route (README, dev branch)",
-   "source": "https://www.reddit.com/r/hackios/comments/1y3036f/ios_16_reference_repo",
-   "updated": "2026-11-22T23:49:40.025Z"
+   "state": "works",
+   "detail": "HakiOS registry: audio yes (rafsanbasunia/ios-garnet)",
+   "source": "https://hakios-developers.com/#/port/garnet-3",
+   "updated": "2026-11-23T07:13:55.390Z"
   },
   {
    "device_slug": "poco-x6",
    "area_slug": "battery",
-   "state": "in-progress",
-   "detail": "reddit claim (2026-11-22): level reading; on a PC port the 0.5 A charge is below the 3-4 W iOS draws at idle, so the level still falls (README, dev branch)",
-   "source": "https://www.reddit.com/r/hackios/comments/1y3036f/ios_16_reference_repo",
-   "updated": "2026-11-22T23:49:40.209Z"
+   "state": "works",
+   "detail": "HakiOS registry: charging yes (rafsanbasunia/ios-garnet)",
+   "source": "https://hakios-developers.com/#/port/garnet-3",
+   "updated": "2026-11-23T07:13:55.493Z"
   },
   {
    "device_slug": "poco-x6",
    "area_slug": "bluetooth",
-   "state": "in-progress",
-   "detail": "reddit claim (2026-11-22): devices pair and connect (earbuds, a fitness band through CoreBluetooth); no sound through them yet (README, dev branch)",
-   "source": "https://www.reddit.com/r/hackios/comments/1y3036f/ios_16_reference_repo",
-   "updated": "2026-11-22T23:49:40.062Z"
+   "state": "works",
+   "detail": "HakiOS registry: bluetooth yes (rafsanbasunia/ios-garnet)",
+   "source": "https://hakios-developers.com/#/port/garnet-3",
+   "updated": "2026-11-23T07:13:55.354Z"
   },
   {
    "device_slug": "poco-x6",
@@ -2358,10 +3870,10 @@
   {
    "device_slug": "poco-x6",
    "area_slug": "modem",
-   "state": "in-progress",
-   "detail": "reddit claim (2026-11-22): with modem=1: registered on LTE, signal bars, mobile data, USSD; off by default, a restart is needed after a session (README, dev branch)",
-   "source": "https://www.reddit.com/r/hackios/comments/1y3036f/ios_16_reference_repo",
-   "updated": "2026-11-22T23:49:40.099Z"
+   "state": "works",
+   "detail": "HakiOS registry: cellular yes (rafsanbasunia/ios-garnet)",
+   "source": "https://hakios-developers.com/#/port/garnet-3",
+   "updated": "2026-11-23T07:13:55.448Z"
   },
   {
    "device_slug": "poco-x6",
@@ -2412,12 +3924,132 @@
    "updated": "2026-11-22T19:33:34.794Z"
   },
   {
-   "device_slug": "qrd7325",
+   "device_slug": "poco-x7-pro",
+   "area_slug": "audio",
+   "state": "works",
+   "detail": "HakiOS registry: audio yes (oosexgang/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/rodin",
+   "updated": "2026-11-23T07:13:54.372Z"
+  },
+  {
+   "device_slug": "poco-x7-pro",
+   "area_slug": "battery",
+   "state": "works",
+   "detail": "HakiOS registry: charging yes (oosexgang/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/rodin",
+   "updated": "2026-11-23T07:13:54.444Z"
+  },
+  {
+   "device_slug": "poco-x7-pro",
+   "area_slug": "bluetooth",
+   "state": "works",
+   "detail": "HakiOS registry: bluetooth yes (oosexgang/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/rodin",
+   "updated": "2026-11-23T07:13:54.337Z"
+  },
+  {
+   "device_slug": "poco-x7-pro",
    "area_slug": "boot",
    "state": "in-progress",
-   "detail": "reddit claim (2026-11-14): photos of iOS on the device, no details",
-   "source": "https://www.reddit.com/r/hackios/comments/1xweuyp/ios_on_qrd7325_qualcomm_reference_design_phone",
-   "updated": "2026-11-22T19:33:27.270Z"
+   "detail": "HakiOS registry: work in progress (oosexgang/hakios-xnu-kernel, Darwin 27.2)",
+   "source": "https://hakios-developers.com/#/port/rodin",
+   "updated": "2026-11-23T07:13:54.194Z"
+  },
+  {
+   "device_slug": "poco-x7-pro",
+   "area_slug": "gpu",
+   "state": "works",
+   "detail": "HakiOS registry: gpu yes (oosexgang/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/rodin",
+   "updated": "2026-11-23T07:13:54.266Z"
+  },
+  {
+   "device_slug": "poco-x7-pro",
+   "area_slug": "modem",
+   "state": "works",
+   "detail": "HakiOS registry: cellular yes (oosexgang/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/rodin",
+   "updated": "2026-11-23T07:13:54.409Z"
+  },
+  {
+   "device_slug": "poco-x7-pro",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (oosexgang/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/rodin",
+   "updated": "2026-11-23T07:13:54.231Z"
+  },
+  {
+   "device_slug": "poco-x7-pro",
+   "area_slug": "wifi",
+   "state": "works",
+   "detail": "HakiOS registry: wifi yes (oosexgang/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/rodin",
+   "updated": "2026-11-23T07:13:54.302Z"
+  },
+  {
+   "device_slug": "qrd7325",
+   "area_slug": "audio",
+   "state": "in-progress",
+   "detail": "HakiOS registry: audio partial (lunaticwhat/hakios-qrd7325)",
+   "source": "https://hakios-developers.com/#/port/qrd7325",
+   "updated": "2026-11-23T07:13:57.141Z"
+  },
+  {
+   "device_slug": "qrd7325",
+   "area_slug": "battery",
+   "state": "works",
+   "detail": "HakiOS registry: charging yes (lunaticwhat/hakios-qrd7325)",
+   "source": "https://hakios-developers.com/#/port/qrd7325",
+   "updated": "2026-11-23T07:13:57.208Z"
+  },
+  {
+   "device_slug": "qrd7325",
+   "area_slug": "bluetooth",
+   "state": "in-progress",
+   "detail": "HakiOS registry: bluetooth partial (lunaticwhat/hakios-qrd7325)",
+   "source": "https://hakios-developers.com/#/port/qrd7325",
+   "updated": "2026-11-23T07:13:57.106Z"
+  },
+  {
+   "device_slug": "qrd7325",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (lunaticwhat/hakios-qrd7325, Darwin 16.5 (20F66))",
+   "source": "https://hakios-developers.com/#/port/qrd7325",
+   "updated": "2026-11-23T07:13:56.972Z"
+  },
+  {
+   "device_slug": "qrd7325",
+   "area_slug": "gpu",
+   "state": "works",
+   "detail": "HakiOS registry: gpu yes (lunaticwhat/hakios-qrd7325)",
+   "source": "https://hakios-developers.com/#/port/qrd7325",
+   "updated": "2026-11-23T07:13:57.040Z"
+  },
+  {
+   "device_slug": "qrd7325",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (lunaticwhat/hakios-qrd7325)",
+   "source": "https://hakios-developers.com/#/port/qrd7325",
+   "updated": "2026-11-23T07:13:57.175Z"
+  },
+  {
+   "device_slug": "qrd7325",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (lunaticwhat/hakios-qrd7325)",
+   "source": "https://hakios-developers.com/#/port/qrd7325",
+   "updated": "2026-11-23T07:13:57.006Z"
+  },
+  {
+   "device_slug": "qrd7325",
+   "area_slug": "wifi",
+   "state": "works",
+   "detail": "HakiOS registry: wifi yes (lunaticwhat/hakios-qrd7325)",
+   "source": "https://hakios-developers.com/#/port/qrd7325",
+   "updated": "2026-11-23T07:13:57.072Z"
   },
   {
    "device_slug": "rabbit-r1",
@@ -2669,6 +4301,22 @@
   },
   {
    "device_slug": "redmi-10c",
+   "area_slug": "battery",
+   "state": "in-progress",
+   "detail": "HakiOS registry: charging partial (ddoass/hackios-fog)",
+   "source": "https://hakios-developers.com/#/port/fog",
+   "updated": "2026-11-23T07:14:01.786Z"
+  },
+  {
+   "device_slug": "redmi-10c",
+   "area_slug": "bluetooth",
+   "state": "in-progress",
+   "detail": "HakiOS registry: bluetooth partial (ddoass/hackios-fog)",
+   "source": "https://hakios-developers.com/#/port/fog",
+   "updated": "2026-11-23T07:14:01.720Z"
+  },
+  {
+   "device_slug": "redmi-10c",
    "area_slug": "boot",
    "state": "works",
    "detail": "reddit claim (2026-11-11): boots without a PC, 4 cores, all RAM",
@@ -2682,6 +4330,14 @@
    "detail": "reddit claim (2026-11-15): Metal runs (porter; no video of it yet)",
    "source": "https://www.reddit.com/r/hackios/comments/1xx75sh/update_i_finally_got_internet_sound_and_metal_to",
    "updated": "2026-11-22T19:33:20.054Z"
+  },
+  {
+   "device_slug": "redmi-10c",
+   "area_slug": "modem",
+   "state": "in-progress",
+   "detail": "HakiOS registry: cellular partial (ddoass/hackios-fog)",
+   "source": "https://hakios-developers.com/#/port/fog",
+   "updated": "2026-11-23T07:14:01.752Z"
   },
   {
    "device_slug": "redmi-10c",
@@ -2813,6 +4469,30 @@
   },
   {
    "device_slug": "redmi-k20-pro",
+   "area_slug": "audio",
+   "state": "works",
+   "detail": "HakiOS registry: audio yes (yfl520/hackios-raphael)",
+   "source": "https://hakios-developers.com/#/port/raphael",
+   "updated": "2026-11-23T07:13:54.707Z"
+  },
+  {
+   "device_slug": "redmi-k20-pro",
+   "area_slug": "battery",
+   "state": "works",
+   "detail": "HakiOS registry: charging yes (yfl520/hackios-raphael)",
+   "source": "https://hakios-developers.com/#/port/raphael",
+   "updated": "2026-11-23T07:13:54.781Z"
+  },
+  {
+   "device_slug": "redmi-k20-pro",
+   "area_slug": "bluetooth",
+   "state": "works",
+   "detail": "HakiOS registry: bluetooth yes (yfl520/hackios-raphael)",
+   "source": "https://hakios-developers.com/#/port/raphael",
+   "updated": "2026-11-23T07:13:54.673Z"
+  },
+  {
+   "device_slug": "redmi-k20-pro",
    "area_slug": "boot",
    "state": "works",
    "detail": "repo claim (2026-10-27): UEFI, loader and XNU boot iOS 16.5 (20F66) to the desktop from RAM; all 39 init checks pass (README test, branch raphael-bringup)",
@@ -2829,6 +4509,14 @@
   },
   {
    "device_slug": "redmi-k20-pro",
+   "area_slug": "modem",
+   "state": "works",
+   "detail": "HakiOS registry: cellular yes (yfl520/hackios-raphael)",
+   "source": "https://hakios-developers.com/#/port/raphael",
+   "updated": "2026-11-23T07:13:54.742Z"
+  },
+  {
+   "device_slug": "redmi-k20-pro",
    "area_slug": "touch",
    "state": "works",
    "detail": "repo claim (2026-10-27): desktop, Control Center, touch and buttons work (user-confirmed); not a steady 60 fps everywhere (README test, branch raphael-bringup)",
@@ -2838,10 +4526,10 @@
   {
    "device_slug": "redmi-k20-pro",
    "area_slug": "wifi",
-   "state": "in-progress",
-   "detail": "repo claim (2026-10-27): 5 GHz WPA3-SAE join with an address and real web access (WPA2 before); after turning Wi-Fi off and on it lists networks but cannot reconnect (README test, branch raphael-bringup)",
-   "source": "https://github.com/HeliumStudio-Dev/hackios-xnu-kernel/tree/raphael-bringup",
-   "updated": "2026-11-22T23:55:14.264Z"
+   "state": "works",
+   "detail": "HakiOS registry: wifi yes (yfl520/hackios-raphael)",
+   "source": "https://hakios-developers.com/#/port/raphael",
+   "updated": "2026-11-23T07:13:54.638Z"
   },
   {
    "device_slug": "redmi-note-10-pro",
@@ -3052,6 +4740,134 @@
    "updated": "2026-11-22T19:33:31.523Z"
   },
   {
+   "device_slug": "redmi-note-12-pro-4g",
+   "area_slug": "audio",
+   "state": "broken",
+   "detail": "HakiOS registry: audio no (nonrootus/ios-sweet_k6a)",
+   "source": "https://hakios-developers.com/#/port/sweet_k6a",
+   "updated": "2026-11-23T07:14:01.988Z"
+  },
+  {
+   "device_slug": "redmi-note-12-pro-4g",
+   "area_slug": "battery",
+   "state": "broken",
+   "detail": "HakiOS registry: charging no (nonrootus/ios-sweet_k6a)",
+   "source": "https://hakios-developers.com/#/port/sweet_k6a",
+   "updated": "2026-11-23T07:14:02.055Z"
+  },
+  {
+   "device_slug": "redmi-note-12-pro-4g",
+   "area_slug": "bluetooth",
+   "state": "broken",
+   "detail": "HakiOS registry: bluetooth no (nonrootus/ios-sweet_k6a)",
+   "source": "https://hakios-developers.com/#/port/sweet_k6a",
+   "updated": "2026-11-23T07:14:01.955Z"
+  },
+  {
+   "device_slug": "redmi-note-12-pro-4g",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (nonrootus/ios-sweet_k6a, Darwin Darwin 22.6.0 (20H392))",
+   "source": "https://hakios-developers.com/#/port/sweet_k6a",
+   "updated": "2026-11-23T07:14:01.820Z"
+  },
+  {
+   "device_slug": "redmi-note-12-pro-4g",
+   "area_slug": "gpu",
+   "state": "works",
+   "detail": "HakiOS registry: gpu yes (nonrootus/ios-sweet_k6a)",
+   "source": "https://hakios-developers.com/#/port/sweet_k6a",
+   "updated": "2026-11-23T07:14:01.889Z"
+  },
+  {
+   "device_slug": "redmi-note-12-pro-4g",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (nonrootus/ios-sweet_k6a)",
+   "source": "https://hakios-developers.com/#/port/sweet_k6a",
+   "updated": "2026-11-23T07:14:02.022Z"
+  },
+  {
+   "device_slug": "redmi-note-12-pro-4g",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (nonrootus/ios-sweet_k6a)",
+   "source": "https://hakios-developers.com/#/port/sweet_k6a",
+   "updated": "2026-11-23T07:14:01.853Z"
+  },
+  {
+   "device_slug": "redmi-note-12-pro-4g",
+   "area_slug": "wifi",
+   "state": "in-progress",
+   "detail": "HakiOS registry: wifi partial (nonrootus/ios-sweet_k6a)",
+   "source": "https://hakios-developers.com/#/port/sweet_k6a",
+   "updated": "2026-11-23T07:14:01.922Z"
+  },
+  {
+   "device_slug": "redmi-note-13-4g",
+   "area_slug": "audio",
+   "state": "works",
+   "detail": "HakiOS registry: audio yes (Angelpro09xd/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/sapphire",
+   "updated": "2026-11-23T07:14:00.095Z"
+  },
+  {
+   "device_slug": "redmi-note-13-4g",
+   "area_slug": "battery",
+   "state": "works",
+   "detail": "HakiOS registry: charging yes (Angelpro09xd/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/sapphire",
+   "updated": "2026-11-23T07:14:00.168Z"
+  },
+  {
+   "device_slug": "redmi-note-13-4g",
+   "area_slug": "bluetooth",
+   "state": "works",
+   "detail": "HakiOS registry: bluetooth yes (Angelpro09xd/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/sapphire",
+   "updated": "2026-11-23T07:14:00.059Z"
+  },
+  {
+   "device_slug": "redmi-note-13-4g",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (DEV-AdriBOT/hakios-device-sapphiren, Darwin 22.5.0)",
+   "source": "https://hakios-developers.com/#/port/sapphiren",
+   "updated": "2026-11-23T07:13:59.912Z"
+  },
+  {
+   "device_slug": "redmi-note-13-4g",
+   "area_slug": "gpu",
+   "state": "works",
+   "detail": "HakiOS registry: gpu yes (Angelpro09xd/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/sapphire",
+   "updated": "2026-11-23T07:13:59.981Z"
+  },
+  {
+   "device_slug": "redmi-note-13-4g",
+   "area_slug": "modem",
+   "state": "works",
+   "detail": "HakiOS registry: cellular yes (Angelpro09xd/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/sapphire",
+   "updated": "2026-11-23T07:14:00.130Z"
+  },
+  {
+   "device_slug": "redmi-note-13-4g",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (Angelpro09xd/hakios-xnu-kernel)",
+   "source": "https://hakios-developers.com/#/port/sapphire",
+   "updated": "2026-11-23T07:13:59.946Z"
+  },
+  {
+   "device_slug": "redmi-note-13-4g",
+   "area_slug": "wifi",
+   "state": "works",
+   "detail": "HakiOS registry: wifi yes (DEV-AdriBOT/hakios-device-sapphiren)",
+   "source": "https://hakios-developers.com/#/port/sapphiren",
+   "updated": "2026-11-23T07:14:00.018Z"
+  },
+  {
    "device_slug": "redmi-note-5-pro",
    "area_slug": "boot",
    "state": "in-progress",
@@ -3213,6 +5029,14 @@
   },
   {
    "device_slug": "redmi-note-9s",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (qdizax-w/hakios-sm7125)",
+   "source": "https://hakios-developers.com/#/port/curtana",
+   "updated": "2026-11-23T07:14:02.355Z"
+  },
+  {
+   "device_slug": "redmi-note-9s",
    "area_slug": "sensors",
    "state": "broken",
    "detail": "reddit claim (2026-10-29): sensors broken",
@@ -3222,10 +5046,10 @@
   {
    "device_slug": "redmi-note-9s",
    "area_slug": "touch",
-   "state": "in-progress",
-   "detail": "reddit claim (2026-10-29): buttons work; touch only with the Huaxing panel",
-   "source": "https://www.reddit.com/r/hackios/comments/1xie0kg/hackios_booted_on_redmi_note_9s_curtanamiatoll",
-   "updated": "2026-11-22T19:33:29.653Z"
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (qdizax-w/hakios-sm7125)",
+   "source": "https://hakios-developers.com/#/port/curtana",
+   "updated": "2026-11-23T07:14:02.321Z"
   },
   {
    "device_slug": "redmi-note-9s",
@@ -3460,6 +5284,70 @@
    "updated": "2026-11-22T19:33:28.265Z"
   },
   {
+   "device_slug": "s20-ultra",
+   "area_slug": "audio",
+   "state": "broken",
+   "detail": "HakiOS registry: audio no (ch1tmdgus/hackios-z3q)",
+   "source": "https://hakios-developers.com/#/port/z3q",
+   "updated": "2026-11-23T07:13:56.352Z"
+  },
+  {
+   "device_slug": "s20-ultra",
+   "area_slug": "battery",
+   "state": "works",
+   "detail": "HakiOS registry: charging yes (ch1tmdgus/hackios-z3q)",
+   "source": "https://hakios-developers.com/#/port/z3q",
+   "updated": "2026-11-23T07:13:56.422Z"
+  },
+  {
+   "device_slug": "s20-ultra",
+   "area_slug": "bluetooth",
+   "state": "in-progress",
+   "detail": "HakiOS registry: bluetooth partial (ch1tmdgus/hackios-z3q)",
+   "source": "https://hakios-developers.com/#/port/z3q",
+   "updated": "2026-11-23T07:13:56.318Z"
+  },
+  {
+   "device_slug": "s20-ultra",
+   "area_slug": "boot",
+   "state": "works",
+   "detail": "HakiOS registry: boots to the Home Screen (ch1tmdgus/hackios-z3q, Darwin 16.7.10)",
+   "source": "https://hakios-developers.com/#/port/z3q",
+   "updated": "2026-11-23T07:13:56.178Z"
+  },
+  {
+   "device_slug": "s20-ultra",
+   "area_slug": "gpu",
+   "state": "works",
+   "detail": "HakiOS registry: gpu yes (ch1tmdgus/hackios-z3q)",
+   "source": "https://hakios-developers.com/#/port/z3q",
+   "updated": "2026-11-23T07:13:56.247Z"
+  },
+  {
+   "device_slug": "s20-ultra",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (ch1tmdgus/hackios-z3q)",
+   "source": "https://hakios-developers.com/#/port/z3q",
+   "updated": "2026-11-23T07:13:56.387Z"
+  },
+  {
+   "device_slug": "s20-ultra",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (ch1tmdgus/hackios-z3q)",
+   "source": "https://hakios-developers.com/#/port/z3q",
+   "updated": "2026-11-23T07:13:56.212Z"
+  },
+  {
+   "device_slug": "s20-ultra",
+   "area_slug": "wifi",
+   "state": "works",
+   "detail": "HakiOS registry: wifi yes (ch1tmdgus/hackios-z3q)",
+   "source": "https://hakios-developers.com/#/port/z3q",
+   "updated": "2026-11-23T07:13:56.283Z"
+  },
+  {
    "device_slug": "s21-5g",
    "area_slug": "boot",
    "state": "in-progress",
@@ -3469,11 +5357,27 @@
   },
   {
    "device_slug": "s21-plus",
+   "area_slug": "audio",
+   "state": "broken",
+   "detail": "HakiOS registry: audio no (jimmycarles9991-glitch/s21xnu)",
+   "source": "https://hakios-developers.com/#/port/t2s",
+   "updated": "2026-11-23T07:14:00.961Z"
+  },
+  {
+   "device_slug": "s21-plus",
    "area_slug": "battery",
    "state": "works",
    "detail": "reddit claim (2026-11-20): charging works and shows in the battery indicator",
    "source": "https://www.reddit.com/r/hackios/comments/1y114l6/ios_16716_on_the_galaxy_s21_exynos_2100_current",
    "updated": "2026-11-22T19:33:23.236Z"
+  },
+  {
+   "device_slug": "s21-plus",
+   "area_slug": "bluetooth",
+   "state": "broken",
+   "detail": "HakiOS registry: bluetooth no (jimmycarles9991-glitch/s21xnu)",
+   "source": "https://hakios-developers.com/#/port/t2s",
+   "updated": "2026-11-23T07:14:00.924Z"
   },
   {
    "device_slug": "s21-plus",
@@ -3490,6 +5394,14 @@
    "detail": "reddit claim (2026-11-20): GPU powers on and runs jobs but iOS does not render",
    "source": "https://www.reddit.com/r/hackios/comments/1y114l6/ios_16716_on_the_galaxy_s21_exynos_2100_current",
    "updated": "2026-11-22T18:20:12.980Z"
+  },
+  {
+   "device_slug": "s21-plus",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (jimmycarles9991-glitch/s21xnu)",
+   "source": "https://hakios-developers.com/#/port/t2s",
+   "updated": "2026-11-23T07:14:00.999Z"
   },
   {
    "device_slug": "s21-plus",
@@ -3998,10 +5910,10 @@
   {
    "device_slug": "s9",
    "area_slug": "bluetooth",
-   "state": "broken",
-   "detail": "reddit claim (2026-11-07): Bluetooth does not work (porter's comment 2026-11-13)",
-   "source": "https://www.reddit.com/r/hackios/comments/1xpzb4v/ios_16_on_my_s9_exynos",
-   "updated": "2026-11-22T19:33:22.042Z"
+   "state": "in-progress",
+   "detail": "HakiOS registry: bluetooth partial (Scion-Project/scion-kernel)",
+   "source": "https://hakios-developers.com/#/port/starlte",
+   "updated": "2026-11-23T07:13:53.324Z"
   },
   {
    "device_slug": "s9",
@@ -4018,6 +5930,22 @@
    "detail": "reddit claim (2026-11-07): only the front camera, quality awful (porter's comment)",
    "source": "https://www.reddit.com/r/hackios/comments/1xpzb4v/ios_16_on_my_s9_exynos",
    "updated": "2026-11-22T19:33:22.119Z"
+  },
+  {
+   "device_slug": "s9",
+   "area_slug": "gpu",
+   "state": "in-progress",
+   "detail": "HakiOS registry: gpu partial (Scion-Project/scion-kernel)",
+   "source": "https://hakios-developers.com/#/port/starlte",
+   "updated": "2026-11-23T07:13:53.289Z"
+  },
+  {
+   "device_slug": "s9",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (Scion-Project/scion-kernel)",
+   "source": "https://hakios-developers.com/#/port/starlte",
+   "updated": "2026-11-23T07:13:53.361Z"
   },
   {
    "device_slug": "s9",
@@ -4234,6 +6162,70 @@
    "detail": "reddit claim (2026-10-27): touchscreen working (porter's comment)",
    "source": "https://www.reddit.com/r/hackios/comments/1xgvvuo/xiaomi_12_lite_5g_touch_not_working",
    "updated": "2026-11-22T19:33:20.664Z"
+  },
+  {
+   "device_slug": "xiaomi-14-pro",
+   "area_slug": "audio",
+   "state": "works",
+   "detail": "HakiOS registry: audio yes (mariqnetr/hakios-shennong)",
+   "source": "https://hakios-developers.com/#/port/shennong",
+   "updated": "2026-11-23T07:13:55.244Z"
+  },
+  {
+   "device_slug": "xiaomi-14-pro",
+   "area_slug": "battery",
+   "state": "in-progress",
+   "detail": "HakiOS registry: charging partial (mariqnetr/hakios-shennong)",
+   "source": "https://hakios-developers.com/#/port/shennong",
+   "updated": "2026-11-23T07:13:55.316Z"
+  },
+  {
+   "device_slug": "xiaomi-14-pro",
+   "area_slug": "bluetooth",
+   "state": "in-progress",
+   "detail": "HakiOS registry: bluetooth partial (mariqnetr/hakios-shennong)",
+   "source": "https://hakios-developers.com/#/port/shennong",
+   "updated": "2026-11-23T07:13:55.206Z"
+  },
+  {
+   "device_slug": "xiaomi-14-pro",
+   "area_slug": "boot",
+   "state": "in-progress",
+   "detail": "HakiOS registry: work in progress (mariqnetr/hakios-shennong, Darwin 16.5)",
+   "source": "https://hakios-developers.com/#/port/shennong",
+   "updated": "2026-11-23T07:13:55.064Z"
+  },
+  {
+   "device_slug": "xiaomi-14-pro",
+   "area_slug": "gpu",
+   "state": "in-progress",
+   "detail": "HakiOS registry: gpu partial (mariqnetr/hakios-shennong)",
+   "source": "https://hakios-developers.com/#/port/shennong",
+   "updated": "2026-11-23T07:13:55.138Z"
+  },
+  {
+   "device_slug": "xiaomi-14-pro",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (mariqnetr/hakios-shennong)",
+   "source": "https://hakios-developers.com/#/port/shennong",
+   "updated": "2026-11-23T07:13:55.279Z"
+  },
+  {
+   "device_slug": "xiaomi-14-pro",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (mariqnetr/hakios-shennong)",
+   "source": "https://hakios-developers.com/#/port/shennong",
+   "updated": "2026-11-23T07:13:55.101Z"
+  },
+  {
+   "device_slug": "xiaomi-14-pro",
+   "area_slug": "wifi",
+   "state": "in-progress",
+   "detail": "HakiOS registry: wifi partial (mariqnetr/hakios-shennong)",
+   "source": "https://hakios-developers.com/#/port/shennong",
+   "updated": "2026-11-23T07:13:55.173Z"
   },
   {
    "device_slug": "xiaomi-15",
@@ -4557,6 +6549,22 @@
   },
   {
    "device_slug": "xperia-xz3",
+   "area_slug": "audio",
+   "state": "broken",
+   "detail": "HakiOS registry: audio no (funnysky943/ios-akatsuki)",
+   "source": "https://hakios-developers.com/#/port/akatsuki",
+   "updated": "2026-11-23T07:13:59.290Z"
+  },
+  {
+   "device_slug": "xperia-xz3",
+   "area_slug": "bluetooth",
+   "state": "broken",
+   "detail": "HakiOS registry: bluetooth no (funnysky943/ios-akatsuki)",
+   "source": "https://hakios-developers.com/#/port/akatsuki",
+   "updated": "2026-11-23T07:13:59.254Z"
+  },
+  {
+   "device_slug": "xperia-xz3",
    "area_slug": "boot",
    "state": "works",
    "detail": "reddit claim (2026-10-27): iOS runs at the native XZ3 resolution (video); keyboard layout off",
@@ -4570,6 +6578,30 @@
    "detail": "reddit claim (2026-10-27): GPU in progress, much tearing and flicker",
    "source": "https://www.reddit.com/r/hackios/comments/1xgwo1w/sony_xperia_xz3_first_iteration",
    "updated": "2026-11-22T19:33:25.814Z"
+  },
+  {
+   "device_slug": "xperia-xz3",
+   "area_slug": "modem",
+   "state": "broken",
+   "detail": "HakiOS registry: cellular no (funnysky943/ios-akatsuki)",
+   "source": "https://hakios-developers.com/#/port/akatsuki",
+   "updated": "2026-11-23T07:13:59.325Z"
+  },
+  {
+   "device_slug": "xperia-xz3",
+   "area_slug": "touch",
+   "state": "works",
+   "detail": "HakiOS registry: touch yes, buttons yes (funnysky943/ios-akatsuki)",
+   "source": "https://hakios-developers.com/#/port/akatsuki",
+   "updated": "2026-11-23T07:13:59.181Z"
+  },
+  {
+   "device_slug": "xperia-xz3",
+   "area_slug": "wifi",
+   "state": "broken",
+   "detail": "HakiOS registry: wifi no (funnysky943/ios-akatsuki)",
+   "source": "https://hakios-developers.com/#/port/akatsuki",
+   "updated": "2026-11-23T07:13:59.217Z"
   },
   {
    "device_slug": "z-flip",
@@ -4630,6 +6662,23 @@
  ],
  "devices": [
   {
+   "slug": "a03s",
+   "name": "Galaxy A03s",
+   "model": "SM-A037F",
+   "soc": "Helio P35 (MT6765)",
+   "repo_kind": "fork",
+   "status": "works",
+   "best_result": "HakiOS registry: boots to the Home Screen (iOS 16.5)",
+   "notes": "Listed on the HakiOS ports registry: https://hakios-developers.com/#/port/a03s",
+   "base": "other",
+   "ios_version": "iOS 16.5",
+   "image_url": "https://images.samsung.com/is/image/samsung/p6pim/africa_en/sm-a037fzbdxfe/gallery/africa-en-galaxy-a03s-a037-401856-sm-a037fzbdxfe-501314479?$650_519_PNG$",
+   "image_credit": "© Samsung, official product image, used for device identification",
+   "image_license": "© Samsung",
+   "image_source_url": "https://www.samsung.com/africa_en/business/smartphones/galaxy-a/galaxy-a03s-sm-a037fzbdxfe/",
+   "updated": "2026-11-23T07:33:13.608Z"
+  },
+  {
    "slug": "a13",
    "name": "Galaxy A13",
    "model": "SM-A135F",
@@ -4662,6 +6711,23 @@
    "image_license": "© Samsung",
    "image_source_url": "https://www.samsung.com/uk/support/model/SM-A217FZKNEUA/",
    "updated": "2026-11-22T20:55:30.571Z"
+  },
+  {
+   "slug": "a22",
+   "name": "Galaxy A22 4G",
+   "model": "SM-A225F",
+   "soc": "Helio G80 (MT6769V/CU)",
+   "repo_kind": "fork",
+   "status": "works",
+   "best_result": "HakiOS registry: boots to the Home Screen (iOS 16.5)",
+   "notes": "Listed on the HakiOS ports registry: https://hakios-developers.com/#/port/a22",
+   "base": "other",
+   "ios_version": "iOS 16.5",
+   "image_url": "https://images.samsung.com/is/image/samsung/p6pim/au/sm-a225fzkpxsa/gallery/au-galaxy-a22-a225-sm-a225fzkpxsa-thumb-507674632?$650_519_PNG$",
+   "image_credit": "© Samsung, official product image, used for device identification",
+   "image_license": "© Samsung",
+   "image_source_url": "https://www.samsung.com/au/smartphones/galaxy-a/galaxy-a22-black-128gb-sm-a225fzkpxsa/",
+   "updated": "2026-11-23T07:33:13.425Z"
   },
   {
    "slug": "a3-2017",
@@ -4713,6 +6779,23 @@
    "image_license": "© Samsung",
    "image_source_url": "https://www.samsung.com/uk/support/model/SM-A510FZWABTU/",
    "updated": "2026-11-22T20:55:30.805Z"
+  },
+  {
+   "slug": "a51",
+   "name": "Galaxy A51",
+   "model": "SM-A515F",
+   "soc": "Exynos 9611",
+   "repo_kind": "fork",
+   "status": "works",
+   "best_result": "HakiOS registry: boots to the Home Screen (iOS 16.5)",
+   "notes": "Listed on the HakiOS ports registry: https://hakios-developers.com/#/port/a51",
+   "base": "other",
+   "ios_version": "iOS 16.5",
+   "image_url": "https://images.samsung.com/is/image/samsung/ie-galaxy-a51-sm-a515fzkveua-207438859?$650_519_PNG$",
+   "image_credit": "© Samsung, official product image, used for device identification",
+   "image_license": "© Samsung",
+   "image_source_url": "https://www.samsung.com/ie/business/smartphones/galaxy-a/galaxy-a51-sm-a515fzkveua/",
+   "updated": "2026-11-23T07:33:13.390Z"
   },
   {
    "slug": "a52s",
@@ -4815,6 +6898,40 @@
    "image_license": "© HONOR",
    "image_source_url": "https://www.honor.com/global/news/honor-5x/",
    "updated": "2026-11-22T20:55:31.494Z"
+  },
+  {
+   "slug": "infinix-gt-10-pro",
+   "name": "Infinix GT 10 Pro",
+   "model": "X6739",
+   "soc": "Dimensity 8050 (MT6893)",
+   "repo_kind": "fork",
+   "status": "works",
+   "best_result": "HakiOS registry: boots to the Home Screen (iOS 16.5)",
+   "notes": "Listed on the HakiOS ports registry: https://hakios-developers.com/#/port/x6739",
+   "base": "other",
+   "ios_version": "iOS 16.5",
+   "image_url": "https://www.infinixmobility.com/fileadmin/assets/v/gt/gt10pro/assets/pc/sec22/bg.webp",
+   "image_credit": "© Infinix, official product image, used for device identification",
+   "image_license": "© Infinix",
+   "image_source_url": "https://www.infinixmobility.com/gt-10-pro",
+   "updated": "2026-11-23T07:33:13.645Z"
+  },
+  {
+   "slug": "infinix-hot-20",
+   "name": "Infinix HOT 20",
+   "model": "X6826",
+   "soc": "MT6768",
+   "repo_kind": "fork",
+   "status": "works",
+   "best_result": "HakiOS registry: boots to the Home Screen (iOS 27.2)",
+   "notes": "Listed on the HakiOS ports registry: https://hakios-developers.com/#/port/x6826",
+   "base": "other",
+   "ios_version": "iOS 27.2",
+   "image_url": "https://www.infinixmobility.com/fileadmin/assets/v/hot/hot20/nav/hot20.png",
+   "image_credit": "© Infinix, official product image, used for device identification",
+   "image_license": "© Infinix",
+   "image_source_url": "https://web.archive.org/web/20221212153157/https://www.infinixmobility.com/smartphone/hot-20",
+   "updated": "2026-11-23T07:33:13.758Z"
   },
   {
    "slug": "infinix-note-12",
@@ -5055,6 +7172,23 @@
    "updated": "2026-11-22T20:55:32.958Z"
   },
   {
+   "slug": "mi-8",
+   "name": "Xiaomi Mi 8",
+   "model": "dipper",
+   "soc": "Snapdragon 845 (SDM845)",
+   "repo_kind": "fork",
+   "status": "works",
+   "best_result": "HakiOS registry: boots to the Home Screen (iOS 16.5)",
+   "notes": "Listed on the HakiOS ports registry: https://hakios-developers.com/#/port/dipper",
+   "base": "other",
+   "ios_version": "iOS 16.5",
+   "image_url": "https://i01.appmifile.com/webfile/globalimg/products/pc/mi8/specs-phone-black.png",
+   "image_credit": "© Xiaomi, official product image, used for device identification",
+   "image_license": "© Xiaomi",
+   "image_source_url": "https://www.mi.com/uk/mi8/specs/",
+   "updated": "2026-11-23T07:33:13.256Z"
+  },
+  {
    "slug": "mi-a2-lite",
    "name": "Xiaomi Mi A2 Lite",
    "model": "daisy",
@@ -5191,6 +7325,23 @@
    "updated": "2026-11-22T20:55:33.901Z"
   },
   {
+   "slug": "moto-g60",
+   "name": "Moto G60",
+   "model": "hanoip",
+   "soc": "Snapdragon 732G (SM7150-AC)",
+   "repo_kind": "fork",
+   "status": "works",
+   "best_result": "HakiOS registry: boots to the Home Screen (iOS 18)",
+   "notes": "Listed on the HakiOS ports registry: https://hakios-developers.com/#/port/hanoip-3 https://hakios-developers.com/#/port/hanoip-2 https://hakios-developers.com/#/port/hanoip",
+   "base": "other",
+   "ios_version": "iOS 18",
+   "image_url": "https://motorolain.vtexassets.com/arquivos/ids/157040/Moto-G60-pdp-kv-render-Ti-8-h4ip771u.png?v=637835433052400000",
+   "image_credit": "© Motorola, official product image, used for device identification",
+   "image_license": "© Motorola",
+   "image_source_url": "https://www.motorola.in/smartphones-moto-g60/p",
+   "updated": "2026-11-23T07:33:13.076Z"
+  },
+  {
    "slug": "moto-g84",
    "name": "Moto G84 5G",
    "model": "bangkk",
@@ -5206,6 +7357,23 @@
    "image_license": "© Motorola",
    "image_source_url": "https://www.motorola.in/smartphones-moto-g84-5g/p",
    "updated": "2026-11-23T00:14:08.703Z"
+  },
+  {
+   "slug": "moto-g85",
+   "name": "Moto G85 5G",
+   "model": "malmo",
+   "soc": "Snapdragon 6s Gen 3 (SM6375)",
+   "repo_kind": "fork",
+   "status": "works",
+   "best_result": "HakiOS registry: boots to the Home Screen (iOS 16.5)",
+   "notes": "Listed on the HakiOS ports registry: https://hakios-developers.com/#/port/malmo",
+   "base": "other",
+   "ios_version": "iOS 16.5",
+   "image_url": "https://p1-ofp.static.pub//fes/cms/2025/01/22/qobxwu1er0vl6upg1bmqj6vbhbuirc654922.png",
+   "image_credit": "© Motorola, official product image, used for device identification",
+   "image_license": "© Motorola",
+   "image_source_url": "https://www.motorola.com/gb/en/p/phones/moto-g/85-5g/pmipmgv37m9?pn=PB2A0001GB",
+   "updated": "2026-11-23T07:33:13.681Z"
   },
   {
    "slug": "nokia-5-3",
@@ -5302,12 +7470,12 @@
    "best_result": "reddit claim: booted, very early stage, touch dead",
    "notes": "xyz-sundram/hackios-xnu-kernel. Source: https://www.reddit.com/r/hackios/comments/1xn1bo5/booted_on_nothing_phone_1",
    "base": "other",
-   "ios_version": "",
+   "ios_version": "iOS 16.5",
    "image_url": "https://cdn.shopify.com/s/files/1/0376/5420/0459/products/phone1black1600x2160.png?v=1658461176",
    "image_credit": "© Nothing, official product image, used for device identification",
    "image_license": "© Nothing",
    "image_source_url": "https://nothing.tech/products/phone-1",
-   "updated": "2026-11-22T20:55:34.593Z"
+   "updated": "2026-11-23T07:13:45.674Z"
   },
   {
    "slug": "nubia-z60-ultra",
@@ -5342,6 +7510,23 @@
    "image_license": "© OnePlus",
    "image_source_url": "https://www.oneplus.com/global/10-pro",
    "updated": "2026-11-22T20:55:34.711Z"
+  },
+  {
+   "slug": "oneplus-12",
+   "name": "OnePlus 12",
+   "model": "waffle",
+   "soc": "Snapdragon 8 Gen 3 (SM8650)",
+   "repo_kind": "fork",
+   "status": "works",
+   "best_result": "HakiOS registry: boots to the Home Screen (iOS 16.5)",
+   "notes": "Listed on the HakiOS ports registry: https://hakios-developers.com/#/port/waffle",
+   "base": "other",
+   "ios_version": "iOS 16.5",
+   "image_url": "https://oasis.opstatics.com/content/dam/oasis/page/2023/cn/12/12-green.png",
+   "image_credit": "© OnePlus, official product image, used for device identification",
+   "image_license": "© OnePlus",
+   "image_source_url": "https://www.oneplus.com/global/12/specs",
+   "updated": "2026-11-23T07:33:13.534Z"
   },
   {
    "slug": "oneplus-13",
@@ -5472,12 +7657,12 @@
    "best_result": "reddit claim: dual SIM and 5G cellular data working (photo)",
    "notes": "instantnoodlep. No repo, by u/Stunning_Head_8354. Source: https://www.reddit.com/r/hackios/comments/1xuh1cl/dual_sim_5g_cellular_data_is_working",
    "base": "other",
-   "ios_version": "",
+   "ios_version": "iOS 16.5",
    "image_url": "https://cdn.opstatics.com/store/20170907/assets/images/events/instant-noodle/19811/design/color_01.png",
    "image_credit": "© OnePlus, official product image, used for device identification",
    "image_license": "© OnePlus",
    "image_source_url": "https://www.oneplus.in/8-pro",
-   "updated": "2026-11-22T20:55:35.525Z"
+   "updated": "2026-11-23T07:13:45.853Z"
   },
   {
    "slug": "oneplus-8t",
@@ -5514,6 +7699,23 @@
    "updated": "2026-11-22T20:55:35.741Z"
   },
   {
+   "slug": "oneplus-ace-3-pro",
+   "name": "OnePlus Ace 3 Pro",
+   "model": "PJX110 / corvette",
+   "soc": "Snapdragon 8 Gen 3 (SM8650)",
+   "repo_kind": "fork",
+   "status": "works",
+   "best_result": "HakiOS registry: boots to the Home Screen (iOS 16.5)",
+   "notes": "Listed on the HakiOS ports registry: https://hakios-developers.com/#/port/corvette",
+   "base": "other",
+   "ios_version": "iOS 16.5",
+   "image_url": "https://www.oneplus.com/content/dam/oasis/page/2024/global/product/corvette/specs/1080-1080green.png",
+   "image_credit": "© OnePlus, official product image, used for device identification",
+   "image_license": "© OnePlus",
+   "image_source_url": "https://www.oneplus.com/cn/ace-3-pro/specs",
+   "updated": "2026-11-23T07:33:13.220Z"
+  },
+  {
    "slug": "oneplus-ace-5",
    "name": "OnePlus Ace 5",
    "model": "PKG110",
@@ -5531,6 +7733,23 @@
    "updated": "2026-11-23T00:13:58.835Z"
   },
   {
+   "slug": "oneplus-ace-6t",
+   "name": "OnePlus Ace 6T / 15R",
+   "model": "PLR110 / macan",
+   "soc": "Snapdragon 8 Gen 5 (SM8845)",
+   "repo_kind": "fork",
+   "status": "works",
+   "best_result": "HakiOS registry: boots to the Home Screen (iOS 27.2)",
+   "notes": "Listed on the HakiOS ports registry: https://hakios-developers.com/#/port/macan",
+   "base": "other",
+   "ios_version": "iOS 27.2",
+   "image_url": "https://www.oneplus.com/content/dam/oneplus/2025/cn/macan/specs/OnePlus_Macan_Black_1080x1080.png",
+   "image_credit": "© OnePlus, official product image, used for device identification",
+   "image_license": "© OnePlus",
+   "image_source_url": "https://www.oneplus.com/cn/ace-6t/specs",
+   "updated": "2026-11-23T07:33:12.980Z"
+  },
+  {
    "slug": "oneplus-nord",
    "name": "OnePlus Nord",
    "model": "avicii",
@@ -5546,6 +7765,23 @@
    "image_license": "© OnePlus",
    "image_source_url": "https://www.oneplus.in/nord",
    "updated": "2026-11-22T20:55:35.846Z"
+  },
+  {
+   "slug": "oneplus-nord-4",
+   "name": "OnePlus Nord 4",
+   "model": "avalon",
+   "soc": "Snapdragon 7+ Gen 3 (SM7675)",
+   "repo_kind": "fork",
+   "status": "works",
+   "best_result": "HakiOS registry: boots to the Home Screen (iOS 16.5)",
+   "notes": "Listed on the HakiOS ports registry: https://hakios-developers.com/#/port/avalon",
+   "base": "other",
+   "ios_version": "iOS 16.5",
+   "image_url": "https://oasis.opstatics.com/content/dam/oasis/page/2024/global/product/avalon/black.png",
+   "image_credit": "© OnePlus, official product image, used for device identification",
+   "image_license": "© OnePlus",
+   "image_source_url": "https://www.oneplus.com/global/nord-4/specs",
+   "updated": "2026-11-23T07:33:13.496Z"
   },
   {
    "slug": "oneplus-open",
@@ -5769,6 +8005,40 @@
    "updated": "2026-11-22T20:55:37.035Z"
   },
   {
+   "slug": "pixel-7a",
+   "name": "Pixel 7a",
+   "model": "lynx",
+   "soc": "Tensor G2 (GS201)",
+   "repo_kind": "fork",
+   "status": "works",
+   "best_result": "HakiOS registry: boots to the Home Screen (iOS 16.5)",
+   "notes": "Listed on the HakiOS ports registry: https://hakios-developers.com/#/port/lynx",
+   "base": "other",
+   "ios_version": "iOS 16.5",
+   "image_url": "https://lh3.googleusercontent.com/JZFO-a291hyiRLiZfd7tqChODHftb6oM1X0GUvL_CSy8ZcDQtdul9NzYtto6jevbhdFRwMJZYNH3tgM_nfjfc4HnGFWXj8GS0dA=w1024",
+   "image_credit": "© Google, official product image, used for device identification",
+   "image_license": "© Google",
+   "image_source_url": "https://store.google.com/us/magazine/compare_pixel?hl=en-US",
+   "updated": "2026-11-23T07:33:13.292Z"
+  },
+  {
+   "slug": "pixel-8a",
+   "name": "Pixel 8a",
+   "model": "akita",
+   "soc": "Tensor G3",
+   "repo_kind": "fork",
+   "status": "works",
+   "best_result": "HakiOS registry: boots to the Home Screen (iOS 16.6.1)",
+   "notes": "Listed on the HakiOS ports registry: https://hakios-developers.com/#/port/akita",
+   "base": "other",
+   "ios_version": "iOS 16.6.1",
+   "image_url": "https://lh3.googleusercontent.com/UQse72iPdx6m0GqKhExopl58yewjg3KUs-plOSwt9pocfiBuGFUtn76hkpF-e9diL7SwWACuslCDSYqcn6YF6XHKJPwjPK8f26s=w1024",
+   "image_credit": "© Google, official product image, used for device identification",
+   "image_license": "© Google",
+   "image_source_url": "https://store.google.com/us/magazine/compare_pixel?hl=en-US",
+   "updated": "2026-11-23T07:33:13.346Z"
+  },
+  {
    "slug": "pixel-fold",
    "name": "Pixel Fold",
    "model": "felix",
@@ -5837,6 +8107,40 @@
    "updated": "2026-11-22T20:55:37.465Z"
   },
   {
+   "slug": "poco-f4",
+   "name": "POCO F4 / Redmi K40S",
+   "model": "munch",
+   "soc": "Snapdragon 870 (SM8250-AC)",
+   "repo_kind": "fork",
+   "status": "works",
+   "best_result": "HakiOS registry: boots to the Home Screen (iOS 16.5)",
+   "notes": "Listed on the HakiOS ports registry: https://hakios-developers.com/#/port/munch",
+   "base": "other",
+   "ios_version": "iOS 16.5",
+   "image_url": "https://i01.appmifile.com/v1/MI_18455B3E4DA706226CF7535A58E875F0267/pms_1655969425.00453167.png",
+   "image_credit": "© Xiaomi, official product image, used for device identification",
+   "image_license": "© Xiaomi",
+   "image_source_url": "https://www.mi.com/uk/product/poco-f4/",
+   "updated": "2026-11-23T07:33:13.149Z"
+  },
+  {
+   "slug": "poco-f5",
+   "name": "POCO F5 / Redmi Note 12 Turbo",
+   "model": "marble",
+   "soc": "Snapdragon 7+ Gen 2 (SM7475)",
+   "repo_kind": "fork",
+   "status": "works",
+   "best_result": "HakiOS registry: boots to the Home Screen (iOS 16)",
+   "notes": "Listed on the HakiOS ports registry: https://hakios-developers.com/#/port/marble",
+   "base": "other",
+   "ios_version": "iOS 16",
+   "image_url": "https://i02.appmifile.com/390_operatorx_operatorx_opx/20/08/2024/c81518450813c64feb06e2cf2bbb006d.png",
+   "image_credit": "© Xiaomi, official product image, used for device identification",
+   "image_license": "© Xiaomi",
+   "image_source_url": "https://www.mi.com/global/product/poco-f5/",
+   "updated": "2026-11-23T07:33:13.571Z"
+  },
+  {
    "slug": "poco-f5-pro",
    "name": "POCO F5 Pro / Redmi K60",
    "model": "mondrian",
@@ -5852,6 +8156,23 @@
    "image_license": "© Xiaomi",
    "image_source_url": "https://www.po.co/global/product/poco-f5-pro/specs/",
    "updated": "2026-11-23T00:14:06.835Z"
+  },
+  {
+   "slug": "poco-f6",
+   "name": "POCO F6 / Redmi Turbo 3",
+   "model": "peridot",
+   "soc": "Snapdragon 8s Gen 3 (SM8635)",
+   "repo_kind": "fork",
+   "status": "works",
+   "best_result": "HakiOS registry: boots to the Home Screen (iOS 16.5)",
+   "notes": "Listed on the HakiOS ports registry: https://hakios-developers.com/#/port/peridot",
+   "base": "other",
+   "ios_version": "iOS 16.5",
+   "image_url": "https://i02.appmifile.com/660_operatorx_operatorx_opx/24/05/2024/1e6bbc99cfa14f74419fd63b4e573f64.png",
+   "image_credit": "© Xiaomi, official product image, used for device identification",
+   "image_license": "© Xiaomi",
+   "image_source_url": "https://www.mi.com/global/product/poco-f6/",
+   "updated": "2026-11-23T07:33:13.184Z"
   },
   {
    "slug": "poco-f7",
@@ -5891,7 +8212,7 @@
    "slug": "poco-m8",
    "name": "POCO M8 5G",
    "model": "kunzite",
-   "soc": "",
+   "soc": "SM6475",
    "repo_kind": "fork",
    "status": "in-progress",
    "best_result": "reddit claim: iOS 16.7.16 WIP",
@@ -5902,7 +8223,7 @@
    "image_credit": "© Xiaomi, official product image, used for device identification",
    "image_license": "© Xiaomi",
    "image_source_url": "https://www.mi.com/es/product/poco-m8-5g/",
-   "updated": "2026-11-22T20:55:37.792Z"
+   "updated": "2026-11-23T07:13:45.319Z"
   },
   {
    "slug": "poco-x3-nfc",
@@ -5914,12 +8235,12 @@
    "best_result": "reddit claim: iOS (ios-sweet base) running (image only)",
    "notes": "surya (Huaxing panel). Repo android-a5y7lte/ios-surya (branch surya: Adreno 618 bring-up), linked by u/jimmyxnu (OP) on 2026-11-22. Source: https://www.reddit.com/r/hackios/comments/1y24qxf/poco_x3_nfc",
    "base": "other",
-   "ios_version": "",
+   "ios_version": "iOS 16.5",
    "image_url": "https://i01.appmifile.com/webfile/globalimg/products/pc/poco-x3-nfc/section01-phone1.png",
    "image_credit": "© Xiaomi, official product image, used for device identification",
    "image_license": "© Xiaomi",
    "image_source_url": "https://www.mi.com/uk/poco-x3-nfc/",
-   "updated": "2026-11-22T23:49:36.908Z"
+   "updated": "2026-11-23T07:13:46.138Z"
   },
   {
    "slug": "poco-x3-pro",
@@ -5956,6 +8277,23 @@
    "updated": "2026-11-22T20:55:38.155Z"
   },
   {
+   "slug": "poco-x5-pro",
+   "name": "POCO X5 Pro 5G",
+   "model": "redwood",
+   "soc": "Snapdragon 778G (SM7325)",
+   "repo_kind": "fork",
+   "status": "works",
+   "best_result": "HakiOS registry: boots to the Home Screen (iOS 16.5)",
+   "notes": "Listed on the HakiOS ports registry: https://hakios-developers.com/#/port/redwood",
+   "base": "other",
+   "ios_version": "iOS 16.5",
+   "image_url": "https://i01.appmifile.com/v1/MI_18455B3E4DA706226CF7535A58E875F0267/pms_1675683479.37079731.png",
+   "image_credit": "© Xiaomi, official product image, used for device identification",
+   "image_license": "© Xiaomi",
+   "image_source_url": "https://www.mi.com/global/product/poco-x5-pro-5g/",
+   "updated": "2026-11-23T07:33:13.019Z"
+  },
+  {
    "slug": "poco-x6",
    "name": "POCO X6 5G",
    "model": "garnet",
@@ -5990,6 +8328,23 @@
    "updated": "2026-11-22T20:55:38.280Z"
   },
   {
+   "slug": "poco-x7-pro",
+   "name": "POCO X7 Pro",
+   "model": "rodin",
+   "soc": "Dimensity 8400 Ultra (MT6899)",
+   "repo_kind": "fork",
+   "status": "in-progress",
+   "best_result": "HakiOS registry: work in progress (iOS 27.2)",
+   "notes": "The HakiOS registry lists the SoC as Snapdragon 8 Gen 4; the POCO X7 Pro ships with the Dimensity 8400 Ultra. Listed on the HakiOS ports registry: https://hakios-developers.com/#/port/rodin",
+   "base": "other",
+   "ios_version": "iOS 27.2",
+   "image_url": "https://i02.appmifile.com/251_operatorx_operatorx_opx/09/01/2025/d7110ed0232cacb6c01be82fc953bd49.png",
+   "image_credit": "© Xiaomi, official product image, used for device identification",
+   "image_license": "© Xiaomi",
+   "image_source_url": "https://www.mi.com/global/product/poco-x7-pro/",
+   "updated": "2026-11-23T07:33:13.113Z"
+  },
+  {
    "slug": "qrd7325",
    "name": "Qualcomm QRD7325 (reference phone)",
    "model": "QRD7325",
@@ -5999,12 +8354,12 @@
    "best_result": "reddit claim: photos of iOS on the reference phone, no details",
    "notes": "No repo, by u/brianpro700. Source: https://www.reddit.com/r/hackios/comments/1xweuyp/ios_on_qrd7325_qualcomm_reference_design_phone",
    "base": "other",
-   "ios_version": "",
+   "ios_version": "iOS 16.5",
    "image_url": "https://preview.redd.it/abane359kn1i1.jpeg?width=640&crop=smart&auto=webp&s=d7521aea34884efcc0bac1801bb9b7fe881d95a1",
    "image_credit": "u/brianpro700 on r/hackios",
    "image_license": "Reddit post (owner's rights reserved)",
    "image_source_url": "https://www.reddit.com/r/hackios/comments/1xweuyp/ios_on_qrd7325_qualcomm_reference_design_phone",
-   "updated": "2026-11-22T20:55:38.393Z"
+   "updated": "2026-11-23T07:13:45.460Z"
   },
   {
    "slug": "rabbit-r1",
@@ -6279,6 +8634,40 @@
    "updated": "2026-11-22T20:55:39.940Z"
   },
   {
+   "slug": "redmi-note-12-pro-4g",
+   "name": "Redmi Note 12 Pro 4G",
+   "model": "sweet_k6a",
+   "soc": "Snapdragon 732G (SM7150-AC)",
+   "repo_kind": "fork",
+   "status": "works",
+   "best_result": "HakiOS registry: boots to the Home Screen (iOS 16.6)",
+   "notes": "Listed on the HakiOS ports registry: https://hakios-developers.com/#/port/sweet_k6a",
+   "base": "other",
+   "ios_version": "iOS 16.6",
+   "image_url": "https://i01.appmifile.com/v1/MI_18455B3E4DA706226CF7535A58E875F0267/pms_1681299637.34121266.png",
+   "image_credit": "© Xiaomi, official product image, used for device identification",
+   "image_license": "© Xiaomi",
+   "image_source_url": "https://www.mi.com/global/product/redmi-note-12-pro/",
+   "updated": "2026-11-23T07:33:13.718Z"
+  },
+  {
+   "slug": "redmi-note-13-4g",
+   "name": "Redmi Note 13 4G / 4G NFC",
+   "model": "sapphire / sapphiren",
+   "soc": "Snapdragon 685 (SM6225)",
+   "repo_kind": "fork",
+   "status": "works",
+   "best_result": "HakiOS registry: boots to the Home Screen (iOS 16.5)",
+   "notes": "Listed on the HakiOS ports registry: https://hakios-developers.com/#/port/sapphiren https://hakios-developers.com/#/port/sapphire",
+   "base": "other",
+   "ios_version": "iOS 16.5",
+   "image_url": "https://i02.appmifile.com/994_operatorx_operatorx_opx/11/01/2024/72a71b312950178179eeb71425ef8def.png",
+   "image_credit": "© Xiaomi, official product image, used for device identification",
+   "image_license": "© Xiaomi",
+   "image_source_url": "https://www.mi.com/global/product/redmi-note-13/",
+   "updated": "2026-11-23T07:33:13.461Z"
+  },
+  {
    "slug": "redmi-note-5-pro",
    "name": "Redmi Note 5 Pro",
    "model": "whyred",
@@ -6471,7 +8860,7 @@
    "model": "SM-G9880",
    "soc": "Snapdragon 865 (SM8250)",
    "repo_kind": "fork",
-   "status": "unknown",
+   "status": "works",
    "best_result": "iOS 16 (iPhone X userland) port of ios-sweet (GitHub description); README still the upstream text, no recorded boot",
    "notes": "Codename z3q. chenzikang/z3q-port (OneiOS docs/references.md:156).",
    "base": "other",
@@ -6480,7 +8869,7 @@
    "image_credit": "© Samsung, official product image, used for device identification",
    "image_license": "© Samsung",
    "image_source_url": "https://www.samsung.com/uk/support/model/SM-G988BZKDEUA/",
-   "updated": "2026-11-23T00:14:07.286Z"
+   "updated": "2026-11-23T07:13:45.389Z"
   },
   {
    "slug": "s21-5g",
@@ -6900,12 +9289,12 @@
    "best_result": "HakiOS layer (Fearless109/hakios-sm8650, device.conf): system boots to SpringBoard on 8 cores; touch, buttons, haptics and UFS writes work; display, GPU, audio and Wi-Fi partial. UniXNU-shennong stops in _arm_init on iOS 27",
    "notes": "Codename shennong. YX2748198202-lab/UniXNU-shennong (UniXNU; iPhone17,1 iOS 27.0.1 24A446 target stops in _arm_init, OneiOS docs/references.md:140) and Fearless109/hakios-sm8650 (HakiOS, docs/references.md:142). ios_version left empty: the HakiOS layer does not state its iOS build.",
    "base": "other",
-   "ios_version": "",
+   "ios_version": "iOS 16.5",
    "image_url": "https://cdn.cnbj1.fds.api.mi-img.com/product-images/xiaomi14proy4y29r/index/28064.png",
    "image_credit": "© Xiaomi, official product image, used for device identification",
    "image_license": "© Xiaomi",
    "image_source_url": "https://www.mi.com/xiaomi-14-pro",
-   "updated": "2026-11-23T00:13:58.295Z"
+   "updated": "2026-11-23T07:13:45.354Z"
   },
   {
    "slug": "xiaomi-15",
@@ -7002,12 +9391,12 @@
    "best_result": "reddit claim: iOS at the native resolution; GPU in progress (tearing, flicker)",
    "notes": "akatsuki. No repo, by u/Fluid-Orange-7060. Source: https://www.reddit.com/r/hackios/comments/1xgwo1w/sony_xperia_xz3_first_iteration",
    "base": "other",
-   "ios_version": "",
+   "ios_version": "iOS 16",
    "image_url": "https://external-preview.redd.it/c2kwZG12c205MXloMUpvPFR8XwYRbsOAMmjoIW8-_CsixpZVZAI386oZZDx7.png?width=640&crop=smart&format=pjpg&auto=webp&s=4437828a3d3fce239f4b4a0fed3bf2162b415d2e",
    "image_credit": "u/Fluid-Orange-7060 on r/hackios",
    "image_license": "Reddit post (owner's rights reserved)",
    "image_source_url": "https://www.reddit.com/r/hackios/comments/1xgwo1w/sony_xperia_xz3_first_iteration",
-   "updated": "2026-11-22T20:55:45.777Z"
+   "updated": "2026-11-23T07:13:45.709Z"
   },
   {
    "slug": "z-flip",
@@ -7424,6 +9813,20 @@
    "updated": "2026-11-22T20:11:09.113Z"
   },
   {
+   "repo": "ArThirtyFour/hakios-devices-lynx",
+   "device_slug": "pixel-7a",
+   "kind": "standalone",
+   "branch": "",
+   "url": "https://github.com/ArThirtyFour/hakios-devices-lynx",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Google Pixel 7a, Darwin 16.5, by Kangel. Registry page: https://hakios-developers.com/#/port/lynx",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:48.541Z"
+  },
+  {
    "repo": "Asultop/UniXNU-NX769J",
    "device_slug": "redmagic-9-pro",
    "kind": "standalone",
@@ -7480,6 +9883,48 @@
    "updated": "2026-11-23T00:00:53.721Z"
   },
   {
+   "repo": "david7xw/hakios-a22",
+   "device_slug": "a22",
+   "kind": "standalone",
+   "branch": "",
+   "url": "https://github.com/david7xw/hakios-a22",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Samsung Galaxy A22 4G, Darwin 22.5.0 (iOS 16.5, 20F66), by david7xw. Registry page: https://hakios-developers.com/#/port/a22",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:49.114Z"
+  },
+  {
+   "repo": "dekefake/hackios-op8pro",
+   "device_slug": "oneplus-8-pro",
+   "kind": "standalone",
+   "branch": "",
+   "url": "https://github.com/dekefake/hackios-op8pro",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Oneplus 8 Pro, Darwin 16.5, by Dekefake. Registry page: https://hakios-developers.com/#/port/instantnoodlep",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:49.545Z"
+  },
+  {
+   "repo": "DEV-AdriBOT/hakios-device-sapphiren",
+   "device_slug": "redmi-note-13-4g",
+   "kind": "standalone",
+   "branch": "",
+   "url": "https://github.com/DEV-AdriBOT/hakios-device-sapphiren",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Redmi Note 13 4G NFC, Darwin 22.5.0, by NeonDev. Registry page: https://hakios-developers.com/#/port/sapphiren",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:49.315Z"
+  },
+  {
    "repo": "Droid-VM/UniXNU-droidvm",
    "device_slug": "oneplus-pad-pro",
    "kind": "standalone",
@@ -7506,6 +9951,20 @@
    "notes": "source: OneiOS docs/references.md:142, scripts/setup/get-references.sh:63, :71; device.conf",
    "base_project": "HackiOS",
    "updated": "2026-11-23T00:00:52.815Z"
+  },
+  {
+   "repo": "filipdanielisback-commits/hakios-motog60",
+   "device_slug": "moto-g60",
+   "kind": "standalone",
+   "branch": "",
+   "url": "https://github.com/filipdanielisback-commits/hakios-motog60",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "moto g(60), Darwin 24.0.0, by filipdanielisback-commits. Registry page: https://hakios-developers.com/#/port/hanoip",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:46.928Z"
   },
   {
    "repo": "kerrinz/UniXNU-zorn",
@@ -7564,6 +10023,62 @@
    "updated": "2026-11-23T00:00:52.066Z"
   },
   {
+   "repo": "Luminous418/hakios-a32",
+   "device_slug": "a32",
+   "kind": "standalone",
+   "branch": "",
+   "url": "https://github.com/Luminous418/hakios-a32",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Samsung A32 4G, Darwin 16.5 (20F66), by Luminous | 418. Registry page: https://hakios-developers.com/#/port/a32",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:48.891Z"
+  },
+  {
+   "repo": "lunaticwhat/hakios-qrd7325",
+   "device_slug": "qrd7325",
+   "kind": "standalone",
+   "branch": "",
+   "url": "https://github.com/lunaticwhat/hakios-qrd7325",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Qualcomm Reference Design QRD7325, Darwin 16.5 (20F66), by lunaticwhat. Registry page: https://hakios-developers.com/#/port/qrd7325",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:47.977Z"
+  },
+  {
+   "repo": "mariqnetr/hakios-shennong",
+   "device_slug": "xiaomi-14-pro",
+   "kind": "standalone",
+   "branch": "",
+   "url": "https://github.com/mariqnetr/hakios-shennong",
+   "best_result": "HakiOS registry: work in progress",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Xiaomi 14 Pro, Darwin 16.5, by mariqnetr. Registry page: https://hakios-developers.com/#/port/shennong",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:47.259Z"
+  },
+  {
+   "repo": "Martinvlba/hakios-devices-akita",
+   "device_slug": "pixel-8a",
+   "kind": "standalone",
+   "branch": "",
+   "url": "https://github.com/Martinvlba/hakios-devices-akita",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Google Pixel 8a, Darwin 16.6.1 (20G81), by Martin Valba. Registry page: https://hakios-developers.com/#/port/akita",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:49.212Z"
+  },
+  {
    "repo": "none24smu/UniXNU-zeta",
    "device_slug": "surface-duo-2",
    "kind": "standalone",
@@ -7576,6 +10091,20 @@
    "notes": "source: iOSPlus10 docs/external-repos.md:37, CREDITS.md:44, README.md:79; OneiOS docs/references.md:162-163 (the non-PAC shared-cache rewrite the owner ruled out)",
    "base_project": "UniXNU",
    "updated": "2026-11-23T00:00:52.423Z"
+  },
+  {
+   "repo": "nonrootus/ios-sweet_k6a",
+   "device_slug": "redmi-note-12-pro-4g",
+   "kind": "standalone",
+   "branch": "",
+   "url": "https://github.com/nonrootus/ios-sweet_k6a",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Xiaomi Redmi Note 12 Pro 4G, Darwin Darwin 22.6.0 (20H392), by nursultan. Registry page: https://hakios-developers.com/#/port/sweet_k6a",
+   "base_project": "ios-sweet",
+   "updated": "2026-11-23T07:13:50.402Z"
   },
   {
    "repo": "open-mapple/mapple_build",
@@ -7788,6 +10317,48 @@
    "updated": "2026-11-23T00:00:52.164Z"
   },
   {
+   "repo": "SathiyaSenpai/hakios-avalon",
+   "device_slug": "oneplus-nord-4",
+   "kind": "standalone",
+   "branch": "",
+   "url": "https://github.com/SathiyaSenpai/hakios-avalon",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "OnePlus Nord 4, Darwin 22.5.0, by SathiyaSenpai. Registry page: https://hakios-developers.com/#/port/avalon",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:49.641Z"
+  },
+  {
+   "repo": "slayedkaito/xnu-kernel-peridot-amiaxf",
+   "device_slug": "poco-f6",
+   "kind": "standalone",
+   "branch": "",
+   "url": "https://github.com/slayedkaito/xnu-kernel-peridot-amiaxf",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Xiaomi Poco F6, Darwin 22.5, by amiaxf. Registry page: https://hakios-developers.com/#/port/peridot",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:48.079Z"
+  },
+  {
+   "repo": "timeroute/hakios-op8t",
+   "device_slug": "oneplus-8t",
+   "kind": "standalone",
+   "branch": "",
+   "url": "https://github.com/timeroute/hakios-op8t",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "OnePlus 8T, Darwin 16.5, by QuentinZ. Registry page: https://hakios-developers.com/#/port/kona",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:47.707Z"
+  },
+  {
    "repo": "tomaswarner/ios-dm3q",
    "device_slug": "s23-ultra",
    "kind": "standalone",
@@ -7816,6 +10387,20 @@
    "updated": "2026-11-23T00:00:51.891Z"
   },
   {
+   "repo": "unix-qv/hakios-sm6475",
+   "device_slug": "poco-m8",
+   "kind": "standalone",
+   "branch": "",
+   "url": "https://github.com/unix-qv/hakios-sm6475",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "POCO M8 5G (Darwin 22.5.0), Darwin 22.5.0 (20F66), by UralRedux. Registry page: https://hakios-developers.com/#/port/kunzite",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:47.164Z"
+  },
+  {
    "repo": "UniXNU/UniXNU-sheng",
    "device_slug": "xiaomi-pad-6s-pro",
    "kind": "standalone",
@@ -7828,6 +10413,34 @@
    "notes": "source: OneiOS docs/references.md:105, :139 (\"Metal fully working on sheng\"), :165, scripts/setup/get-references.sh:72; the repo README",
    "base_project": "UniXNU",
    "updated": "2026-11-23T00:00:51.117Z"
+  },
+  {
+   "repo": "vael01id/HakiOS-Garnet-by-Vael",
+   "device_slug": "poco-x6",
+   "kind": "standalone",
+   "branch": "",
+   "url": "https://github.com/vael01id/HakiOS-Garnet-by-Vael",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Poco X6 5G, Darwin 22.5, by Vael. Registry page: https://hakios-developers.com/#/port/garnet-2",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:47.354Z"
+  },
+  {
+   "repo": "wuxianlin/hakios_devices_dodge",
+   "device_slug": "oneplus-13",
+   "kind": "standalone",
+   "branch": "",
+   "url": "https://github.com/wuxianlin/hakios_devices_dodge",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "OnePlus 13, Darwin 27.2 (24B119), by wuxianlin. Registry page: https://hakios-developers.com/#/port/dodge",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:46.677Z"
   },
   {
    "repo": "xaxaapple/s25ver",
@@ -7844,6 +10457,48 @@
    "updated": "2026-11-22T19:52:45.004Z"
   },
   {
+   "repo": "Xia-s-Projekt/hakios-x6739",
+   "device_slug": "infinix-gt-10-pro",
+   "kind": "standalone",
+   "branch": "",
+   "url": "https://github.com/Xia-s-Projekt/hakios-x6739",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Infinix GT 10 Pro, Darwin 22.5.0, by ryanistr. Registry page: https://hakios-developers.com/#/port/x6739",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:50.164Z"
+  },
+  {
+   "repo": "yfl520/hackios-raphael",
+   "device_slug": "redmi-k20-pro",
+   "kind": "standalone",
+   "branch": "",
+   "url": "https://github.com/yfl520/hackios-raphael",
+   "best_result": "HakiOS registry: work in progress",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Redmi K20 Pro / Mi 9T Pro (iOS 16.5 · xnu-8796.121.2 · raphael), Darwin 22.5.0（iOS 16.5，20F66）, by 你说喜欢是装的. Registry page: https://hakios-developers.com/#/port/raphael",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:47.063Z"
+  },
+  {
+   "repo": "youzjuzi/dipper-xnu",
+   "device_slug": "mi-8",
+   "kind": "standalone",
+   "branch": "",
+   "url": "https://github.com/youzjuzi/dipper-xnu",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Xiaomi Mi 8, Darwin 22.5.0 (20F66), by youzjuzi. Registry page: https://hakios-developers.com/#/port/dipper",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:48.443Z"
+  },
+  {
    "repo": "YX2748198202-lab/UniXNU-shennong",
    "device_slug": "xiaomi-14-pro",
    "kind": "standalone",
@@ -7858,6 +10513,20 @@
    "updated": "2026-11-23T00:00:51.777Z"
   },
   {
+   "repo": "adelholzener69/hakios-xnu-kernel-raphael",
+   "device_slug": "redmi-k20-pro",
+   "kind": "fork",
+   "branch": "raphael",
+   "url": "https://github.com/adelholzener69/hakios-xnu-kernel-raphael",
+   "best_result": "",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "GitHub fork of oosexgang/hakios-xnu-kernel for raphael: Apple's open-source XNU kernel on Android phones: its own loader and drivers, Metal on the Adreno. Runs from RAM; a reboot gives the phone back to Android.. Last push 2026-11-08, 0 stars. Listed at https://hakios-developers.com/#/fork/adelholzener69/hakios-xnu-kernel-raphael",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:51.900Z"
+  },
+  {
    "repo": "AdyaGMD/ios-spes",
    "device_slug": "redmi-note-11",
    "kind": "fork",
@@ -7870,6 +10539,20 @@
    "notes": "reddit claim (r/hackios 2026-10-25); source: https://www.reddit.com/r/hackios/comments/1xf7wk3/redmi_note_11_spes_gpu_safari_wifi_buttons_working",
    "base_project": "ios-sweet",
    "updated": "2026-11-23T00:00:53.799Z"
+  },
+  {
+   "repo": "Akhdaa/hakios-xiaomi-munch",
+   "device_slug": "poco-f4",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/Akhdaa/hakios-xiaomi-munch",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "POCO F4 5G, Darwin 16.5, by Akhdaa. Registry page: https://hakios-developers.com/#/port/munch",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:47.847Z"
   },
   {
    "repo": "akshaynexus/DarwinBoot",
@@ -7998,6 +10681,20 @@
    "updated": "2026-11-22T18:19:57.133Z"
   },
   {
+   "repo": "Angelpro09xd/hakios-xnu-kernel",
+   "device_slug": "redmi-note-13-4g",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/Angelpro09xd/hakios-xnu-kernel",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Redmi Note 13 4G, Darwin 16.7.16, by Angelpro09_Dev. Registry page: https://hakios-developers.com/#/port/sapphire",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:49.416Z"
+  },
+  {
    "repo": "Angelpro09xd/ios-sapphire",
    "device_slug": null,
    "kind": "fork",
@@ -8080,6 +10777,20 @@
    "notes": "reddit claim (r/hackios 2026-11-08); source: https://www.reddit.com/r/hackios/comments/1xqlak6/ios_26_on_poco_f7_onyx",
    "base_project": "HackiOS",
    "updated": "2026-11-22T18:19:59.764Z"
+  },
+  {
+   "repo": "beb4554/hackios-xnu-kernel-lisa",
+   "device_slug": "mi-11-lite-5g-ne",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/beb4554/hackios-xnu-kernel-lisa",
+   "best_result": "",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "GitHub fork of oosexgang/hakios-xnu-kernel for lisa. Last push 2026-10-24 (inactive), 0 stars. Listed at https://hakios-developers.com/#/fork/beb4554/hackios-xnu-kernel-lisa",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:52.406Z"
   },
   {
    "repo": "blake-lucas/LightTouch",
@@ -8460,6 +11171,76 @@
    "updated": "2026-11-22T18:19:56.040Z"
   },
   {
+   "repo": "EmoticonYT/ios-oriole",
+   "device_slug": "pixel-6",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/EmoticonYT/ios-oriole",
+   "best_result": "",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "GitHub fork of oosexgang/hakios-xnu-kernel for oriole. Last push 2026-10-26 (inactive), 0 stars. Listed at https://hakios-developers.com/#/fork/EmoticonYT/ios-oriole",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:52.274Z"
+  },
+  {
+   "repo": "enesuzun2002/hakios-apollo",
+   "device_slug": "mi-10t",
+   "kind": "fork",
+   "branch": "apollo",
+   "url": "https://github.com/enesuzun2002/hakios-apollo",
+   "best_result": "",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "GitHub fork of oosexgang/hakios-xnu-kernel for apollo. Last push 2026-11-12, 3 stars. Listed at https://hakios-developers.com/#/fork/enesuzun2002/hakios-apollo",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:50.935Z"
+  },
+  {
+   "repo": "filipdanielisback-commits/hakios-xnu-kernel",
+   "device_slug": "moto-g60",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/filipdanielisback-commits/hakios-xnu-kernel",
+   "best_result": "HakiOS registry: work in progress",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "moto g(60) (Darwin 27.2), Darwin 27.2, by filipdanielisback-commits. Registry page: https://hakios-developers.com/#/port/hanoip-3",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:46.779Z"
+  },
+  {
+   "repo": "Franciiscodev/hackios-xnu-kernel-munch",
+   "device_slug": "poco-f4",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/Franciiscodev/hackios-xnu-kernel-munch",
+   "best_result": "",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "GitHub fork of oosexgang/hakios-xnu-kernel for munch. Last push 2026-10-22 (inactive), 0 stars. Listed at https://hakios-developers.com/#/fork/Franciiscodev/hackios-xnu-kernel-munch",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:52.541Z"
+  },
+  {
+   "repo": "funnysky943/ios-akatsuki",
+   "device_slug": "xperia-xz3",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/funnysky943/ios-akatsuki",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Sony Xperia XZ3, Darwin 22, by funnysky. Registry page: https://hakios-developers.com/#/port/akatsuki",
+   "base_project": "ios-sweet",
+   "updated": "2026-11-23T07:13:48.987Z"
+  },
+  {
    "repo": "gageconnor/OneiOS",
    "device_slug": null,
    "kind": "fork",
@@ -8500,6 +11281,20 @@
    "notes": "reddit claim (r/hackios 2026-10-30); source: https://www.reddit.com/r/hackios/comments/1xj3oim/ios_167_booted_on_galaxy_note10",
    "base_project": "ios-sweet",
    "updated": "2026-11-22T18:19:55.328Z"
+  },
+  {
+   "repo": "Gsjsjzhznsz/hackios-xnu-kernel",
+   "device_slug": "redmi-k20-pro",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/Gsjsjzhznsz/hackios-xnu-kernel",
+   "best_result": "",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "GitHub fork of oosexgang/hakios-xnu-kernel for raphael: HackiOS · iOS 16 用户态 + XNU 运行于小米 Redmi K20 Pro（raphael / 骁龙 855）—— oosexgang/hackios-xnu-kernel 的 raphael 适配线 | iOS 16 userland + XNU on the Xiaomi Redmi K20 Pro (raphael, SM8150). Last push 2026-11-10, 11 stars. Listed at https://hakios-developers.com/#/fork/Gsjsjzhznsz/hackios-xnu-kernel",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:50.661Z"
   },
   {
    "repo": "HeliumStudio-Dev/hackios-xnu-kernel",
@@ -8558,6 +11353,34 @@
    "updated": "2026-11-22T18:24:25.464Z"
   },
   {
+   "repo": "hoshikv/xnu-kernel-peridot",
+   "device_slug": "poco-f6",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/hoshikv/xnu-kernel-peridot",
+   "best_result": "",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "GitHub fork of oosexgang/hakios-xnu-kernel for peridot. Last push 2026-11-17, 2 stars. Listed at https://hakios-developers.com/#/fork/hoshikv/xnu-kernel-peridot",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:51.023Z"
+  },
+  {
+   "repo": "imjee/hakios-xnu-kernel-kunzite",
+   "device_slug": "poco-m8",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/imjee/hakios-xnu-kernel-kunzite",
+   "best_result": "",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "GitHub fork of oosexgang/hakios-xnu-kernel for kunzite. Last push 2026-10-28 (inactive), 0 stars. Listed at https://hakios-developers.com/#/fork/imjee/hakios-xnu-kernel-kunzite",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:52.020Z"
+  },
+  {
    "repo": "imusingwinxp-ops/j3y17lte-xnu",
    "device_slug": "j3-2017",
    "kind": "fork",
@@ -8614,6 +11437,20 @@
    "updated": "2026-11-22T19:33:18.477Z"
   },
   {
+   "repo": "JopangJovan/hackios-xnu-kernel-umi",
+   "device_slug": "mi-10",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/JopangJovan/hackios-xnu-kernel-umi",
+   "best_result": "",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "GitHub fork of oosexgang/hakios-xnu-kernel for umi. Last push 2026-10-29, 7 stars. Listed at https://hakios-developers.com/#/fork/JopangJovan/hackios-xnu-kernel-umi",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:50.817Z"
+  },
+  {
    "repo": "joranv1/ios-sailfish",
    "device_slug": "pixel-1",
    "kind": "fork",
@@ -8626,6 +11463,34 @@
    "notes": "reddit claim (r/hackios 2026-10-28); source: https://www.reddit.com/r/hackios/comments/1xhxiqm/misc_update_pausing_oneplus_10_pro_development Org link github.com/joranv1 + the name iOS-Sailfish in the credits.",
    "base_project": "ios-sweet",
    "updated": "2026-11-22T19:35:30.292Z"
+  },
+  {
+   "repo": "JosephMontfort/hakios-xnu-kernel-garnet",
+   "device_slug": "poco-x6",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/JosephMontfort/hakios-xnu-kernel-garnet",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Redmi Note 13 PRO/Poco X6 5G, Darwin 22.5, by JosephMontfort. Registry page: https://hakios-developers.com/#/port/garnet",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:47.459Z"
+  },
+  {
+   "repo": "kiwiiiii-eth/hakios-xnu-kernel",
+   "device_slug": "oneplus-6t",
+   "kind": "fork",
+   "branch": "fajita",
+   "url": "https://github.com/kiwiiiii-eth/hakios-xnu-kernel",
+   "best_result": "",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "GitHub fork of oosexgang/hakios-xnu-kernel for fajita: HakiOS (XNU on Qualcomm phones) with the OnePlus 6T drivers: Adreno 630, SDM845 modem, WCN3990 Wi-Fi, RMI4 touch, PMI8998 charging/flash/haptics. Device repo: kiwiiiii-eth/hakios-fajita. Last push 2026-11-16, 0 stars. Listed at https://hakios-developers.com/#/fork/kiwiiiii-eth/hakios-xnu-kernel",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:51.654Z"
   },
   {
    "repo": "KlugKlugTG/Un1box",
@@ -8654,6 +11519,20 @@
    "notes": "reddit claim (r/hackios 2026-11-01); source: https://www.reddit.com/r/hackios/comments/1xlb426/im_trying_to_port_ios_on_a_redmi_note15_5g",
    "base_project": "HackiOS",
    "updated": "2026-11-22T18:19:59.353Z"
+  },
+  {
+   "repo": "kvfsrl/xnu-kernel-peridot-marble",
+   "device_slug": "poco-f6",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/kvfsrl/xnu-kernel-peridot-marble",
+   "best_result": "",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "GitHub fork of oosexgang/hakios-xnu-kernel for peridot. Last push 2026-10-26, 0 stars. Listed at https://hakios-developers.com/#/fork/kvfsrl/xnu-kernel-peridot-marble",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:52.147Z"
   },
   {
    "repo": "leh0726/G986N-iOS",
@@ -8696,6 +11575,20 @@
    "notes": "reddit claim (r/hackios 2026-10-30); source: https://www.reddit.com/r/hackios/comments/1xjo950/ios_on_tecno_spark_30_pro_kl7_helio_g100",
    "base_project": "ios-sweet",
    "updated": "2026-11-22T18:20:00.372Z"
+  },
+  {
+   "repo": "lopro104/hakios_kernel_google_sunfish",
+   "device_slug": "pixel-4a",
+   "kind": "fork",
+   "branch": "sunfish-27",
+   "url": "https://github.com/lopro104/hakios_kernel_google_sunfish",
+   "best_result": "",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "GitHub fork of oosexgang/hakios-xnu-kernel for sunfish: HakiOS (XNU) kernel tree for the Google Pixel 4a (sunfish): iOS 16.5 on SM7150. Last push 2026-11-23, 0 stars. Listed at https://hakios-developers.com/#/fork/lopro104/hakios_kernel_google_sunfish",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:51.279Z"
   },
   {
    "repo": "madesh-ops/ios-m20lte",
@@ -8782,6 +11675,20 @@
    "updated": "2026-11-23T00:02:32.696Z"
   },
   {
+   "repo": "mhamzates/ios-port-marble",
+   "device_slug": "poco-f5",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/mhamzates/ios-port-marble",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Xiaomi Poco F5, Darwin 16, by mhamzates. Registry page: https://hakios-developers.com/#/port/marble",
+   "base_project": "unknown",
+   "updated": "2026-11-23T07:13:49.914Z"
+  },
+  {
    "repo": "mkukarin01/ios-kunzite-experiments",
    "device_slug": "poco-m8",
    "kind": "fork",
@@ -8838,6 +11745,20 @@
    "updated": "2026-11-22T19:52:36.666Z"
   },
   {
+   "repo": "N1709/hakios-whyred",
+   "device_slug": "redmi-note-5-pro",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/N1709/hakios-whyred",
+   "best_result": "",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "GitHub fork of oosexgang/hakios-xnu-kernel for whyred: whyred. Last push 2026-11-17, 0 stars. Listed at https://hakios-developers.com/#/fork/N1709/hakios-whyred",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:51.401Z"
+  },
+  {
    "repo": "Nik300/ios-viva",
    "device_slug": "redmi-note-11-pro",
    "kind": "fork",
@@ -8878,6 +11799,34 @@
    "notes": "reddit claim (r/hackios 2026-11-17); source: https://www.reddit.com/r/hackios/comments/1xyciha/ipados_16_on_xiaomi_pad_6_pipa_github",
    "base_project": "custom",
    "updated": "2026-11-22T18:19:58.952Z"
+  },
+  {
+   "repo": "nitheshd30/hakios-xnu-kernel",
+   "device_slug": "nothing-phone-1",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/nitheshd30/hakios-xnu-kernel",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Nothing Phone 1, Darwin 16.5, by nitheshd30. Registry page: https://hakios-developers.com/#/port/spacewar",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:48.762Z"
+  },
+  {
+   "repo": "nomorecoolnicknames/hackios-xnu-kernel-vayu",
+   "device_slug": "poco-x3-pro",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/nomorecoolnicknames/hackios-xnu-kernel-vayu",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "POCO X3 Pro, Darwin 22.5.0 (iOS 16.5, 20F66), by nomorecoolnicknames. Registry page: https://hakios-developers.com/#/port/vayu",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:48.180Z"
   },
   {
    "repo": "nomorecoolnicknames/hakios-sm8150",
@@ -8934,6 +11883,20 @@
    "notes": "reddit claim (r/hackios 2026-10-22); source: https://www.reddit.com/r/hackios/comments/1xcmsy4/pixel_4_metal_gpu_acceleration_wifi_ssh_server",
    "base_project": "ios-sweet",
    "updated": "2026-11-22T18:19:57.235Z"
+  },
+  {
+   "repo": "olzhas0986/hackios-xnu-kernel-munch",
+   "device_slug": "poco-f4",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/olzhas0986/hackios-xnu-kernel-munch",
+   "best_result": "",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "GitHub fork of oosexgang/hakios-xnu-kernel for munch: HackiOS Ported for POCO F4 (Xiaomi Munch SM8250) Status: WIP, Booted, no Wi-Fi, BT, Camera. Last push 2026-11-16, 0 stars. Listed at https://hakios-developers.com/#/fork/olzhas0986/hackios-xnu-kernel-munch",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:51.525Z"
   },
   {
    "repo": "orhunnx/beyond2lte-ios",
@@ -9020,6 +11983,20 @@
    "updated": "2026-11-23T00:02:32.615Z"
   },
   {
+   "repo": "pixelpixys/hakios-malmo",
+   "device_slug": "moto-g85",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/pixelpixys/hakios-malmo",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Moto G85, Darwin 16.5, by pixys. Registry page: https://hakios-developers.com/#/port/malmo",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:50.273Z"
+  },
+  {
    "repo": "PixOS-Project/pixelios-kernel",
    "device_slug": "pixel-6a",
    "kind": "fork",
@@ -9062,6 +12039,20 @@
    "updated": "2026-11-22T18:24:25.671Z"
   },
   {
+   "repo": "qarzis/ios-waffle",
+   "device_slug": "oneplus-12",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/qarzis/ios-waffle",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Oneplus 12, Darwin 16.5, by qarzis. Registry page: https://hakios-developers.com/#/port/waffle",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:49.762Z"
+  },
+  {
    "repo": "qdizax-w/hakios-sm7125",
    "device_slug": "redmi-note-9s",
    "kind": "fork",
@@ -9088,6 +12079,20 @@
    "notes": "Same porter as qdizax-w/hakios-sm7125 (u/qdizax-w, account linked in https://www.reddit.com/r/hackios/comments/1xie0kg/hackios_booted_on_redmi_note_9s_curtanamiatoll)",
    "base_project": "UniXNU",
    "updated": "2026-11-22T23:55:04.598Z"
+  },
+  {
+   "repo": "rafsanbasunia/hakios-xnu-kernel-garnet",
+   "device_slug": "poco-x6",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/rafsanbasunia/hakios-xnu-kernel-garnet",
+   "best_result": "",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "GitHub fork of oosexgang/hakios-xnu-kernel for garnet: Apple's open-source XNU kernel on Android phones: its own loader and drivers, Metal on the Adreno. Runs from RAM; a reboot gives the phone back to Android.. Last push 2026-11-10 (inactive), 0 stars. Listed at https://hakios-developers.com/#/fork/rafsanbasunia/hakios-xnu-kernel-garnet",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:51.778Z"
   },
   {
    "repo": "rafsanbasunia/ios-garnet",
@@ -9160,6 +12165,20 @@
    "updated": "2026-11-23T00:02:32.525Z"
   },
   {
+   "repo": "SakuraKyuo/hackios-xnu-kernel_corvette",
+   "device_slug": "oneplus-ace-3-pro",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/SakuraKyuo/hackios-xnu-kernel_corvette",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "OnePlus Ace 3 Pro, Darwin 16.5, by SakuraKyuo. Registry page: https://hakios-developers.com/#/port/corvette",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:48.307Z"
+  },
+  {
    "repo": "Scion-Project/scion-crownlte",
    "device_slug": "note9",
    "kind": "fork",
@@ -9216,6 +12235,34 @@
    "updated": "2026-11-22T18:19:54.732Z"
   },
   {
+   "repo": "sembesoporte-lab/hakios-motog84",
+   "device_slug": "moto-g84",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/sembesoporte-lab/hakios-motog84",
+   "best_result": "HakiOS registry: work in progress",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Motorola moto g84 5G, Darwin 16, by manuel. Registry page: https://hakios-developers.com/#/port/bangkk",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:46.543Z"
+  },
+  {
+   "repo": "shimoku74/hakios-xnu-kernel",
+   "device_slug": "mi-11-lite-5g",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/shimoku74/hakios-xnu-kernel",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Xiaomi Mi 11 Lite 5G, Darwin 27.2 (24B119), by oosexgang. Registry page: https://hakios-developers.com/#/port/renoir",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:46.262Z"
+  },
+  {
    "repo": "skglab-dev/ios-taoyao",
    "device_slug": "xiaomi-12-lite",
    "kind": "fork",
@@ -9256,6 +12303,20 @@
    "notes": "reddit claim (r/hackios 2026-11-01); source: https://www.reddit.com/r/hackios/comments/1xl1eyk/ios_165_running_on_a_cheap_chinese_mp3_player",
    "base_project": "HackiOS",
    "updated": "2026-11-22T18:20:00.470Z"
+  },
+  {
+   "repo": "speedyg2200/hakios-xnu-kernel",
+   "device_slug": "a51",
+   "kind": "fork",
+   "branch": "a51-port",
+   "url": "https://github.com/speedyg2200/hakios-xnu-kernel",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Samsung Galaxy A51, Darwin 16.5 (20F66), by CML. Registry page: https://hakios-developers.com/#/port/a51",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:48.643Z"
   },
   {
    "repo": "stormtroopxyz/y2sios",
@@ -9468,6 +12529,34 @@
    "updated": "2026-11-22T19:52:36.222Z"
   },
   {
+   "repo": "wyruzz/ios-SM-A037F",
+   "device_slug": "a03s",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/wyruzz/ios-SM-A037F",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Samsung Galaxy A03s, Darwin 16.5, by wyruzz. Registry page: https://hakios-developers.com/#/port/a03s",
+   "base_project": "ios-sweet",
+   "updated": "2026-11-23T07:13:50.039Z"
+  },
+  {
+   "repo": "xiongnemo/hakios-alioth",
+   "device_slug": "poco-f3",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/xiongnemo/hakios-alioth",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Xiaomi POCO F3, Darwin 16.5, by xiongnemo. Registry page: https://hakios-developers.com/#/port/alioth",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:47.582Z"
+  },
+  {
    "repo": "xNekom/ios-mondrian",
    "device_slug": "poco-f5-pro",
    "kind": "fork",
@@ -9494,6 +12583,20 @@
    "notes": "reddit claim (r/hackios 2026-11-03); source: https://www.reddit.com/r/hackios/comments/1xn1bo5/booted_on_nothing_phone_1",
    "base_project": "HackiOS",
    "updated": "2026-11-22T18:19:59.650Z"
+  },
+  {
+   "repo": "yavuzhanozyer/hakios-xnu-kernel",
+   "device_slug": "poco-x3-nfc",
+   "kind": "fork",
+   "branch": "",
+   "url": "https://github.com/yavuzhanozyer/hakios-xnu-kernel",
+   "best_result": "HakiOS registry: boots to the Home Screen",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "Poco X3 NFC, Darwin 16.5, by MakaRov. Registry page: https://hakios-developers.com/#/port/surya",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:50.535Z"
   },
   {
    "repo": "YMGPwcca/OneiOS",
@@ -9536,6 +12639,20 @@
    "notes": "reddit claim (r/hackios 2026-10-28); source: https://www.reddit.com/r/hackios/comments/1xi40k1/latest_pixel_5_update_storage_working_with_hfs Renamed from Yofuness/ios-flame (branch sunfish).",
    "base_project": "ios-sweet",
    "updated": "2026-11-22T19:35:29.981Z"
+  },
+  {
+   "repo": "yukoimi/hackios-marble",
+   "device_slug": "poco-f5",
+   "kind": "fork",
+   "branch": "codex/marble-port",
+   "url": "https://github.com/yukoimi/hackios-marble",
+   "best_result": "",
+   "ported": "",
+   "fork_only": "",
+   "verified": "fork-claim",
+   "notes": "GitHub fork of oosexgang/hakios-xnu-kernel for marble: Experimental HackiOS marble port for Redmi Note 12 Turbo / POCO F5: source, verified status, inputs and development handoff. Last push 2026-11-01, 1 stars. Listed at https://hakios-developers.com/#/fork/yukoimi/hackios-marble",
+   "base_project": "HackiOS",
+   "updated": "2026-11-23T07:13:51.150Z"
   },
   {
    "repo": "YumikoHayamato/OneiOS",
@@ -11666,12 +14783,28 @@
  ],
  "repo_devices": [
   {
+   "repo": "adelholzener69/hakios-xnu-kernel-raphael",
+   "device_slug": "redmi-k20-pro",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:51.863Z"
+  },
+  {
    "repo": "AdyaGMD/ios-spes",
    "device_slug": "redmi-note-11",
    "support": "claimed",
    "via": null,
    "note": "",
    "updated": "2026-11-22T19:43:50.003Z"
+  },
+  {
+   "repo": "Akhdaa/hakios-xiaomi-munch",
+   "device_slug": "poco-f4",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:47.807Z"
   },
   {
    "repo": "akshaynexus/iOSPlus10",
@@ -11738,6 +14871,22 @@
    "updated": "2026-11-22T19:43:50.003Z"
   },
   {
+   "repo": "Angelpro09xd/hakios-xnu-kernel",
+   "device_slug": "redmi-note-13-4g",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:49.377Z"
+  },
+  {
+   "repo": "ArThirtyFour/hakios-devices-lynx",
+   "device_slug": "pixel-7a",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:48.553Z"
+  },
+  {
    "repo": "Asultop/UniXNU-NX769J",
    "device_slug": "redmagic-9-pro",
    "support": "primary",
@@ -11778,12 +14927,28 @@
    "updated": "2026-11-22T19:43:50.003Z"
   },
   {
+   "repo": "beb4554/hackios-xnu-kernel-lisa",
+   "device_slug": "mi-11-lite-5g-ne",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:52.366Z"
+  },
+  {
    "repo": "cappedcat1710/ios-d2s",
    "device_slug": "note10-plus",
    "support": "claimed",
    "via": null,
    "note": "",
    "updated": "2026-11-22T19:43:50.003Z"
+  },
+  {
+   "repo": "ch1tmdgus/hackios-z3q",
+   "device_slug": "s20-ultra",
+   "support": "claimed",
+   "via": null,
+   "note": "HakiOS registry: listed as the source of this port",
+   "updated": "2026-11-23T07:13:47.756Z"
   },
   {
    "repo": "ch1tmdgus/ios-v60",
@@ -11858,12 +15023,28 @@
    "updated": "2026-11-22T19:43:50.003Z"
   },
   {
+   "repo": "david7xw/hakios-a22",
+   "device_slug": "a22",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:49.125Z"
+  },
+  {
    "repo": "DC28088/ios-sweet",
    "device_slug": "redmi-note-10-pro",
    "support": "claimed",
    "via": null,
    "note": "",
    "updated": "2026-11-22T19:43:50.003Z"
+  },
+  {
+   "repo": "dekefake/hackios-op8pro",
+   "device_slug": "oneplus-8-pro",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:49.558Z"
   },
   {
    "repo": "DenialOfGravity/ios-redfin",
@@ -11888,6 +15069,14 @@
    "via": null,
    "note": "",
    "updated": "2026-11-22T19:52:36.346Z"
+  },
+  {
+   "repo": "DEV-AdriBOT/hakios-device-sapphiren",
+   "device_slug": "redmi-note-13-4g",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:49.327Z"
   },
   {
    "repo": "devilAPI/zte-axon7",
@@ -11970,12 +15159,60 @@
    "updated": "2026-11-22T19:43:50.003Z"
   },
   {
+   "repo": "EmoticonYT/ios-oriole",
+   "device_slug": "pixel-6",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:52.235Z"
+  },
+  {
+   "repo": "enesuzun2002/hakios-apollo",
+   "device_slug": "mi-10t",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:50.867Z"
+  },
+  {
    "repo": "Fearless109/hakios-sm8650",
    "device_slug": "xiaomi-14-pro",
    "support": "primary",
    "via": null,
    "note": "",
    "updated": "2026-11-23T00:00:52.826Z"
+  },
+  {
+   "repo": "filipdanielisback-commits/hakios-motog60",
+   "device_slug": "moto-g60",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:46.939Z"
+  },
+  {
+   "repo": "filipdanielisback-commits/hakios-xnu-kernel",
+   "device_slug": "moto-g60",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:46.736Z"
+  },
+  {
+   "repo": "Franciiscodev/hackios-xnu-kernel-munch",
+   "device_slug": "poco-f4",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:52.501Z"
+  },
+  {
+   "repo": "funnysky943/ios-akatsuki",
+   "device_slug": "xperia-xz3",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:48.951Z"
   },
   {
    "repo": "GFander/UniXNU-kebab",
@@ -11992,6 +15229,14 @@
    "via": null,
    "note": "",
    "updated": "2026-11-22T19:43:50.003Z"
+  },
+  {
+   "repo": "Gsjsjzhznsz/hackios-xnu-kernel",
+   "device_slug": "redmi-k20-pro",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:50.624Z"
   },
   {
    "repo": "HeliumStudio-Dev/hackios-xnu-kernel",
@@ -12026,6 +15271,22 @@
    "updated": "2026-11-22T19:43:50.003Z"
   },
   {
+   "repo": "hoshikv/xnu-kernel-peridot",
+   "device_slug": "poco-f6",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:50.985Z"
+  },
+  {
+   "repo": "imjee/hakios-xnu-kernel-kunzite",
+   "device_slug": "poco-m8",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:51.983Z"
+  },
+  {
    "repo": "imusingwinxp-ops/j3y17lte-xnu",
    "device_slug": "j3-2017",
    "support": "claimed",
@@ -12058,12 +15319,28 @@
    "updated": "2026-11-22T19:43:50.003Z"
   },
   {
+   "repo": "JopangJovan/hackios-xnu-kernel-umi",
+   "device_slug": "mi-10",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:50.747Z"
+  },
+  {
    "repo": "joranv1/ios-sailfish",
    "device_slug": "pixel-1",
    "support": "claimed",
    "via": null,
    "note": "",
    "updated": "2026-11-22T19:43:50.003Z"
+  },
+  {
+   "repo": "JosephMontfort/hakios-xnu-kernel-garnet",
+   "device_slug": "poco-x6",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:47.411Z"
   },
   {
    "repo": "kerrinz/UniXNU-zorn",
@@ -12074,12 +15351,28 @@
    "updated": "2026-11-23T00:00:51.976Z"
   },
   {
+   "repo": "kiwiiiii-eth/hakios-xnu-kernel",
+   "device_slug": "oneplus-6t",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:51.614Z"
+  },
+  {
    "repo": "kmu1757/UniXNU-t970",
    "device_slug": "tab-s7-plus",
    "support": "primary",
    "via": null,
    "note": "",
    "updated": "2026-11-23T00:00:52.280Z"
+  },
+  {
+   "repo": "kvfsrl/xnu-kernel-peridot-marble",
+   "device_slug": "poco-f6",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:52.109Z"
   },
   {
    "repo": "leh0726/G986N-iOS",
@@ -12122,12 +15415,52 @@
    "updated": "2026-11-23T00:00:52.076Z"
   },
   {
+   "repo": "lopro104/hakios_kernel_google_sunfish",
+   "device_slug": "pixel-4a",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:51.239Z"
+  },
+  {
+   "repo": "Luminous418/hakios-a32",
+   "device_slug": "a32",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:48.902Z"
+  },
+  {
+   "repo": "lunaticwhat/hakios-qrd7325",
+   "device_slug": "qrd7325",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:47.989Z"
+  },
+  {
    "repo": "malthiscode/ios-b1lte",
    "device_slug": "s10",
    "support": "claimed",
    "via": null,
    "note": "",
    "updated": "2026-11-22T19:43:50.003Z"
+  },
+  {
+   "repo": "mariqnetr/hakios-shennong",
+   "device_slug": "xiaomi-14-pro",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:47.270Z"
+  },
+  {
+   "repo": "Martinvlba/hakios-devices-akita",
+   "device_slug": "pixel-8a",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:49.224Z"
   },
   {
    "repo": "mateusseiboth/darwin-lisa",
@@ -12152,6 +15485,14 @@
    "via": null,
    "note": "negroni kernel patches, shim and root tools iOSPlus10 builds on (iOSPlus10 CREDITS.md:15); akshaynexus/iOSPlus10 is the phone's furthest port",
    "updated": "2026-11-23T00:02:32.740Z"
+  },
+  {
+   "repo": "mhamzates/ios-port-marble",
+   "device_slug": "poco-f5",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:49.867Z"
   },
   {
    "repo": "mkukarin01/ios-kunzite-experiments",
@@ -12186,6 +15527,14 @@
    "updated": "2026-11-22T19:52:36.680Z"
   },
   {
+   "repo": "N1709/hakios-whyred",
+   "device_slug": "redmi-note-5-pro",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:51.363Z"
+  },
+  {
    "repo": "Nik300/ios-viva",
    "device_slug": "redmi-note-11-pro",
    "support": "claimed",
@@ -12208,6 +15557,22 @@
    "via": null,
    "note": "",
    "updated": "2026-11-22T19:43:50.003Z"
+  },
+  {
+   "repo": "nitheshd30/hakios-xnu-kernel",
+   "device_slug": "nothing-phone-1",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:48.725Z"
+  },
+  {
+   "repo": "nomorecoolnicknames/hackios-xnu-kernel-vayu",
+   "device_slug": "poco-x3-pro",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:48.139Z"
   },
   {
    "repo": "nomorecoolnicknames/hakios-sm8150",
@@ -12242,12 +15607,44 @@
    "updated": "2026-11-23T00:00:52.435Z"
   },
   {
+   "repo": "nonrootus/ios-sweet_k6a",
+   "device_slug": "redmi-note-12-pro-4g",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:50.413Z"
+  },
+  {
    "repo": "NWylynko/ios-flame",
    "device_slug": "pixel-4",
    "support": "claimed",
    "via": null,
    "note": "",
    "updated": "2026-11-22T19:43:50.003Z"
+  },
+  {
+   "repo": "olzhas0986/hackios-xnu-kernel-munch",
+   "device_slug": "poco-f4",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:51.486Z"
+  },
+  {
+   "repo": "oosexgang/hakios-xnu-kernel",
+   "device_slug": "poco-x7-pro",
+   "support": "claimed",
+   "via": null,
+   "note": "HakiOS registry: listed as the source of this port",
+   "updated": "2026-11-23T07:13:46.975Z"
+  },
+  {
+   "repo": "oosexgang/hakios-xnu-kernel",
+   "device_slug": "xiaomi-pad-5",
+   "support": "claimed",
+   "via": null,
+   "note": "HakiOS registry: listed as the source of this port",
+   "updated": "2026-11-23T07:13:46.453Z"
   },
   {
    "repo": "open-mapple/manifest",
@@ -12402,6 +15799,14 @@
    "updated": "2026-11-23T00:00:52.231Z"
   },
   {
+   "repo": "pixelpixys/hakios-malmo",
+   "device_slug": "moto-g85",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:50.223Z"
+  },
+  {
    "repo": "PixOS-Project/pixelios-kernel",
    "device_slug": "pixel-6a",
    "support": "claimed",
@@ -12426,6 +15831,14 @@
    "updated": "2026-11-22T19:43:50.003Z"
   },
   {
+   "repo": "qarzis/ios-waffle",
+   "device_slug": "oneplus-12",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:49.700Z"
+  },
+  {
    "repo": "qdizax-w/hakios-sm7125",
    "device_slug": "redmi-note-9-pro",
    "support": "claimed",
@@ -12448,6 +15861,14 @@
    "via": null,
    "note": "",
    "updated": "2026-11-22T23:55:04.627Z"
+  },
+  {
+   "repo": "rafsanbasunia/hakios-xnu-kernel-garnet",
+   "device_slug": "poco-x6",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:51.740Z"
   },
   {
    "repo": "rafsanbasunia/ios-garnet",
@@ -12490,12 +15911,28 @@
    "updated": "2026-11-23T00:02:32.563Z"
   },
   {
+   "repo": "SakuraKyuo/hackios-xnu-kernel_corvette",
+   "device_slug": "oneplus-ace-3-pro",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:48.267Z"
+  },
+  {
    "repo": "SangLuoCN/UniXNU-Nubia-Z60U",
    "device_slug": "nubia-z60-ultra",
    "support": "primary",
    "via": null,
    "note": "",
    "updated": "2026-11-23T00:00:52.175Z"
+  },
+  {
+   "repo": "SathiyaSenpai/hakios-avalon",
+   "device_slug": "oneplus-nord-4",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:49.653Z"
   },
   {
    "repo": "Scion-Project/scion-crownlte",
@@ -12530,12 +15967,52 @@
    "updated": "2026-11-22T23:55:09.472Z"
   },
   {
+   "repo": "Scion-Project/scion-kernel",
+   "device_slug": "s9",
+   "support": "claimed",
+   "via": null,
+   "note": "HakiOS registry: listed as the source of this port",
+   "updated": "2026-11-23T07:13:46.413Z"
+  },
+  {
    "repo": "Scion-Project/scion-starlte",
    "device_slug": "s9",
    "support": "claimed",
    "via": null,
    "note": "",
    "updated": "2026-11-22T19:43:50.003Z"
+  },
+  {
+   "repo": "sembesoporte-lab/hakios-motog84",
+   "device_slug": "moto-g84",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:46.505Z"
+  },
+  {
+   "repo": "shimoku74/hakios-xnu-kernel",
+   "device_slug": "mi-11-lite-5g",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:46.224Z"
+  },
+  {
+   "repo": "shimoku74/hakios-xnu-kernel",
+   "device_slug": "oneplus-ace-6t",
+   "support": "claimed",
+   "via": null,
+   "note": "HakiOS registry: listed as the source of this port",
+   "updated": "2026-11-23T07:13:46.339Z"
+  },
+  {
+   "repo": "shimoku74/hakios-xnu-kernel",
+   "device_slug": "poco-x5-pro",
+   "support": "claimed",
+   "via": null,
+   "note": "HakiOS registry: listed as the source of this port",
+   "updated": "2026-11-23T07:13:46.377Z"
   },
   {
    "repo": "skglab-dev/ios-taoyao",
@@ -12546,12 +16023,28 @@
    "updated": "2026-11-22T19:43:50.003Z"
   },
   {
+   "repo": "slayedkaito/xnu-kernel-peridot-amiaxf",
+   "device_slug": "poco-f6",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:48.091Z"
+  },
+  {
    "repo": "soumarcelino/fiio-jm21-xnu",
    "device_slug": "fiio-jm21",
    "support": "claimed",
    "via": null,
    "note": "",
    "updated": "2026-11-22T19:43:50.003Z"
+  },
+  {
+   "repo": "speedyg2200/hakios-xnu-kernel",
+   "device_slug": "a51",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:48.603Z"
   },
   {
    "repo": "superboyyy/hakios-arm64e-dada",
@@ -12592,6 +16085,14 @@
    "via": null,
    "note": "",
    "updated": "2026-11-22T19:43:50.003Z"
+  },
+  {
+   "repo": "timeroute/hakios-op8t",
+   "device_slug": "oneplus-8t",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:47.719Z"
   },
   {
    "repo": "TODOCRACK/Daisy_XNU16",
@@ -12642,12 +16143,28 @@
    "updated": "2026-11-23T00:00:51.901Z"
   },
   {
+   "repo": "unix-qv/hakios-sm6475",
+   "device_slug": "poco-m8",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:47.175Z"
+  },
+  {
    "repo": "UniXNU/UniXNU-sheng",
    "device_slug": "xiaomi-pad-6s-pro",
    "support": "primary",
    "via": null,
    "note": "",
    "updated": "2026-11-23T00:00:51.127Z"
+  },
+  {
+   "repo": "vael01id/HakiOS-Garnet-by-Vael",
+   "device_slug": "poco-x6",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:47.365Z"
   },
   {
    "repo": "Veerhooda/iOS",
@@ -12690,6 +16207,22 @@
    "updated": "2026-11-22T19:52:36.027Z"
   },
   {
+   "repo": "wuxianlin/hakios_devices_dodge",
+   "device_slug": "oneplus-13",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:46.688Z"
+  },
+  {
+   "repo": "wyruzz/ios-SM-A037F",
+   "device_slug": "a03s",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:49.998Z"
+  },
+  {
    "repo": "xaxaapple/s25ver",
    "device_slug": "s25",
    "support": "primary",
@@ -12704,6 +16237,22 @@
    "via": null,
    "note": "",
    "updated": "2026-11-22T19:43:50.003Z"
+  },
+  {
+   "repo": "Xia-s-Projekt/hakios-x6739",
+   "device_slug": "infinix-gt-10-pro",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:50.175Z"
+  },
+  {
+   "repo": "xiongnemo/hakios-alioth",
+   "device_slug": "poco-f3",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:47.545Z"
   },
   {
    "repo": "xNekom/ios-mondrian",
@@ -12722,6 +16271,22 @@
    "updated": "2026-11-22T19:43:50.003Z"
   },
   {
+   "repo": "yavuzhanozyer/hakios-xnu-kernel",
+   "device_slug": "poco-x3-nfc",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:50.499Z"
+  },
+  {
+   "repo": "yfl520/hackios-raphael",
+   "device_slug": "redmi-k20-pro",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:47.075Z"
+  },
+  {
    "repo": "YMGPwcca/OneiOS",
    "device_slug": "s26-ultra",
    "support": "merged",
@@ -12736,6 +16301,22 @@
    "via": null,
    "note": "",
    "updated": "2026-11-22T19:43:50.003Z"
+  },
+  {
+   "repo": "youzjuzi/dipper-xnu",
+   "device_slug": "mi-8",
+   "support": "primary",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:48.454Z"
+  },
+  {
+   "repo": "yukoimi/hackios-marble",
+   "device_slug": "poco-f5",
+   "support": "claimed",
+   "via": null,
+   "note": "",
+   "updated": "2026-11-23T07:13:51.111Z"
   },
   {
    "repo": "YumikoHayamato/OneiOS",
@@ -12877,6 +16458,34 @@
    "note": ""
   },
   {
+   "repo": "api-test/fork-mwsilllsx6dgc0",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "api-test/fork-mwskjk7x5pty0w",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "api-test/fork-mwskssybzz1k7o",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "api-test/fork-mwskv0vwvw1qdy",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
    "repo": "api-test/sync-mwsa10rc8xykrv",
    "base_project": "",
    "repo_exists": 1,
@@ -12975,6 +16584,34 @@
    "note": ""
   },
   {
+   "repo": "api-test/sync-mwsilllsx6dgc0",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "api-test/sync-mwskjk7x5pty0w",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "api-test/sync-mwskssybzz1k7o",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "api-test/sync-mwskv0vwvw1qdy",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
    "repo": "arabaci0711-ux/ios-vince",
    "base_project": "unknown",
    "repo_exists": 1,
@@ -12994,13 +16631,6 @@
    "repo_exists": 1,
    "description": "iOS 16 userland + XNU on Google Pixel 1 (sailfish, Snapdragon 821)",
    "note": "submodule of devilAPI/zte-axon7 (branch axon7)"
-  },
-  {
-   "repo": "enesuzun2002/hakios-apollo",
-   "base_project": "HackiOS",
-   "repo_exists": 1,
-   "description": "",
-   "note": "archived"
   },
   {
    "repo": "erikkunz/pixel3-ios",
@@ -13036,13 +16666,6 @@
    "repo_exists": 1,
    "description": "because bootloaders shouldn't be complicated :D",
    "note": "minimal loader (\"because bootloaders shouldn't be complicated\")"
-  },
-  {
-   "repo": "JopangJovan/hackios-xnu-kernel-umi",
-   "base_project": "HackiOS",
-   "repo_exists": 1,
-   "description": "",
-   "note": ""
   },
   {
    "repo": "kOtusin/uniloader",
@@ -13192,6 +16815,34 @@
    "note": ""
   },
   {
+   "repo": "other-mwsild6g46a1/port-2",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "other-mwskj8wug4et/port-2",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "other-mwsksi3uj381/port-2",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "other-mwskusad7ojt/port-2",
+   "base_project": "",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
    "repo": "Project-Silicium/Mu-Silicium",
    "base_project": "tooling",
    "repo_exists": 1,
@@ -13318,6 +16969,34 @@
    "note": ""
   },
   {
+   "repo": "tghmwsild6g46a1/port-mwsild6g46a1",
+   "base_project": "fam-mwsild6g46a1",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "tghmwskj8wug4et/port-mwskj8wug4et",
+   "base_project": "fam-mwskj8wug4et",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "tghmwsksi3uj381/port-mwsksi3uj381",
+   "base_project": "fam-mwsksi3uj381",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
+   "repo": "tghmwskusad7ojt/port-mwskusad7ojt",
+   "base_project": "fam-mwskusad7ojt",
+   "repo_exists": 1,
+   "description": "",
+   "note": ""
+  },
+  {
    "repo": "tlfares/iOS16-on-A40",
    "base_project": "ios-sweet",
    "repo_exists": 1,
@@ -13333,6 +17012,14 @@
   }
  ],
  "repo_lineage": [
+  {
+   "repo": "adelholzener69/hakios-xnu-kernel-raphael",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "GitHub fork of oosexgang/hakios-xnu-kernel",
+   "source": "https://github.com/adelholzener69/hakios-xnu-kernel-raphael",
+   "base_exists": 1
+  },
   {
    "repo": "AdyaGMD/ios-spes",
    "base": "MakrSas/ios-topaz",
@@ -13387,6 +17074,14 @@
    "relation": "uses",
    "note": "metal2vulkan over Turnip",
    "source": "https://github.com/AdyaGMD/ios-spes#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "Akhdaa/hakios-xiaomi-munch",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "GitHub fork of oosexgang/hakios-xnu-kernel",
+   "source": "https://github.com/Akhdaa/hakios-xiaomi-munch",
    "base_exists": 1
   },
   {
@@ -13910,6 +17605,14 @@
    "base_exists": 1
   },
   {
+   "repo": "Angelpro09xd/hakios-xnu-kernel",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "GitHub fork of oosexgang/hakios-xnu-kernel",
+   "source": "https://github.com/Angelpro09xd/hakios-xnu-kernel",
+   "base_exists": 1
+  },
+  {
    "repo": "Angelpro09xd/ios-sapphire",
    "base": "MakrSas/ios-topaz",
    "relation": "derived-from",
@@ -14067,6 +17770,14 @@
    "relation": "fork-of",
    "note": "GitHub parent (README still titled hakios-arm64e-dada)",
    "source": "github:parent",
+   "base_exists": 1
+  },
+  {
+   "repo": "beb4554/hackios-xnu-kernel-lisa",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "GitHub fork of oosexgang/hakios-xnu-kernel",
+   "source": "https://github.com/beb4554/hackios-xnu-kernel-lisa",
    "base_exists": 1
   },
   {
@@ -14654,6 +18365,14 @@
    "base_exists": 1
   },
   {
+   "repo": "EmoticonYT/ios-oriole",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "GitHub fork of oosexgang/hakios-xnu-kernel",
+   "source": "https://github.com/EmoticonYT/ios-oriole",
+   "base_exists": 1
+  },
+  {
    "repo": "enesuzun2002/hakios-apollo",
    "base": "oosexgang/hakios-xnu-kernel",
    "relation": "fork-of",
@@ -14726,6 +18445,14 @@
    "base_exists": 1
   },
   {
+   "repo": "filipdanielisback-commits/hakios-xnu-kernel",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "GitHub fork of oosexgang/hakios-xnu-kernel",
+   "source": "https://github.com/filipdanielisback-commits/hakios-xnu-kernel",
+   "base_exists": 1
+  },
+  {
    "repo": "Floppikrob/ios-galaxy-s8",
    "base": "dipa-studio/ios-sweet",
    "relation": "derived-from",
@@ -14747,6 +18474,22 @@
    "relation": "derived-from",
    "note": "Credits: \"the Galaxy A5 2016 port ... this project is based on\"",
    "source": "https://github.com/Floppikrob/ios-galaxy-s8#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "Franciiscodev/hackios-xnu-kernel-munch",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "GitHub fork of oosexgang/hakios-xnu-kernel",
+   "source": "https://github.com/Franciiscodev/hackios-xnu-kernel-munch",
+   "base_exists": 1
+  },
+  {
+   "repo": "funnysky943/ios-akatsuki",
+   "base": "edi194/ios-fajita",
+   "relation": "fork-of",
+   "note": "GitHub fork of edi194/ios-fajita, which is based on dipa-studio/ios-sweet",
+   "source": "https://github.com/funnysky943/ios-akatsuki",
    "base_exists": 1
   },
   {
@@ -14822,6 +18565,14 @@
    "base_exists": 1
   },
   {
+   "repo": "Gsjsjzhznsz/hackios-xnu-kernel",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "GitHub fork of oosexgang/hakios-xnu-kernel",
+   "source": "https://github.com/Gsjsjzhznsz/hackios-xnu-kernel",
+   "base_exists": 1
+  },
+  {
    "repo": "HeliumStudio-Dev/hackios-xnu-kernel",
    "base": "oosexgang/hakios-xnu-kernel",
    "relation": "derived-from",
@@ -14867,6 +18618,22 @@
    "relation": "derived-from",
    "note": "\"Based on orhunnx/ios-a5xelte (A5 2016)\"; not a GitHub fork (\"i cant 'fork' a branch\")",
    "source": "https://github.com/hoaan1911/ios-on7xelte#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "hoshikv/xnu-kernel-peridot",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "GitHub fork of oosexgang/hakios-xnu-kernel",
+   "source": "https://github.com/hoshikv/xnu-kernel-peridot",
+   "base_exists": 1
+  },
+  {
+   "repo": "imjee/hakios-xnu-kernel-kunzite",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "GitHub fork of oosexgang/hakios-xnu-kernel",
+   "source": "https://github.com/imjee/hakios-xnu-kernel-kunzite",
    "base_exists": 1
   },
   {
@@ -14934,11 +18701,27 @@
    "base_exists": 1
   },
   {
+   "repo": "JosephMontfort/hakios-xnu-kernel-garnet",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "GitHub fork of oosexgang/hakios-xnu-kernel",
+   "source": "https://github.com/JosephMontfort/hakios-xnu-kernel-garnet",
+   "base_exists": 1
+  },
+  {
    "repo": "kerrinz/UniXNU-zorn",
    "base": "UniXNU/UniXNU",
    "relation": "uses",
    "note": "UniXNU device repository (README)",
    "source": "https://github.com/kerrinz/UniXNU-zorn#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "kiwiiiii-eth/hakios-xnu-kernel",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "GitHub fork of oosexgang/hakios-xnu-kernel",
+   "source": "https://github.com/kiwiiiii-eth/hakios-xnu-kernel",
    "base_exists": 1
   },
   {
@@ -15006,6 +18789,14 @@
    "base_exists": 1
   },
   {
+   "repo": "kvfsrl/xnu-kernel-peridot-marble",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "GitHub fork of oosexgang/hakios-xnu-kernel",
+   "source": "https://github.com/kvfsrl/xnu-kernel-peridot-marble",
+   "base_exists": 1
+  },
+  {
    "repo": "leh0726/G986N-iOS",
    "base": "oosexgang/hackios-xnu-userland",
    "relation": "derived-from",
@@ -15067,6 +18858,14 @@
    "relation": "uses",
    "note": "UniXNU port (README, format-2 device repo)",
    "source": "https://github.com/loolooc/UniXNU-meizu21#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "lopro104/hakios_kernel_google_sunfish",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "GitHub fork of oosexgang/hakios-xnu-kernel",
+   "source": "https://github.com/lopro104/hakios_kernel_google_sunfish",
    "base_exists": 1
   },
   {
@@ -15222,6 +19021,14 @@
    "base_exists": 1
   },
   {
+   "repo": "mhamzates/ios-port-marble",
+   "base": "jebbranch/ios-port-marble",
+   "relation": "fork-of",
+   "note": "GitHub fork of jebbranch/ios-port-marble; its README does not say what it is based on",
+   "source": "https://github.com/mhamzates/ios-port-marble",
+   "base_exists": 1
+  },
+  {
    "repo": "mkukarin01/ios-kunzite-experiments",
    "base": "MakrSas/ios-topaz",
    "relation": "fork-of",
@@ -15318,6 +19125,14 @@
    "base_exists": 1
   },
   {
+   "repo": "N1709/hakios-whyred",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "GitHub fork of oosexgang/hakios-xnu-kernel",
+   "source": "https://github.com/N1709/hakios-whyred",
+   "base_exists": 1
+  },
+  {
    "repo": "Nik300/ios-viva",
    "base": "dipa-studio/ios-sweet",
    "relation": "fork-of",
@@ -15390,6 +19205,22 @@
    "base_exists": 1
   },
   {
+   "repo": "nitheshd30/hakios-xnu-kernel",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "GitHub fork of oosexgang/hakios-xnu-kernel",
+   "source": "https://github.com/nitheshd30/hakios-xnu-kernel",
+   "base_exists": 1
+  },
+  {
+   "repo": "nomorecoolnicknames/hackios-xnu-kernel-vayu",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "GitHub fork of oosexgang/hakios-xnu-kernel",
+   "source": "https://github.com/nomorecoolnicknames/hackios-xnu-kernel-vayu",
+   "base_exists": 1
+  },
+  {
    "repo": "nomorecoolnicknames/hakios-sm8150",
    "base": "oosexgang/hakios-xnu-kernel",
    "relation": "uses",
@@ -15430,6 +19261,14 @@
    "base_exists": 1
   },
   {
+   "repo": "nonrootus/ios-sweet_k6a",
+   "base": "DanaTheScripterAlt/ios-sweet",
+   "relation": "derived-from",
+   "note": "README: an ios-sweet port",
+   "source": "https://github.com/nonrootus/ios-sweet_k6a",
+   "base_exists": 1
+  },
+  {
    "repo": "NWylynko/ios-flame",
    "base": "MakrSas/ios-topaz",
    "relation": "ported-from",
@@ -15467,6 +19306,14 @@
    "relation": "uses",
    "note": "Metal on Turnip through metal2vulkan",
    "source": "https://github.com/NWylynko/ios-flame#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "olzhas0986/hackios-xnu-kernel-munch",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "GitHub fork of oosexgang/hakios-xnu-kernel",
+   "source": "https://github.com/olzhas0986/hackios-xnu-kernel-munch",
    "base_exists": 1
   },
   {
@@ -15790,6 +19637,14 @@
    "base_exists": 1
   },
   {
+   "repo": "pixelpixys/hakios-malmo",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "GitHub fork of oosexgang/hakios-xnu-kernel",
+   "source": "https://github.com/pixelpixys/hakios-malmo",
+   "base_exists": 1
+  },
+  {
    "repo": "PixOS-Project/pixelios-kernel",
    "base": "dipa-studio/ios-sweet",
    "relation": "derived-from",
@@ -15830,6 +19685,14 @@
    "base_exists": 1
   },
   {
+   "repo": "qarzis/ios-waffle",
+   "base": "hxfuxyy/ios-macan",
+   "relation": "fork-of",
+   "note": "GitHub fork of hxfuxyy/ios-macan (HackiOS on the OnePlus Ace 6T)",
+   "source": "https://github.com/qarzis/ios-waffle",
+   "base_exists": 1
+  },
+  {
    "repo": "qdizax-w/hakios-sm7125",
    "base": "oosexgang/hakios-xnu-kernel",
    "relation": "derived-from",
@@ -15859,6 +19722,14 @@
    "relation": "uses",
    "note": "README: Mu-Silicium miatollPkg with UniXNU and DarwinBoot",
    "source": "https://github.com/qdizax-w/UniXNU-miatoll",
+   "base_exists": 1
+  },
+  {
+   "repo": "rafsanbasunia/hakios-xnu-kernel-garnet",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "GitHub fork of oosexgang/hakios-xnu-kernel",
+   "source": "https://github.com/rafsanbasunia/hakios-xnu-kernel-garnet",
    "base_exists": 1
   },
   {
@@ -15950,6 +19821,14 @@
    "base_exists": 1
   },
   {
+   "repo": "SakuraKyuo/hackios-xnu-kernel_corvette",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "GitHub fork of oosexgang/hakios-xnu-kernel",
+   "source": "https://github.com/SakuraKyuo/hackios-xnu-kernel_corvette",
+   "base_exists": 1
+  },
+  {
    "repo": "samhenrigold/LightTouchMac",
    "base": "samhenrigold/qemu-ios",
    "relation": "uses",
@@ -16022,6 +19901,22 @@
    "base_exists": 1
   },
   {
+   "repo": "sembesoporte-lab/hakios-motog84",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "GitHub fork of oosexgang/hakios-xnu-kernel",
+   "source": "https://github.com/sembesoporte-lab/hakios-motog84",
+   "base_exists": 1
+  },
+  {
+   "repo": "shimoku74/hakios-xnu-kernel",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "GitHub fork of oosexgang/hakios-xnu-kernel",
+   "source": "https://github.com/shimoku74/hakios-xnu-kernel",
+   "base_exists": 1
+  },
+  {
    "repo": "skglab-dev/ios-taoyao",
    "base": "oosexgang/hakios-xnu-kernel",
    "relation": "derived-from",
@@ -16043,6 +19938,14 @@
    "relation": "derived-from",
    "note": "inferred: README says only \"Based on XNU 8796.121.2 (iOS 16.5)\" (HackiOS's XNU version) and the build output is named hakios-kernel",
    "source": "https://github.com/soumarcelino/fiio-jm21-xnu#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "speedyg2200/hakios-xnu-kernel",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "GitHub fork of oosexgang/hakios-xnu-kernel",
+   "source": "https://github.com/speedyg2200/hakios-xnu-kernel",
    "base_exists": 1
   },
   {
@@ -16350,11 +20253,27 @@
    "base_exists": 1
   },
   {
+   "repo": "wyruzz/ios-SM-A037F",
+   "base": "dipa-studio/ios-sweet",
+   "relation": "fork-of",
+   "note": "GitHub fork of dipa-studio/ios-sweet",
+   "source": "https://github.com/wyruzz/ios-SM-A037F",
+   "base_exists": 1
+  },
+  {
    "repo": "xaxaapple/s25ver",
    "base": "akshaynexus/OneiOS",
    "relation": "derived-from",
    "note": "not a GitHub fork, but the README is OneiOS's (\"# OneiOS\"); OneiOS's README calls it the \"s25ver snapshot\" of the S25 Ultra work",
    "source": "https://github.com/xaxaapple/s25ver#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "xiongnemo/hakios-alioth",
+   "base": "JopangJovan/hackios-xnu-kernel-umi",
+   "relation": "fork-of",
+   "note": "GitHub fork of JopangJovan/hackios-xnu-kernel-umi",
+   "source": "https://github.com/xiongnemo/hakios-alioth",
    "base_exists": 1
   },
   {
@@ -16371,6 +20290,14 @@
    "relation": "fork-of",
    "note": "GitHub parent; \"This fork targets Nothing Phone (1)\"",
    "source": "github:parent",
+   "base_exists": 1
+  },
+  {
+   "repo": "yavuzhanozyer/hakios-xnu-kernel",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "GitHub fork of oosexgang/hakios-xnu-kernel",
+   "source": "https://github.com/yavuzhanozyer/hakios-xnu-kernel",
    "base_exists": 1
   },
   {
@@ -16459,6 +20386,14 @@
    "relation": "uses",
    "note": "Metal via SweetMetal2 (metal2vulkan + Turnip)",
    "source": "https://github.com/Yofuness/ios-sunfish#readme",
+   "base_exists": 1
+  },
+  {
+   "repo": "yukoimi/hackios-marble",
+   "base": "oosexgang/hakios-xnu-kernel",
+   "relation": "fork-of",
+   "note": "GitHub fork of oosexgang/hakios-xnu-kernel",
+   "source": "https://github.com/yukoimi/hackios-marble",
    "base_exists": 1
   },
   {

@@ -17,6 +17,7 @@ export function resolveSource(raw: string): Resolved {
       const u = new URL(s);
       const host = u.hostname.replace(/^www\.|^old\./, "");
       if (host === "reddit.com" || host === "redd.it") return { label: "Reddit post", href: s };
+      if (host === "hakios-developers.com") return { label: "HakiOS registry", href: s };
       if (host === "github.com") {
         const [owner, repo] = u.pathname.split("/").filter(Boolean);
         return { label: repo ? `${owner}/${repo}` : "GitHub", href: s };

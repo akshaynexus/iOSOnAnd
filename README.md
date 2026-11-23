@@ -49,6 +49,10 @@ safe to run on every start:
    seeds over existing rows. `node scripts/seed-export.mjs` writes the local
    DB's seeded tables back into `seed/seed.json`.
 
+`node scripts/sync-hakios.mjs [--apply]` combines the HakiOS ports registry
+(hakios-developers.com) with the tracker: its phones, repos and per-feature
+states, without overwriting maintainers' rows (docs: `/docs/hakios-registry`).
+
 Uploads use the emulated R2 under `.wrangler/state`, so they need no setup.
 
 The app and API listen on port 3000 on every address, IPv4 and IPv6, so
