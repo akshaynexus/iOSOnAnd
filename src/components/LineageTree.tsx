@@ -86,12 +86,12 @@ function Branch({ node, depth }: { node: TreeNode; depth: number }) {
             href={`https://github.com/${node.name}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="truncate font-mono text-xs hover:underline"
+            className="truncate font-mono text-xs hover:underline max-sm:break-all max-sm:whitespace-normal pointer-coarse:leading-8"
           >
             {short}
           </a>
         ) : (
-          <span className="truncate text-xs font-medium">{short}</span>
+          <span className="truncate text-xs font-medium max-sm:break-all max-sm:whitespace-normal">{short}</span>
         )}
         {depth > 0 && node.relation ? (
           <span className="shrink-0 text-xs text-muted-foreground">

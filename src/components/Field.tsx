@@ -35,7 +35,7 @@ export function NativeSelect({ className, ...props }: ComponentProps<"select">) 
   return (
     <select
       className={cn(
-        "h-9 w-full min-w-0 rounded-md border border-input bg-background dark:bg-input/30 px-3 text-base outline-none transition-[color,box-shadow,background-color] focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 disabled:opacity-50 md:text-sm",
+        "h-9 w-full min-w-0 rounded-md border border-input bg-background dark:bg-input/30 px-3 text-base outline-none transition-[color,box-shadow,background-color] focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 disabled:opacity-50 md:text-sm pointer-coarse:h-11 pointer-coarse:text-base",
         className,
       )}
       {...props}

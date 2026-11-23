@@ -9,7 +9,10 @@
  *   (IntersectionObserver, 200px margin) and released when it leaves;
  * - each pool has a cap (cards 10, buttons 4; 14 in all, under the ~16 browsers allow); requests past the cap wait in
  *   order and get the next free slot;
- * - no slot at all when WebGL2 is missing or the user prefers reduced motion.
+ * - no slot at all when WebGL2 is missing, the user prefers reduced motion, or
+ *   the device is touch-only ((hover: none) and (pointer: coarse)): there the
+ *   tilt and specular light never follow a pointer, and up to 14 live contexts
+ *   cost scroll smoothness on a phone GPU for no visible effect.
  *
  * A component without a slot renders its CSS-only look.
  */
@@ -54,6 +57,15 @@ export function prefersReducedMotion(): boolean {
   }
 }
 
+/** A phone or tablet with no mouse: the effects have no pointer to follow. */
+export function touchOnly(): boolean {
+  try {
+    return window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+  } catch {
+    return false;
+  }
+}
+
 function request(pool: GlPool, ticket: Ticket) {
   const p = pools[pool];
   if (ticket.granted || p.waiting.includes(ticket)) return;
@@ -92,7 +104,7 @@ export function useGlSlot(ref: RefObject<Element | null>, pool: GlPool, enabled 
   useEffect(() => {
     const element = ref.current;
     if (!enabled || !element || typeof IntersectionObserver === "undefined") return;
-    if (!webgl2Supported() || prefersReducedMotion()) return;
+    if (touchOnly() || prefersReducedMotion() || !webgl2Supported()) return;
     let alive = true;
     const ticket: Ticket = {
       granted: false,

@@ -70,7 +70,7 @@ function DevicePhoto({ device }: { device: Device }) {
   return (
     <figure className="flex flex-col gap-2">
       <div
-        className={`flex items-center justify-center overflow-hidden rounded-2xl border bg-muted/40 ${src && !failed ? "p-3" : "aspect-[4/5] p-6"}`}
+        className={`flex items-center justify-center overflow-hidden rounded-2xl border bg-muted/40 ${src && !failed ? "p-3" : "h-[200px] p-6 md:aspect-[4/5] md:h-auto"}`}
       >
         {src && !failed ? (
           <img
@@ -78,7 +78,7 @@ function DevicePhoto({ device }: { device: Device }) {
             alt={device.name}
             onError={() => setFailed(true)}
             style={{ viewTransitionName: vtName("img", device.slug) }}
-            className="max-h-[28rem] max-w-full rounded-lg object-contain"
+            className="max-h-[200px] max-w-full rounded-lg object-contain md:max-h-[28rem]"
           />
         ) : (
           <PhoneOutline className="h-3/4 w-auto text-muted-foreground/60" style={{ viewTransitionName: vtName("img", device.slug) }} />
@@ -120,7 +120,7 @@ function SupportedBy({ device, forks }: { device: Device; forks: Map<string, For
                   href={fork ? forkHref(fork) : `https://github.com/${s.repo}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-medium break-all hover:underline"
+                  className="inline-flex min-h-8 items-center font-medium break-all hover:underline"
                 >
                   {s.repo}
                 </a>
@@ -161,12 +161,12 @@ function DevicePage() {
       <section className="flex flex-col gap-5">
         <Link
           to="/"
-          className="inline-flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          className="-my-2.5 inline-flex min-h-11 w-fit items-center gap-1 pr-2 text-sm text-muted-foreground hover:text-foreground"
         >
           <ChevronLeft className="size-4" aria-hidden />
           All phones
         </Link>
-        <div className="grid gap-8 md:grid-cols-[minmax(0,20rem)_1fr] lg:grid-cols-[minmax(0,22rem)_1fr]">
+        <div className="grid gap-5 md:gap-8 md:grid-cols-[minmax(0,20rem)_1fr] lg:grid-cols-[minmax(0,22rem)_1fr]">
           <DevicePhoto device={device} />
           <div className="flex min-w-0 flex-col gap-5">
             <div className="flex flex-col gap-2">
@@ -176,7 +176,7 @@ function DevicePage() {
                 <span className="inline-flex" style={{ viewTransitionName: vtName("family", device.slug) }}><FamilyChip families={families} /></span>
               </div>
               {device.ios_version ? (
-                <p className="w-fit text-3xl font-semibold tracking-tight" style={{ viewTransitionName: vtName("ios", device.slug) }}>{device.ios_version}</p>
+                <p className="w-fit text-2xl font-semibold tracking-tight sm:text-3xl" style={{ viewTransitionName: vtName("ios", device.slug) }}>{device.ios_version}</p>
               ) : (
                 <p className="w-fit text-lg text-muted-foreground" style={{ viewTransitionName: vtName("ios", device.slug) }}>iOS version not stated</p>
               )}
@@ -188,7 +188,7 @@ function DevicePage() {
               {device.best_result ? <p className="max-w-3xl text-base">{device.best_result}</p> : null}
             </div>
 
-            <dl className="grid gap-x-8 gap-y-3 rounded-lg border px-4 py-3 sm:grid-cols-2">
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-lg border px-4 py-3 sm:gap-x-8">
               <Fact label="Model">{device.model || <span className="text-muted-foreground">Not recorded</span>}</Fact>
               <Fact label="SoC">{device.soc || <span className="text-muted-foreground">Not recorded</span>}</Fact>
               <Fact label="Maintainer">
@@ -205,12 +205,12 @@ function DevicePage() {
                   <span className="text-muted-foreground">Never</span>
                 )}
               </Fact>
-              <div className="flex flex-col gap-1.5 sm:col-span-2">
+              <div className="col-span-2 flex flex-col gap-1.5">
                 <dt className="text-xs text-muted-foreground">
                   {applicable.length} areas{applicable.length < areas.length ? `, ${areas.length - applicable.length} not applicable` : ""}
                 </dt>
                 <dd>
-                  <div className="max-w-xl" style={{ viewTransitionName: vtName("bar", device.slug) }}><StatusBar counts={counts} /></div>
+                  <div className="w-full md:max-w-xl" style={{ viewTransitionName: vtName("bar", device.slug) }}><StatusBar counts={counts} /></div>
                 </dd>
               </div>
             </dl>
@@ -236,8 +236,10 @@ function DevicePage() {
 
       <SupportedBy device={device} forks={forkMap} />
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-base font-semibold">Areas</h2>
+      <section aria-labelledby="areas-heading" className="flex scroll-mt-20 flex-col gap-3">
+        <h2 id="areas-heading" className="text-base font-semibold">
+          Areas
+        </h2>
         <AreaTable deviceSlug={device.slug} rows={rows} editable={editable} />
       </section>
 

@@ -181,7 +181,7 @@ function SiteSearch({ className, autoFocus }: { className?: string; autoFocus?: 
         }}
         placeholder="Search"
         autoComplete="off"
-        className="h-9 w-full min-w-0 rounded-full border border-input bg-background pr-8 pl-9 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 dark:bg-input/30 [&::-webkit-search-cancel-button]:hidden"
+        className="h-9 w-full min-w-0 rounded-full border border-input bg-background pr-10 pl-9 text-base outline-none pointer-coarse:h-11 md:text-sm pointer-coarse:text-base placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 dark:bg-input/30 [&::-webkit-search-cancel-button]:hidden"
       />
       {query ? (
         <button
@@ -191,7 +191,7 @@ function SiteSearch({ className, autoFocus }: { className?: string; autoFocus?: 
             inputRef.current?.focus();
           }}
           aria-label="Clear search"
-          className="absolute top-1/2 right-2 inline-flex size-5 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
+          className="absolute top-1/2 right-1 inline-flex size-7 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground hover:text-foreground pointer-coarse:size-9"
         >
           <X className="size-3.5" aria-hidden />
         </button>
@@ -325,7 +325,7 @@ export function Page({ children }: { children: ReactNode }) {
   return (
     <>
       <SiteNav />
-      {full ? <main>{children}</main> : <main className="mx-auto max-w-6xl px-4 pt-6 pb-16">{children}</main>}
+      {full ? <main>{children}</main> : <main className="site-main mx-auto max-w-6xl pt-6">{children}</main>}
     </>
   );
 }

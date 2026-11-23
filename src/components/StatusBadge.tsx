@@ -74,7 +74,7 @@ export function StateIcon({ state, className, ...props }: { state: AreaState } &
 export function StateCell({ state, className }: { state: AreaState; className?: string }) {
   const s = known(state);
   return (
-    <span className={cn("inline-flex size-7 items-center justify-center rounded-md", CELL[s], className)}>
+    <span className={cn("inline-flex size-8 items-center justify-center rounded-md", CELL[s], className)}>
       <StateIcon state={s} />
     </span>
   );
@@ -150,15 +150,16 @@ export function StateCountList({ counts }: { counts: StateCounts }) {
 }
 
 /** A cell for an area that does not apply to this device (OneiOS-only area, other base). */
-export function NaCell({ className }: { className?: string }) {
+export function NaCell({ className, label = true }: { className?: string; label?: boolean }) {
   return (
     <span
       className={cn(
-        "inline-flex size-7 items-center justify-center rounded-md bg-[repeating-linear-gradient(135deg,var(--muted)_0_3px,transparent_3px_6px)] text-[11px] font-medium text-muted-foreground",
+        "inline-flex size-8 shrink-0 items-center justify-center rounded-md bg-[repeating-linear-gradient(135deg,var(--muted)_0_3px,transparent_3px_6px)] text-xs font-medium text-muted-foreground",
+        !label && "border border-border",
         className,
       )}
     >
-      N/A
+      {label ? "N/A" : null}
     </span>
   );
 }
@@ -175,7 +176,7 @@ export function StateLegend({ className, na = false }: { className?: string; na?
       ))}
       {na ? (
         <li className="inline-flex items-center gap-1.5" title="Applies only to OneiOS-based ports">
-          <NaCell className="size-5 text-[8px]" />
+          <NaCell className="size-5" label={false} />
           Not applicable
         </li>
       ) : null}

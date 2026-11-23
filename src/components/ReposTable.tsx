@@ -14,6 +14,8 @@ import { familyOfFork, supportPhrase, SUPPORT_LABELS } from "@/components/repoIn
 import { RELATION_LABELS, forkKind, forkMaintainer, type Area, type BasedOn, type Fork } from "@/lib/client";
 import { cn } from "@/lib/utils";
 
+const MAIN_PAGE = 6;
+
 export function forkHref(fork: Pick<Fork, "repo" | "url">): string {
   return fork.url && /^https?:\/\//.test(fork.url) ? fork.url : `https://github.com/${fork.repo}`;
 }
@@ -47,7 +49,7 @@ function CopyClone({ fork }: { fork: Fork }) {
   );
 }
 
-const CHIP = "inline-flex h-5 max-w-44 items-center gap-1 rounded-full border px-2 text-xs whitespace-nowrap";
+const CHIP = "inline-flex h-6 max-w-44 items-center gap-1 rounded-full border px-2 text-xs whitespace-nowrap pointer-coarse:h-8 pointer-coarse:px-2.5";
 
 /** One "based on" entry: the base's short name; relation and note on hover. */
 function BaseChip({ b }: { b: BasedOn }) {
@@ -139,7 +141,7 @@ export function SupportChips({ fork }: { fork: Fork }) {
               params={{ slug: s.device_slug }}
               title={title}
               aria-label={`${s.device_name || s.device_slug}: ${title}`}
-              className={cn(CHIP, "h-6 max-w-56 gap-1.5 bg-background hover:bg-muted")}
+              className={cn(CHIP, "max-w-56 gap-1.5 bg-background hover:bg-muted")}
             >
               <span className={cn("size-1.5 shrink-0 rounded-full", LEVEL_DOT[s.support] ?? "bg-unknown")} aria-hidden />
               <span className="truncate">{s.device_name || s.device_slug}</span>
@@ -228,7 +230,7 @@ function SortHeader({
         type="button"
         onClick={() => onSort(k)}
         className={cn(
-          "inline-flex h-7 items-center gap-1 rounded-md px-2 outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
+          "inline-flex h-7 items-center gap-1 rounded-md px-2 outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring pointer-coarse:h-9",
           active && "text-foreground",
         )}
       >
@@ -240,6 +242,9 @@ function SortHeader({
 }
 
 const TH = "h-9 px-3 text-left text-xs font-medium whitespace-nowrap text-muted-foreground";
+/** A filter: label above its select below md, beside it from md up. */
+const FILTER = "flex min-w-36 flex-1 flex-col gap-1 md:flex-none md:flex-row md:items-center md:gap-2";
+const FILTER_LABEL = "text-xs text-muted-foreground md:text-sm";
 
 /** The family filter value of a repo ("" when unknown). */
 function familyKey(f: Fork): string {
@@ -324,15 +329,16 @@ export function ReposTable({
   return (
     <div className="flex flex-col gap-3">
       {onDeviceFilter ? (
-        <div className="flex flex-wrap items-center gap-2">
-          <label htmlFor="repo-device" className="text-sm text-muted-foreground">
+        <div className="flex flex-wrap items-end gap-x-2 gap-y-2 md:items-center">
+          <div className={FILTER}>
+          <label htmlFor="repo-device" className={FILTER_LABEL}>
             Phone
           </label>
           <NativeSelect
             id="repo-device"
             value={deviceFilter ?? ""}
             onChange={(e) => onDeviceFilter(e.target.value || undefined)}
-            className="h-8 w-auto min-w-44"
+            className="h-8 md:w-auto md:min-w-44"
           >
             <option value="">All phones</option>
             {deviceOptions.map((d) => (
@@ -342,16 +348,17 @@ export function ReposTable({
             ))}
             {hasUnassigned ? <option value="none">No phone</option> : null}
           </NativeSelect>
+          </div>
           {families.length > 0 ? (
-            <>
-              <label htmlFor="repo-family" className="ml-2 text-sm text-muted-foreground">
+            <div className={cn(FILTER, "md:ml-2")}>
+              <label htmlFor="repo-family" className={FILTER_LABEL}>
                 Based on
               </label>
               <NativeSelect
                 id="repo-family"
                 value={family}
                 onChange={(e) => setFamily(e.target.value)}
-                className="h-8 w-auto min-w-36"
+                className="h-8 md:w-auto md:min-w-36"
               >
                 <option value="">Any family</option>
                 {families.map(([k, n]) => (
@@ -361,9 +368,29 @@ export function ReposTable({
                 ))}
                 <option value="unknown">Not recorded</option>
               </NativeSelect>
-            </>
+            </div>
           ) : null}
-          <span className="text-sm text-muted-foreground tabular-nums" aria-live="polite">
+          {/* The table's sortable headers are hidden below md: the same sort as a select. */}
+          <div className={cn(FILTER, "md:hidden")}>
+            <label htmlFor="repo-sort" className={FILTER_LABEL}>
+              Sort
+            </label>
+            <NativeSelect
+              id="repo-sort"
+              value={sort ? `${sort.key}:${sort.dir}` : ""}
+              onChange={(e) => {
+                const [key, dir] = e.target.value.split(":");
+                setSort(key ? { key: key as SortKey, dir: dir === "-1" ? -1 : 1 } : null);
+              }}
+              className="h-8"
+            >
+              <option value="">Default</option>
+              {showDevice ? <option value="device:1">Phone, A to Z</option> : null}
+              <option value="verified:1">Merged first</option>
+              <option value="verified:-1">Fork claims first</option>
+            </NativeSelect>
+          </div>
+          <span className="pb-2.5 text-sm text-muted-foreground tabular-nums md:pb-0" aria-live="polite">
             {rows.length} of {forks.length}
           </span>
         </div>
@@ -372,15 +399,17 @@ export function ReposTable({
       {rows.length === 0 ? (
         <p className="rounded-lg border border-dashed px-4 py-8 text-center text-muted-foreground">{emptyText}</p>
       ) : (
+        // From md up a table; below md each repo is a stacked row (CSS only):
+        // repo and verification, phone, based on, best result, then actions.
         <div className="overflow-x-auto rounded-lg border">
-          <table className="w-full text-sm">
-            <thead className="border-b bg-muted/40">
+          <table className="w-full text-sm max-md:block">
+            <thead className="border-b bg-muted/40 max-md:hidden">
               <tr>
                 <th scope="col" className={TH}>
                   Repo
                 </th>
                 {showDevice ? (
-                  <SortHeader label="Phone" k="device" sort={sort} onSort={onSort} className="hidden sm:table-cell" />
+                  <SortHeader label="Phone" k="device" sort={sort} onSort={onSort} />
                 ) : null}
                 <th scope="col" className={`${TH} hidden md:table-cell`}>
                   Based on
@@ -394,7 +423,7 @@ export function ReposTable({
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody className="divide-y max-md:block">
               {rows.map((f) => {
                 const expanded = open.has(f.id);
                 const maintainer = forkMaintainer(f);
@@ -409,27 +438,33 @@ export function ReposTable({
                 ).filter(([, v]) => v);
                 return (
                   <Fragment key={f.id}>
-                    <tr className={cn("transition-colors hover:bg-muted/50", expanded && "bg-muted/30")}>
-                      <td className="px-3 py-2 align-middle">
+                    <tr
+                      className={cn(
+                        "transition-colors hover:bg-muted/50 max-md:grid max-md:grid-cols-[minmax(0,1fr)_auto] max-md:gap-x-3 max-md:gap-y-2 max-md:px-4 max-md:pt-3 max-md:pb-2",
+                        expanded && "bg-muted/30",
+                      )}
+                    >
+                      <td className="px-3 py-2 align-middle max-md:col-start-1 max-md:row-start-1 max-md:p-0">
                         <a
                           href={forkHref(f)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="font-medium whitespace-nowrap hover:underline"
+                          className="font-medium break-all hover:underline md:break-normal md:whitespace-nowrap"
                         >
                           {f.repo}
                         </a>
                         <div className="text-xs text-muted-foreground">
                           {maintainer ? `Maintained by ${maintainer}` : "Unclaimed"}
-                          {showDevice ? (
-                            <span className="sm:hidden">, {f.device_slug ? deviceName(f) : "no phone"}</span>
-                          ) : null}
                         </div>
                       </td>
                       {showDevice ? (
-                        <td className="hidden px-3 py-2 align-middle whitespace-nowrap sm:table-cell">
+                        <td className="px-3 py-2 align-middle whitespace-nowrap max-md:col-span-2 max-md:flex max-md:items-center max-md:gap-2 max-md:p-0">
                           {f.device_slug ? (
-                            <Link to="/device/$slug" params={{ slug: f.device_slug }} className="hover:underline">
+                            <Link
+                              to="/device/$slug"
+                              params={{ slug: f.device_slug }}
+                              className="hover:underline max-md:truncate pointer-coarse:inline-flex pointer-coarse:min-h-8 pointer-coarse:items-center max-md:inline-flex max-md:min-h-8 max-md:items-center"
+                            >
                               {deviceName(f)}
                             </Link>
                           ) : (
@@ -442,23 +477,23 @@ export function ReposTable({
                           ) : null}
                         </td>
                       ) : null}
-                      <td className="hidden px-3 py-2 align-middle md:table-cell">
+                      <td className="hidden px-3 py-2 align-middle max-md:col-span-2 max-md:block max-md:p-0 md:table-cell">
                         <BasedOnChips fork={f} max={1} />
                       </td>
-                      <td className="px-3 py-2 align-middle">
+                      <td className="px-3 py-2 align-middle max-md:col-start-2 max-md:row-start-1 max-md:p-0 max-md:pt-0.5">
                         <VerifiedBadge verified={f.verified} />
                       </td>
-                      <td className="hidden max-w-0 px-3 py-2 align-middle lg:table-cell lg:w-[34%]">
+                      <td className="hidden max-w-0 px-3 py-2 align-middle max-md:col-span-2 max-md:block max-md:max-w-none max-md:p-0 lg:table-cell lg:w-[34%]">
                         {f.best_result ? (
-                          <p className="truncate" title={f.best_result}>
+                          <p className="line-clamp-2 md:line-clamp-none md:truncate" title={f.best_result}>
                             {f.best_result}
                           </p>
                         ) : (
                           <span className="text-muted-foreground">None reported</span>
                         )}
                       </td>
-                      <td className="px-2 py-1.5 align-middle">
-                        <div className="flex items-center justify-end gap-1">
+                      <td className="px-2 py-1.5 align-middle max-md:col-span-2 max-md:p-0">
+                        <div className="flex items-center justify-end gap-1 max-md:-mr-2 max-md:justify-start max-md:[&>:last-child]:ml-auto">
                           <RepoActions fork={f} devices={devices} areas={areas} forks={forks} compact />
                           {canEdit && f.device_slug && canEdit(f.device_slug) ? (
                             <ForkDialog deviceSlug={f.device_slug} fork={f} />
@@ -479,8 +514,8 @@ export function ReposTable({
                       </td>
                     </tr>
                     {expanded ? (
-                      <tr className="bg-muted/30">
-                        <td colSpan={cols} className="px-3 pt-1 pb-3">
+                      <tr className="bg-muted/30 max-md:block">
+                        <td colSpan={cols} className="px-3 pt-1 pb-3 max-md:block max-md:px-4">
                           <dl className="grid max-w-4xl gap-x-6 gap-y-1.5 text-sm sm:grid-cols-[7rem_1fr]">
                             <dt className="text-muted-foreground">Clone</dt>
                             <dd className="min-w-0">
@@ -546,10 +581,12 @@ export function MainRepos({
     () => Object.entries(deviceNames).map(([slug, name]) => ({ slug, name })),
     [deviceNames],
   );
+  const [all, setAll] = useState(false);
   const main = forks
     .filter((f) => forkKind(f) !== "fork")
     .sort((a, b) => (forkKind(a) === "upstream" ? 0 : 1) - (forkKind(b) === "upstream" ? 0 : 1));
   if (main.length === 0) return null;
+  const cut = !all && main.length > MAIN_PAGE;
   return (
     <section aria-labelledby="main-repos" className="flex flex-col gap-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -558,13 +595,14 @@ export function MainRepos({
         </h2>
         <SupportLegend />
       </div>
-      <ul className="grid gap-3 md:grid-cols-2">
+      {/* Below sm the first six cards, then "Show all": the forks table follows. */}
+      <ul className={cn("grid gap-3 md:grid-cols-2", cut && "max-sm:[&>li:nth-child(n+7)]:hidden")}>
         {main.map((f) => {
           const maintainer = forkMaintainer(f);
           const kind = forkKind(f);
           return (
             <li key={f.id} className="flex min-w-0 flex-col gap-3 rounded-xl border bg-card p-4">
-              <div className="flex items-start gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
                 <div className="min-w-0 flex-1">
                   <a
                     href={forkHref(f)}
@@ -578,7 +616,7 @@ export function MainRepos({
                     {kind === "upstream" ? "Main repo" : "Standalone port"}, {maintainer ? `maintained by ${maintainer}` : "unclaimed"}
                   </p>
                 </div>
-                <div className="flex shrink-0 items-center gap-1">
+                <div className="flex shrink-0 items-center gap-1 max-sm:-my-1">
                   <RepoActions fork={f} devices={devices} areas={areas} forks={forks} />
                   <CopyClone fork={f} />
                 </div>
@@ -595,6 +633,11 @@ export function MainRepos({
           );
         })}
       </ul>
+      {cut ? (
+        <Button variant="outline" className="self-center sm:hidden" onClick={() => setAll(true)}>
+          Show all {main.length}
+        </Button>
+      ) : null}
     </section>
   );
 }

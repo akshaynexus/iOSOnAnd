@@ -46,7 +46,7 @@ export function SourceLink({ source }: { source: string }) {
   return (
     <Badge
       variant="outline"
-      className="max-w-full font-normal"
+      className="max-w-full font-normal pointer-coarse:h-8 pointer-coarse:px-2.5"
       render={<a href={href} target="_blank" rel="noopener noreferrer" title={source} />}
     >
       <span className="truncate">{label}</span>

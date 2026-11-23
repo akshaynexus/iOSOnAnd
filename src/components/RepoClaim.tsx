@@ -35,7 +35,7 @@ export function PromptBox({ repo, device, className }: { repo?: string; device?:
     <div className={className}>
       <div className="overflow-hidden rounded-lg border bg-muted/40">
         <div className="flex items-center justify-end border-b bg-background/60 p-1.5">
-          <CopyButton text={text} label="Copy prompt" toastText="Prompt copied" size="xs" variant="ghost" />
+          <CopyButton text={text} label="Copy prompt" toastText="Prompt copied" size="sm" variant="ghost" />
         </div>
         <pre
           suppressHydrationWarning
@@ -261,7 +261,7 @@ export function ThisIsMine({
   return (
     <>
       {compact ? (
-        <Button variant="outline" size="xs" onClick={() => setOpen(true)} aria-label={`This is mine: ${repo}`}>
+        <Button variant="outline" size="xs" className="pointer-coarse:h-11 pointer-coarse:px-3" onClick={() => setOpen(true)} aria-label={`This is mine: ${repo}`}>
           This is mine
         </Button>
       ) : (

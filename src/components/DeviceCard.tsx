@@ -108,7 +108,7 @@ function Photo({ src, name, maker, compact, vt }: { src: string | null; name: st
     return (
       <span className="flex flex-col items-center gap-1 text-(--rc-muted) opacity-60" style={vt ? { viewTransitionName: vt } : undefined}>
         <PhoneOutline className={compact ? "h-9 w-auto" : "h-[70px] w-auto"} />
-        {compact ? null : <span className="text-[11px] tracking-wide">{maker === "Other" ? "No photo" : maker}</span>}
+        {compact ? null : <span className="dc-maker text-xs tracking-wide">{maker === "Other" ? "No photo" : maker}</span>}
       </span>
     );
   }
@@ -150,7 +150,8 @@ function IosVersion({ value, compact, vt }: { value?: string; compact?: boolean;
 }
 
 /**
- * One phone as a React Bits ReflectiveCard (comfortable: ~300 px tall;
+ * One phone as a React Bits ReflectiveCard (comfortable: ~300 px tall, and
+ * below 480 px a 164 px row with the photo on the left (styles.css);
  * compact: an 88 px row). The WebGL metal runs only while the card holds a
  * slot from glBudget (near the viewport, under the cap); otherwise the same
  * card renders with the CSS sheen. The webcam stays off.
@@ -237,7 +238,7 @@ export const DeviceCard = memo(function DeviceCard({
           </div>
         ) : (
           <>
-            <div className="reflective-card__header device-card__top">
+            <div className="reflective-card__header device-card__top dc-top">
               <span className="inline-flex min-w-0" style={{ viewTransitionName: vtName("family", d.slug) }}><FamilyChip families={families} card /></span>
               <span className="reflective-card__status device-card__state" style={{ viewTransitionName: vtName("state", d.slug) }}>
                 <span className="reflective-card__dot" />
@@ -245,17 +246,17 @@ export const DeviceCard = memo(function DeviceCard({
               </span>
             </div>
 
-            <div className="flex h-[150px] shrink-0 items-center justify-center py-2">
+            <div className="dc-photo flex h-[150px] shrink-0 items-center justify-center py-2">
               <Photo src={photo} name={d.name} maker={makerOf(d)} vt={vtName("img", d.slug)} />
             </div>
 
-            <div className="mt-auto flex min-w-0 flex-col gap-0.5">
+            <div className="dc-name mt-auto flex min-w-0 flex-col gap-0.5">
               <h3 className="w-fit max-w-full truncate text-sm font-semibold text-(--rc-ink)" style={{ viewTransitionName: vtName("name", d.slug) }}>{d.name}</h3>
               <IosVersion value={d.ios_version} vt={vtName("ios", d.slug)} />
               {sub ? <p className="w-fit max-w-full truncate text-xs text-(--rc-muted)" style={{ viewTransitionName: vtName("sub", d.slug) }}>{sub}</p> : null}
             </div>
 
-            <div className="mt-2 flex flex-col gap-1.5">
+            <div className="dc-foot mt-2 flex flex-col gap-1.5">
               <div style={{ viewTransitionName: vtName("bar", d.slug) }}><SegmentBar counts={counts} /></div>
               <p className="w-fit max-w-full truncate text-xs text-(--rc-muted)" title={`${repoLine}, ${owner}`} style={{ viewTransitionName: vtName("repo", d.slug) }}>
                 {mainRepo ? <span className="font-mono text-xs">{mainRepo}</span> : "No repo"}

@@ -717,6 +717,11 @@ const PillNav = ({
     };
   }, [open, panelShown, joined]);
 
+  // iOSOnAnd: navigating (a link in the panel, Back, a link elsewhere) closes the menu.
+  useEffect(() => {
+    setOpen(false);
+  }, [activeHref]);
+
   useEffect(() => {
     if (!open) return undefined;
     const onPointerDown = (event: PointerEvent) => {

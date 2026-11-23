@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { LayoutGrid, Rows3, Table2 } from "lucide-react";
+import { LayoutGrid, Rows3, SlidersHorizontal, Table2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Sheet } from "@/components/ui/sheet";
 import { NativeSelect } from "@/components/Field";
 import { DeviceCard, type DeviceCardData, type Density } from "@/components/DeviceCard";
 import { DevicesTable } from "@/components/DevicesTable";
@@ -138,6 +139,164 @@ export function DeviceBrowser({
   const visible = view === "cards" ? filtered.slice(0, density === "compact" ? shown * 2 : shown) : filtered;
   const limit = density === "compact" ? shown * 2 : shown;
   const filtering = !!(base || bootOnly || maker);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const clearFilters = () => {
+    setBase("");
+    setBootOnly(false);
+    setMaker("");
+  };
+  const activeCount = (base ? 1 : 0) + (maker ? 1 : 0) + (bootOnly ? 1 : 0);
+
+  // The controls, inline from sm up and in the Filters sheet below sm. `p`
+  // prefixes the ids so the two sets never share one.
+  const familySelect = (p: string, className: string) =>
+    familyOptions.list.length > 0 ? (
+      <NativeSelect
+        id={`${p}flt-base`}
+        aria-label={p ? undefined : "Based on"}
+        value={base}
+        onChange={(e) => {
+          const v = e.target.value;
+          withViewTransition(() => setBase(v));
+        }}
+        className={className}
+      >
+        <option value="">Any family</option>
+        {familyOptions.list.map(([f, n]) => (
+          <option key={f} value={f}>
+            {familyName(f)} ({n})
+          </option>
+        ))}
+        {familyOptions.none > 0 ? <option value="none">No repo ({familyOptions.none})</option> : null}
+      </NativeSelect>
+    ) : null;
+  const makerSelect = (p: string, className: string) => (
+    <NativeSelect
+      id={`${p}flt-maker`}
+      aria-label={p ? undefined : "Maker"}
+      value={maker}
+      onChange={(e) => {
+        const v = e.target.value;
+        withViewTransition(() => setMaker(v));
+      }}
+      className={className}
+    >
+      <option value="">Any maker</option>
+      {makers.map(([m, n]) => (
+        <option key={m} value={m}>
+          {m} ({n})
+        </option>
+      ))}
+    </NativeSelect>
+  );
+  const bootsToggle = (className: string) => (
+    <label
+      className={cn(
+        "inline-flex cursor-pointer items-center gap-2 rounded-md border border-input px-2.5 text-sm hover:bg-muted dark:bg-input/30",
+        className,
+      )}
+    >
+      <input
+        type="checkbox"
+        className="size-4 accent-(--brand)"
+        checked={bootOnly}
+        onChange={(e) => {
+          const v = e.target.checked;
+          withViewTransition(() => setBootOnly(v));
+        }}
+      />
+      Boots
+    </label>
+  );
+  const sortSelect = (p: string, className: string) => (
+    <NativeSelect
+      id={`${p}flt-sort`}
+      aria-label={p ? undefined : "Sort"}
+      value={sort}
+      onChange={(e) => {
+        const v = e.target.value as Sort;
+        withViewTransition(() => setSort(v));
+      }}
+      className={className}
+    >
+      <option value="working">Most working areas</option>
+      <option value="updated">Recently updated</option>
+      <option value="name">Name</option>
+    </NativeSelect>
+  );
+  const SEG =
+    "inline-flex h-7 items-center gap-1.5 rounded px-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring pointer-coarse:h-10 pointer-coarse:px-3";
+  const viewToggle = (className?: string) => (
+    <div role="group" aria-label="View" className={cn("inline-flex rounded-md border p-0.5", className)}>
+      {(
+        [
+          ["cards", "Cards", LayoutGrid],
+          ["table", "Table", Table2],
+        ] as const
+      ).map(([v, label, Icon]) => (
+        <button
+          key={v}
+          type="button"
+          aria-pressed={view === v}
+          onClick={() => {
+            setView(v);
+            save(VIEW_KEY, v);
+          }}
+          className={cn(
+            SEG,
+            className && "flex-1 justify-center",
+            view === v ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          <Icon className="size-4" aria-hidden />
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+  const densityToggle = (wide: boolean) =>
+    view === "cards" ? (
+      <div role="group" aria-label="Density" className={cn("inline-flex rounded-md border p-0.5", wide && "w-full")}>
+        {(
+          [
+            ["comfortable", "Comfortable", LayoutGrid],
+            ["compact", "Compact", Rows3],
+          ] as const
+        ).map(([v, label, Icon]) => (
+          <button
+            key={v}
+            type="button"
+            aria-pressed={density === v}
+            title={label}
+            onClick={() => {
+              setDensity(v);
+              save(DENSITY_KEY, v);
+            }}
+            className={cn(
+              SEG,
+              wide && "flex-1 justify-center",
+              density === v ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <Icon className="size-4" aria-hidden />
+            {wide ? (
+              label
+            ) : (
+              <>
+                <span className="hidden lg:inline">{label}</span>
+                <span className="sr-only lg:hidden">{label}</span>
+              </>
+            )}
+          </button>
+        ))}
+      </div>
+    ) : null;
+
+  const INLINE = "h-8 w-auto min-w-36 flex-none";
+  const SHEET_ROW = "flex flex-col gap-1.5";
+  const SHEET_LABEL = "text-sm font-medium";
+  const chip =
+    "inline-flex h-8 shrink-0 items-center gap-1 rounded-full border bg-muted/60 pr-1.5 pl-3 text-sm outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring";
 
   return (
     <section aria-labelledby="devices-heading" className="flex scroll-mt-20 flex-col gap-4">
@@ -148,124 +307,101 @@ export function DeviceBrowser({
             {filtering ? `${filtered.length} of ${devices.length}` : devices.length}
           </span>
         </h2>
-        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-          {familyOptions.list.length > 0 ? (
-            <>
-              <label htmlFor="flt-base" className="sr-only">
-                Based on
-              </label>
-              <NativeSelect id="flt-base" value={base} onChange={(e) => {
-                  const v = e.target.value;
-                  withViewTransition(() => setBase(v));
-                }} className="h-8 min-w-36 basis-36 flex-1 sm:w-auto sm:flex-none">
-                <option value="">Any family</option>
-                {familyOptions.list.map(([f, n]) => (
-                  <option key={f} value={f}>
-                    {familyName(f)} ({n})
-                  </option>
-                ))}
-                {familyOptions.none > 0 ? <option value="none">No repo ({familyOptions.none})</option> : null}
-              </NativeSelect>
-            </>
+        {/* Phones: one Filters button; the controls open in a bottom sheet. */}
+        <Button variant="outline" size="sm" className="sm:hidden" onClick={() => setSheetOpen(true)} aria-haspopup="dialog">
+          <SlidersHorizontal aria-hidden />
+          Filters
+          {activeCount > 0 ? (
+            <span className="ml-0.5 inline-flex min-w-5 items-center justify-center rounded-full bg-foreground px-1.5 text-xs leading-5 font-medium text-background tabular-nums">
+              {activeCount}
+            </span>
           ) : null}
-          <label htmlFor="flt-maker" className="sr-only">
-            Maker
-          </label>
-          <NativeSelect id="flt-maker" value={maker} onChange={(e) => {
-              const v = e.target.value;
-              withViewTransition(() => setMaker(v));
-            }} className="h-8 min-w-36 basis-36 flex-1 sm:w-auto sm:flex-none">
-            <option value="">Any maker</option>
-            {makers.map(([m, n]) => (
-              <option key={m} value={m}>
-                {m} ({n})
-              </option>
-            ))}
-          </NativeSelect>
-          <label className="inline-flex h-8 cursor-pointer items-center gap-2 rounded-md border border-input px-2.5 text-sm hover:bg-muted dark:bg-input/30">
-            <input
-              type="checkbox"
-              className="size-4 accent-(--brand)"
-              checked={bootOnly}
-              onChange={(e) => {
-                const v = e.target.checked;
-                withViewTransition(() => setBootOnly(v));
-              }}
-            />
-            Boots
-          </label>
-          <label htmlFor="flt-sort" className="sr-only">
-            Sort
-          </label>
-          <NativeSelect
-            id="flt-sort"
-            value={sort}
-            onChange={(e) => {
-              const v = e.target.value as Sort;
-              withViewTransition(() => setSort(v));
-            }}
-            className="h-8 min-w-36 basis-36 flex-1 sm:w-auto sm:flex-none"
-          >
-            <option value="working">Most working areas</option>
-            <option value="updated">Recently updated</option>
-            <option value="name">Name</option>
-          </NativeSelect>
-          <div role="group" aria-label="View" className="inline-flex rounded-md border p-0.5">
-            {(
-              [
-                ["cards", "Cards", LayoutGrid],
-                ["table", "Table", Table2],
-              ] as const
-            ).map(([v, label, Icon]) => (
-              <button
-                key={v}
-                type="button"
-                aria-pressed={view === v}
-                onClick={() => {
-                  setView(v);
-                  save(VIEW_KEY, v);
-                }}
-                className={cn(
-                  "inline-flex h-7 items-center gap-1.5 rounded px-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  view === v ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                <Icon className="size-4" aria-hidden />
-                {label}
-              </button>
-            ))}
-          </div>
-          {view === "cards" ? (
-            <div role="group" aria-label="Density" className="inline-flex rounded-md border p-0.5">
-              {(
-                [
-                  ["comfortable", "Comfortable", LayoutGrid],
-                  ["compact", "Compact", Rows3],
-                ] as const
-              ).map(([v, label, Icon]) => (
-                <button
-                  key={v}
-                  type="button"
-                  aria-pressed={density === v}
-                  title={label}
-                  onClick={() => {
-                    setDensity(v);
-                    save(DENSITY_KEY, v);
-                  }}
-                  className={cn(
-                    "inline-flex h-7 items-center gap-1.5 rounded px-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    density === v ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  <Icon className="size-4" aria-hidden />
-                  <span className="hidden lg:inline">{label}</span>
-                  <span className="sr-only lg:hidden">{label}</span>
-                </button>
-              ))}
-            </div>
-          ) : null}
+        </Button>
+        <div className="hidden flex-wrap items-center gap-2 sm:flex">
+          {familySelect("", INLINE)}
+          {makerSelect("", INLINE)}
+          {bootsToggle("h-8")}
+          {sortSelect("", INLINE)}
+          {viewToggle()}
+          {densityToggle(false)}
         </div>
       </div>
+
+      {filtering ? (
+        <ul aria-label="Active filters" className="-mt-1 flex flex-wrap gap-2 sm:hidden">
+          {base ? (
+            <li>
+              <button type="button" className={chip} onClick={() => withViewTransition(() => setBase(""))} aria-label={`Remove filter: ${base === "none" ? "No repo" : familyName(base)}`}>
+                {base === "none" ? "No repo" : familyName(base)}
+                <X className="size-4 text-muted-foreground" aria-hidden />
+              </button>
+            </li>
+          ) : null}
+          {maker ? (
+            <li>
+              <button type="button" className={chip} onClick={() => withViewTransition(() => setMaker(""))} aria-label={`Remove filter: ${maker}`}>
+                {maker}
+                <X className="size-4 text-muted-foreground" aria-hidden />
+              </button>
+            </li>
+          ) : null}
+          {bootOnly ? (
+            <li>
+              <button type="button" className={chip} onClick={() => withViewTransition(() => setBootOnly(false))} aria-label="Remove filter: Boots">
+                Boots
+                <X className="size-4 text-muted-foreground" aria-hidden />
+              </button>
+            </li>
+          ) : null}
+        </ul>
+      ) : null}
+
+      <Sheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        title="Filters"
+        footer={
+          <>
+            {filtering ? (
+              <Button variant="outline" className="flex-1" onClick={clearFilters}>
+                Clear
+              </Button>
+            ) : null}
+            <Button className="flex-1" onClick={() => setSheetOpen(false)}>
+              Show {filtered.length} {filtered.length === 1 ? "phone" : "phones"}
+            </Button>
+          </>
+        }
+      >
+        <div className="flex flex-col gap-4">
+          {familyOptions.list.length > 0 ? (
+            <div className={SHEET_ROW}>
+              <label htmlFor="sheet-flt-base" className={SHEET_LABEL}>
+                Based on
+              </label>
+              {familySelect("sheet-", "")}
+            </div>
+          ) : null}
+          <div className={SHEET_ROW}>
+            <label htmlFor="sheet-flt-maker" className={SHEET_LABEL}>
+              Maker
+            </label>
+            {makerSelect("sheet-", "")}
+          </div>
+          {bootsToggle("h-11 w-full")}
+          <div className={SHEET_ROW}>
+            <label htmlFor="sheet-flt-sort" className={SHEET_LABEL}>
+              Sort
+            </label>
+            {sortSelect("sheet-", "")}
+          </div>
+          <div className={SHEET_ROW}>
+            <span className={SHEET_LABEL}>View</span>
+            {viewToggle("w-full")}
+            {densityToggle(true)}
+          </div>
+        </div>
+      </Sheet>
 
       {filtered.length === 0 ? (
         <div className="rounded-lg border border-dashed px-4 py-10 text-center">
@@ -290,7 +426,7 @@ export function DeviceBrowser({
               "grid gap-3",
               density === "compact"
                 ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
-                : "grid-cols-1 min-[440px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5",
+                : "grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5",
             )}
           >
             {visible.map((r) => (

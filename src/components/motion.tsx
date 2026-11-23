@@ -133,12 +133,17 @@ export function CountUp({ value, className }: { value: number; className?: strin
  * changed) where the browser has one and motion is allowed; else run it plainly.
  */
 export function withViewTransition(fn: () => void) {
-  const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown };
+  type Vt = { ready: Promise<void>; finished: Promise<void> };
+  const doc = document as Document & { startViewTransition?: (cb: () => void) => Vt };
   if (!doc.startViewTransition || reducedMotion()) {
     fn();
     return;
   }
-  doc.startViewTransition(() => flushSync(fn));
+  const vt = doc.startViewTransition(() => flushSync(fn));
+  // A transition the browser skips (the viewport turned, another one started)
+  // rejects these promises; the update itself has run.
+  vt.ready.catch(() => {});
+  vt.finished.catch(() => {});
 }
 
 /**

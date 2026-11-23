@@ -75,53 +75,56 @@ function Featured({ device, areas }: { device: Device; areas: Dashboard["areas"]
   const counts = stateCounts(device, areas);
   const total = applicableAreas(device, areas).length;
   const repo = mainRepoOf(device) ?? (device.base === "oneios" ? ONEIOS_REPO : null);
+  // Phones: a small photo beside the name, then the count and best result at
+  // full width. From sm up the photo spans the card's height on the left.
   return (
-    <article className={cn(CARD, "flex h-full items-center gap-4 px-4 py-3")}>
-      <Link
-        to="/device/$slug"
-        params={{ slug: device.slug }}
-        tabIndex={-1}
-        aria-hidden
-        className="flex h-24 w-24 shrink-0 items-center justify-center sm:w-32"
-      >
+    <article
+      className={cn(
+        CARD,
+        "relative grid h-full grid-cols-[4.5rem_minmax(0,1fr)] items-center gap-x-4 gap-y-2.5 px-4 py-3 sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-y-2",
+      )}
+    >
+      <div aria-hidden className="flex h-20 w-[4.5rem] items-center justify-center sm:row-span-3 sm:h-24 sm:w-32">
         <Photo device={device} />
-      </Link>
-      <div className="flex min-w-0 flex-1 flex-col gap-2">
-        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
-          <h2 className="text-base font-semibold tracking-tight">
-            <Link
-              to="/device/$slug"
-              params={{ slug: device.slug }}
-              className="rounded-sm outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              {device.name}
-            </Link>
-          </h2>
-          {device.ios_version ? <span className="text-sm text-muted-foreground">{device.ios_version}</span> : null}
-          {repo ? (
-            <a
-              href={`https://github.com/${repo}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-sm font-mono text-xs text-muted-foreground outline-none hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring sm:ml-auto"
-            >
-              {repo}
-            </a>
-          ) : null}
-        </div>
-        <div className="flex items-center gap-3">
-          <p className="shrink-0 text-sm tabular-nums">
-            <CountUp value={counts.works} className="font-semibold" />
-            <span className="text-muted-foreground"> of {total} areas work</span>
-          </p>
-          <SegmentBar counts={counts} className="h-1.5 flex-1 bg-foreground/10" />
-        </div>
-        {device.best_result ? (
-          <p className="line-clamp-2 text-sm text-muted-foreground" title={device.best_result}>
-            {device.best_result}
-          </p>
+      </div>
+      <div className="flex min-w-0 flex-col gap-0.5 sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-x-3">
+        <h2 className="text-base font-semibold tracking-tight">
+          {/* The name's link covers the card, so the whole card opens the phone. */}
+          <Link
+            to="/device/$slug"
+            params={{ slug: device.slug }}
+            className="rounded-sm outline-none after:absolute after:inset-0 after:rounded-[14px] after:content-[''] hover:underline focus-visible:after:ring-2 focus-visible:after:ring-ring"
+          >
+            {device.name}
+          </Link>
+        </h2>
+        {device.ios_version ? <span className="text-sm text-muted-foreground">{device.ios_version}</span> : null}
+        {repo ? (
+          <a
+            href={`https://github.com/${repo}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="relative z-10 -my-1.5 inline-flex min-h-8 w-fit max-w-full items-center rounded-sm font-mono text-xs break-all text-muted-foreground outline-none hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring sm:ml-auto sm:pointer-fine:my-0 sm:pointer-fine:min-h-0"
+          >
+            {repo}
+          </a>
         ) : null}
       </div>
+      <div className="col-span-2 flex items-center gap-3 sm:col-span-1 sm:col-start-2">
+        <p className="shrink-0 text-sm tabular-nums">
+          <CountUp value={counts.works} className="font-semibold" />
+          <span className="text-muted-foreground"> of {total} areas work</span>
+        </p>
+        <SegmentBar counts={counts} className="h-1.5 flex-1 bg-foreground/10" />
+      </div>
+      {device.best_result ? (
+        <p
+          className="col-span-2 line-clamp-3 text-sm text-muted-foreground sm:col-span-1 sm:col-start-2 sm:line-clamp-2"
+          title={device.best_result}
+        >
+          {device.best_result}
+        </p>
+      ) : null}
     </article>
   );
 }
@@ -129,10 +132,10 @@ function Featured({ device, areas }: { device: Device; areas: Dashboard["areas"]
 function Stat({ label, value, sub, to }: { label: string; value: number; sub?: string; to?: "repos" }) {
   const body = (
     <>
-      <dt className="w-28 shrink-0 text-sm whitespace-nowrap text-muted-foreground">{label}</dt>
+      <dt className="w-[6.5rem] shrink-0 text-sm whitespace-nowrap text-muted-foreground sm:w-28">{label}</dt>
       <dd className="flex min-w-0 items-baseline gap-2">
         <CountUp value={value} className="text-xl leading-7 font-semibold tracking-tight tabular-nums" />
-        {sub ? <span className="truncate text-xs text-muted-foreground tabular-nums">{sub}</span> : null}
+        {sub ? <span className="min-w-0 text-xs text-muted-foreground tabular-nums">{sub}</span> : null}
       </dd>
     </>
   );
@@ -140,7 +143,7 @@ function Stat({ label, value, sub, to }: { label: string; value: number; sub?: s
     <Link
       to="/"
       search={{ tab: to }}
-      className="flex items-baseline gap-2 py-1.5 outline-none hover:[&_dt]:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+      className="flex min-h-11 items-baseline gap-2 py-2 outline-none hover:[&_dt]:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
     >
       {body}
     </Link>
@@ -194,7 +197,7 @@ function Families({
           />
         ))}
       </div>
-      <ul className="flex flex-wrap gap-x-1 gap-y-1 text-xs lg:shrink-0">
+      <ul className="-mx-1.5 flex flex-wrap gap-1 text-xs lg:mx-0 lg:shrink-0">
         {slices.map((s, i) => {
           const swatch = <span aria-hidden className="size-2 shrink-0 rounded-[3px]" style={{ background: tone(i) }} />;
           const text = (
@@ -213,14 +216,14 @@ function Families({
                   aria-pressed={active === s.key}
                   onClick={() => onPick(s.key === active ? "" : (s.key as string))}
                   className={cn(
-                    "inline-flex h-6 items-center gap-1.5 rounded-md px-1.5 outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring",
+                    "inline-flex h-6 items-center gap-1.5 rounded-md px-1.5 outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring pointer-coarse:h-8 pointer-coarse:px-2",
                     active === s.key && "bg-muted font-medium",
                   )}
                 >
                   {text}
                 </button>
               ) : (
-                <span title={title(s)} className="inline-flex h-6 items-center gap-1.5 px-1.5">
+                <span title={title(s)} className="inline-flex h-6 items-center gap-1.5 px-1.5 pointer-coarse:h-8 pointer-coarse:px-2">
                   {text}
                 </span>
               )}
@@ -258,7 +261,7 @@ function RedditRow({ post }: { post: RedditPost }) {
       ) : null}
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="text-xs text-muted-foreground lg:hidden">Newest Reddit post</span>
-        <span className="truncate text-sm">
+        <span className="line-clamp-2 text-sm lg:line-clamp-1">
           <span className="font-medium">{post.title}</span>
           {post.note ? <span className="hidden text-muted-foreground sm:inline"> {post.note}</span> : null}
         </span>
