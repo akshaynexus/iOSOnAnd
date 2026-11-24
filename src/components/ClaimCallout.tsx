@@ -13,6 +13,7 @@ import { useAction } from "@/components/useAction";
 import { Thumb } from "@/components/ProjectsSection";
 import { useAuth } from "@/components/auth";
 import { ThisIsMine } from "@/components/RepoClaim";
+import { LinkGithubCallout } from "@/components/LinkGithub";
 import { claimRepo, forkMaintainer, maintainersOf, type Device, type Fork } from "@/lib/client";
 import { cn } from "@/lib/utils";
 
@@ -78,16 +79,8 @@ export function ClaimThisPhone({ device }: { device: Device }) {
           ? "If one of the repos below is yours, press Claim on it and keep this page current: what works, what doesn't, with sources."
           : "If you work on a port for it, add your repo and keep this page current: what works, what doesn't, with sources."}{" "}
         Your repo isn&apos;t listed? Use &ldquo;Add your repo&rdquo; above.
-        {user && !user.github_login ? (
-          <>
-            {" "}
-            <Link to="/profile" search={{ tab: "github" }} className="text-foreground underline underline-offset-4">
-              Link your GitHub account
-            </Link>{" "}
-            so your own repos are recognised.
-          </>
-        ) : null}
       </p>
+      <LinkGithubCallout className="mt-2" text="Your repos are then recognised here, and claiming one is approved at once." />
     </section>
   );
 }

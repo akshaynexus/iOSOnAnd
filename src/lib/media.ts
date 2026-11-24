@@ -26,6 +26,8 @@ export interface MediaRow {
   device_slug: string;
   fork_id: number | null;
   area_slug: string | null;
+  history_id?: number | null;
+  feature_id?: number | null;
   user_id: number;
   r2_key: string;
   content_type: string;
@@ -44,6 +46,10 @@ export interface Media {
   device_slug: string;
   fork_id: number | null;
   area_slug: string | null;
+  /** The status change it is evidence for (status_history id, migration 0015). */
+  history_id: number | null;
+  /** The notable feature it shows (device_features id). */
+  feature_id: number | null;
   url: string;
   content_type: string;
   kind: 'image' | 'video';
@@ -67,6 +73,8 @@ export function mapMedia(r: MediaRow): Media {
     device_slug: r.device_slug,
     fork_id: r.fork_id ?? null,
     area_slug: r.area_slug ?? null,
+    history_id: r.history_id ?? null,
+    feature_id: r.feature_id ?? null,
     url: mediaUrl(r.r2_key),
     content_type: r.content_type,
     kind: r.content_type.startsWith('video/') ? 'video' : 'image',
@@ -87,6 +95,60 @@ export async function loadMedia(id: string): Promise<MediaRow> {
 }
 
 const CHUNK = 90;
+
+/**
+ * Check the links an upload may carry: a status change and a notable feature,
+ * both on `device`. The change's area becomes the upload's area when none is
+ * given; a different area is 400. -> {history_id, feature_id, area}.
+ */
+export async function mediaLinks(
+  device: string,
+  raw: { history?: string | number | null; feature?: string | number | null; area?: string | null },
+): Promise<{ history_id: number | null; feature_id: number | null; area: string | null }> {
+  const id = (v: unknown, what: string) => {
+    if (v === null || v === undefined || v === '') return null;
+    const s = String(v).trim();
+    if (!/^\d{1,15}$/.test(s)) throw new HttpError(400, `bad ${what}`, `${what} is numeric`);
+    return Number(s);
+  };
+  let area = raw.area || null;
+  const history_id = id(raw.history, 'history_id');
+  const feature_id = id(raw.feature, 'feature_id');
+  if (history_id !== null) {
+    const h = await queryFirst<{ device_slug: string; area_slug: string }>('SELECT device_slug, area_slug FROM status_history WHERE id = ?', [history_id]);
+    if (!h || h.device_slug !== device) {
+      throw new HttpError(404, 'unknown status change', `history_id must be a status change of ${device} (GET /api/devices/${device}/history)`);
+    }
+    if (area && area !== h.area_slug) throw new HttpError(400, 'area mismatch', `status change #${history_id} is for ${h.area_slug}, not ${area}`);
+    area = h.area_slug;
+  }
+  if (feature_id !== null) {
+    const ft = await queryFirst<{ device_slug: string }>('SELECT device_slug FROM device_features WHERE id = ?', [feature_id]);
+    if (!ft || ft.device_slug !== device) {
+      throw new HttpError(404, 'unknown feature', `feature_id must be a feature of ${device} (GET /api/devices/${device}/features)`);
+    }
+  }
+  return { history_id, feature_id, area };
+}
+
+/** The uploads linked to these status changes or features, by id. */
+export async function mediaByLink(column: 'history_id' | 'feature_id', ids: number[]): Promise<Map<number, Media[]>> {
+  const out = new Map<number, Media[]>();
+  for (let i = 0; i < ids.length; i += CHUNK) {
+    const part = ids.slice(i, i + CHUNK);
+    if (!part.length) continue;
+    const rows = await queryAll<MediaRow>(
+      `${MEDIA_SELECT} WHERE m.deleted = 0 AND m.${column} IN (${part.map(() => '?').join(', ')}) ORDER BY m.id`,
+      part,
+    );
+    for (const r of rows) {
+      const k = Number(r[column]);
+      (out.get(k) ?? out.set(k, []).get(k)!).push(mapMedia(r));
+    }
+  }
+  return out;
+}
+
 
 /** Per device: the newest image and the upload count (deleted ones excluded). */
 export async function mediaSummary(slugs: string[]): Promise<Map<string, { latest: Media | null; count: number }>> {

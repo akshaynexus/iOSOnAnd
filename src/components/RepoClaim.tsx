@@ -11,7 +11,8 @@ import { useAction } from "@/components/useAction";
 import { CopyButton, PrimaryAction } from "@/components/common";
 import { agentPrompt, portPrompt, trackerSupportPrompt } from "@/lib/agentPrompt";
 import { claimRepo, getForkByRepo, listDeviceNames, searchCatalog, verifyRepoClaim, type CatalogEntry, type Fork, type RepoClaim } from "@/lib/client";
-import { formatDate, relativeTime } from "@/lib/utils";
+import { cn, formatDate, relativeTime } from "@/lib/utils";
+import { LinkGithubCallout } from "@/components/LinkGithub";
 
 function useSite(): string {
   const [site, setSite] = useState("");
@@ -28,9 +29,19 @@ export function normalizeRepo(input: string): string {
 }
 
 /** The agent prompt in a read-only box with a copy button. */
-export function PromptBox({ repo, device, className }: { repo?: string; device?: string; className?: string }) {
+export function PromptBox({
+  repo,
+  device,
+  newDevice,
+  className,
+}: {
+  repo?: string;
+  device?: string;
+  newDevice?: { name: string; model?: string; soc?: string };
+  className?: string;
+}) {
   const site = useSite();
-  const text = agentPrompt({ site: site || "https://<this site>", repo, device });
+  const text = agentPrompt({ site: site || "https://<this site>", repo, device, newDevice });
   return (
     <div className={className}>
       <div className="overflow-hidden rounded-lg border bg-muted/40">
@@ -106,7 +117,7 @@ export function PortPromptBox({
   return (
     <PromptDetails
       summary={summary ?? (deviceName ? `Port iOS to the ${deviceName}` : "Port iOS to your phone")}
-      intro="Paste this into your coding agent. It looks up your phone's specs, uses the tracker to pick the project to start from and the ports on the closest chip, finds working parts (GPU, Wi-Fi, audio) in other repos, and shows you a plan before touching anything."
+      intro="Paste this into your coding agent. It looks up your phone's specs, uses the tracker to pick the project to start from and the ports on the closest chip, finds GPU acceleration and driver code that fits its specs, shows you a plan before touching anything, then puts your repo and phone on the tracker as soon as the repo exists, so its page fills in as the port makes progress. New code is Rust first."
       text={portPrompt({ site: site || "https://<this site>", device, deviceName })}
       open={open}
     />
@@ -209,8 +220,8 @@ function PhonePicker({
   const [q, setQ] = useState("");
   const hits = useMemo(() => {
     const t = q.trim().toLowerCase();
-    const list = t ? phones.filter((p) => p.name.toLowerCase().includes(t) || p.slug.includes(t)) : phones;
-    return list.slice(0, 8);
+    // Every tracked phone that matches (the list scrolls), not just the first few.
+    return t ? phones.filter((p) => p.name.toLowerCase().includes(t) || p.slug.includes(t)) : phones;
   }, [phones, q]);
   // Every Android phone and tablet (Google Play's list), for phones the tracker does not list yet.
   const [catalog, setCatalog] = useState<CatalogEntry[]>([]);
@@ -221,7 +232,7 @@ function PhonePicker({
       return;
     }
     const timer = setTimeout(() => {
-      searchCatalog(t, 6).then(
+      searchCatalog(t, 12).then(
         (rows) => setCatalog(rows.filter((r) => !r.tracked)),
         () => setCatalog([]),
       );
@@ -379,8 +390,22 @@ export function ClaimRepoDialog({
   const owner = valid ? normalized.split("/")[0] : "";
   const yours = !!user?.github_login && owner.toLowerCase() === user.github_login.toLowerCase();
   const phoneRequired = fork === null; // a repo the tracker does not list needs its phone
-  const promptRepo = valid ? normalized : undefined;
-  const promptDevice = phone?.kind === "listed" ? phone.slug : undefined;
+  // The coding-agent prompt is the default way to add or claim a repo; the form is the alternative.
+  const [mode, setMode] = useState<"agent" | "form">("agent");
+  const site = useSite();
+  // The agent tab uses only what the dialog was opened with (a phone's or a repo's page); the agent works out the rest.
+  const promptText = agentPrompt({ site: site || "https://<this site>", repo: repo ?? undefined, device: device ?? undefined });
+  const [copied, setCopied] = useState(false);
+  async function copyPrompt() {
+    try {
+      await navigator.clipboard.writeText(promptText);
+      setCopied(true);
+      toast.success("Prompt copied", { description: "Paste it into Claude Code, Codex, Cursor or your agent of choice." });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Copy failed: select the prompt and copy it");
+    }
+  }
 
   const [submit, submitting] = useAction(async () => {
     if (!valid) {
@@ -428,11 +453,37 @@ export function ClaimRepoDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{repo ? `Claim ${repo}` : "Add your repo"}</DialogTitle>
-          <DialogDescription>Claim your port's repo to keep its phones up to date yourself.</DialogDescription>
+          <DialogTitle>{repo ? `Claim ${repo}` : "Add a phone or repo"}</DialogTitle>
+          <DialogDescription>Add your port's repo (and its phone, if the tracker doesn&apos;t list it) to keep it up to date yourself.</DialogDescription>
         </DialogHeader>
+        {claim ? null : <LinkGithubCallout text="Claims are checked against the repo's GitHub owner: repos under your username are approved at once. One click, and you come back here." />}
 
-        {claim ? (
+        {claim ? null : (
+          <div role="group" aria-label="How to add it" className="grid grid-cols-2 rounded-md border p-0.5">
+            {(
+              [
+                ["agent", "With your agent"],
+                ["form", "In the browser"],
+              ] as const
+            ).map(([v, label]) => (
+              <button
+                key={v}
+                type="button"
+                aria-pressed={mode === v}
+                onClick={() => setMode(v)}
+                className={cn(
+                  "inline-flex h-8 items-center justify-center rounded px-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring pointer-coarse:h-11",
+                  mode === v ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {claim || mode === "form" ? (
+          claim ? (
           <ClaimNextStep claim={claim} onDone={() => onOpenChange(false)} />
         ) : loading ? null : !user ? (
           <div className="flex flex-col items-start gap-3">
@@ -441,15 +492,6 @@ export function ClaimRepoDialog({
           </div>
         ) : (
           <form onSubmit={onSubmit} className="flex flex-col gap-4">
-            {user.github_login ? null : (
-              <p className="rounded-md border px-3 py-2 text-sm">
-                Claims are checked against the repo's GitHub owner.{" "}
-                <Link to="/profile" className="font-medium underline underline-offset-4">
-                  Link your GitHub account
-                </Link>{" "}
-                first.
-              </p>
-            )}
             {repo ? null : (
               <Field id="claim-repo" label="Repo">
                 <Input
@@ -489,15 +531,27 @@ export function ClaimRepoDialog({
               {submitting ? "Claiming" : fork && listedOn.length && !phone ? "Claim repo" : phone?.kind === "new" ? "Add phone and claim" : "Claim repo"}
             </PrimaryAction>
           </form>
-        )}
-
-        <details className="group rounded-lg border">
-          <summary className="cursor-pointer px-3 py-2 text-sm font-medium select-none">Use your coding agent instead</summary>
-          <div className="flex flex-col gap-2 border-t p-3">
-            <p className="text-sm text-muted-foreground">Paste this into your agent. It gets the tracker CLI, claims the repo and records what works.</p>
-            <PromptBox repo={promptRepo} device={promptDevice} />
+          )
+        ) : (
+          <div className="flex flex-col gap-4">
+            <p className="text-sm text-muted-foreground">
+              Paste this into your coding agent in your port&apos;s repo. It signs in with your GitHub (through{" "}
+              <code className="font-mono text-xs">gh</code>), finds or adds the phone, claims the repo, records what works and sets up the tracker in
+              the repo, so it stays current as you work.
+            </p>
+            <div className="overflow-hidden rounded-lg border bg-muted/40">
+              <pre
+                suppressHydrationWarning
+                className="max-h-72 overflow-auto p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap [overflow-wrap:anywhere]"
+              >
+                {promptText}
+              </pre>
+            </div>
+            <PrimaryAction size="md" className="w-full" onClick={() => void copyPrompt()}>
+              {copied ? "Copied" : "Copy prompt"}
+            </PrimaryAction>
           </div>
-        </details>
+        )}
       </DialogContent>
     </Dialog>
   );
@@ -535,6 +589,71 @@ export function ThisIsMine({
         <ClaimRepoDialog open={open} onOpenChange={setOpen} repo={repo} device={device} devices={devices} />
       ) : null}
     </>
+  );
+}
+
+/** "Add a phone or repo" on the main page: the claim dialog (agent prompt first), any phone, or a new one. */
+export function AddPhoneOrRepo({ devices }: { devices: { slug: string; name: string }[] }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <PrimaryAction onClick={() => setOpen(true)}>Add a phone or repo</PrimaryAction>
+      {open ? <ClaimRepoDialog open={open} onOpenChange={setOpen} devices={devices} /> : null}
+    </>
+  );
+}
+
+/**
+ * "Port iOS to your device": copy the port prompt. The agent asks which
+ * device it is (or reads it over adb), so the dialog asks nothing.
+ */
+export function PortIosButton() {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <PrimaryAction onClick={() => setOpen(true)}>Port iOS to your device</PrimaryAction>
+      {open ? <PortIosDialog open={open} onOpenChange={setOpen} /> : null}
+    </>
+  );
+}
+
+function PortIosDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+  const site = useSite();
+  const text = portPrompt({ site: site || "https://<this site>" });
+  const [copied, setCopied] = useState(false);
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      toast.success("Prompt copied", { description: "Paste it into Claude Code, Codex, Cursor or your agent of choice." });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Copy failed: select the prompt and copy it");
+    }
+  }
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Port iOS to your device</DialogTitle>
+          <DialogDescription>
+            Paste this into your coding agent. It asks which device you have, finds the closest ports and what works on them, finds GPU
+            acceleration and driver code that fits, and plans the port before changing anything. Your repo joins the tracker as soon as it
+            exists.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex flex-col gap-4">
+          <div className="overflow-hidden rounded-lg border bg-muted/40">
+            <pre suppressHydrationWarning className="max-h-[50dvh] overflow-auto p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap [overflow-wrap:anywhere]">
+              {text}
+            </pre>
+          </div>
+          <PrimaryAction size="md" className="w-full" onClick={() => void copy()}>
+            {copied ? "Copied" : "Copy prompt"}
+          </PrimaryAction>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

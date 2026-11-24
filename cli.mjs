@@ -35,6 +35,7 @@ const WRITE_COMMANDS = new Set([
   "status-set", "device-add", "device-set", "fork-add", "fork-sync", "post-add",
   "claim-add", "claim-approve", "claim-reject", "reddit-fetch", "post-set",
   "repo-claim", "repo-add", "repo-support", "repo-lineage", "media-upload", "update", "repo-maintainer-add", "repo-maintainer-remove",
+  "feature-add", "feature-set", "feature-remove", "media-link", "gpu-set", "gpu-issue-add", "gpu-issue-set", "gpu-issue-remove",
 ]);
 let TOKEN_FLAG = null;
 
@@ -192,7 +193,9 @@ function parseArgs(argv) {
       } else {
         const k = a.slice(2);
         if (!BOOLEAN_FLAGS.has(k) && i + 1 < argv.length && !argv[i + 1].startsWith("--")) {
-          flags[k] = argv[++i];
+          const v = argv[++i];
+          // --photo may be given more than once: the files collect in a list.
+          flags[k] = k === "photo" && flags[k] !== undefined ? [].concat(flags[k], v) : v;
         } else {
           flags[k] = true;
         }
@@ -202,6 +205,33 @@ function parseArgs(argv) {
     }
   }
   return { positionals, flags };
+}
+
+/** The --photo files: repeated flags, or one comma-separated list. Each must exist (checked before any write). */
+function photosOf(flags) {
+  const files = [].concat(flags.photo ?? []).filter((v) => typeof v === "string").flatMap((v) => v.split(",")).map((v) => v.trim()).filter(Boolean);
+  if (files.length > 10) throw usage("at most 10 --photo files");
+  for (const f of files) {
+    let st;
+    try {
+      st = fs.statSync(f);
+    } catch {
+      throw invalid(`no such file: ${f}`);
+    }
+    if (!st.isFile()) throw invalid(`not a file: ${f}`);
+  }
+  return files;
+}
+
+/** Upload each file linked to a status change or a feature; returns the media rows with full URLs. */
+async function uploadLinked(files, device, link) {
+  const media = [];
+  for (const f of files) {
+    info(`uploading ${f}...`);
+    const m = await uploadFile(f, device, link);
+    media.push({ ...m, url: TRACKER_URL + m.url });
+  }
+  return media;
 }
 
 function str(flags, name) {
@@ -328,6 +358,9 @@ Reads (no login):
   status-get [--device SLUG] [--area SLUG] [--state STATE] [--os ios|macos|tvos|all]
   history <device> [--limit N]                what changed on the phone: each status
                                              change, before and after, who and when
+  features <device>                          other notable features: what the
+                                             checklist does not list, or uncommon
+                                             hardware that works
   fork-list [--device SLUG]
   post-list [--limit N]
   claim-list [--device SLUG] [--status pending|approved|rejected]
@@ -337,7 +370,39 @@ Writes (login required; on 403 or 409 the server's error and hint are printed):
                             admin, or a maintainer (approved claim) of <device>.
                             --os: the system it is about (ios, the default, also
                             covers iPadOS); --version: the version it was seen on,
-                            e.g. "iOS 27.2" or "macOS 27.2"
+                            e.g. "iOS 27.2" or "macOS 27.2"; --photo FILE (repeat it,
+                            up to 10): screenshots or clips linked to this change
+  feature-add <device> "<name>" [<state>] --detail TEXT --source REF [--os ios|macos|tvos] [--photo FILE ...]
+                            a notable feature (state defaults to works), e.g.
+                            feature-add s9 "IR blaster" works --detail "..." --source URL
+  feature-set <device> <id> [--state S] [--name N] [--detail T] [--source R] [--os OS] [--photo FILE ...]
+  feature-remove <device> <id>
+  gpu-set <device> --method M --stack "A -> B -> C" --fps 40-58 --fps-note T [--repos R,...] --detail T --source REF [--version V]
+                            how the GPU acceleration works and how fast: M is
+                            native-metal, metal-vulkan (metal2vulkan on Turnip or
+                            PanVK), metal-gl, gles (OpenGL ES only), virtio-gpu
+                            (forwarded to Android's GPU), cpu or other
+  gpu-get <device>          the GPU, its family, the open driver, that record and its issues
+  gpu-issue-add <device> "<symptom>" --kind K [--state open|workaround|fixed] --cause T [--fix T] --source REF
+                            a known GPU issue; K is white-widgets (HEIC snapshots fail:
+                            no hardware HEVC encoder), black-ui (black widgets, blurs or
+                            lock screen: a failing Metal path), gpu-fault, out-of-memory,
+                            artifacts, slow, crash or other
+  gpu-issue-set <device> <id> --state fixed --fix "..."   update one (any field)
+  gpu-issue-remove <device> <id>
+  gpu-issues [<device>] [--kind K] [--state S] [--q words]
+                            known GPU issues on every phone (or one): who hit the same
+                            symptom, the cause and the fix (no login)
+
+Porting records (UniXNU's device records, as on unixnu.com/devices; no login):
+  porting <device> | --repo R | --codename C | --component Adreno740 | --area gpu --status device-verified
+                            each port repo's per-area status (device-verified,
+                            host-verified, implemented, planned), best first
+  porting-get <record>      one record in full: per area the components, what it
+                            achieved, limits, next step, build/boot commands, evidence
+  components [words]        the framework's drivers (e.g. components wifi, components
+                            adreno): what each drives, its repo, and the boards
+                            using it with that area's status
   claim-add <device> [--note TEXT]           ask to maintain a device (any login)
   claim-approve <id>, claim-reject <id>      admin only
   fork-add --repo OWNER/REPO [--device SLUG] [--branch B] [--fork-url URL]
@@ -362,10 +427,12 @@ Repos (a repo you own on GitHub is yours at once; else a proof file):
                             add an untracked repo and claim it in one step
   repo-add OWNER/REPO --new-device "Phone name" [--model CODENAME] [--soc CHIP]
                             a phone the tracker does not list yet (your own repo only)
-  references [--chip TEXT] [--device SLUG] [--area AREA] [--limit N]
+  references [--chip TEXT] [--gpu TEXT] [--device SLUG] [--area AREA] [--limit N]
                             ports to start from and borrow parts from: phones on a
-                            chip, or where an area (gpu, wifi, audio...) works, with
-                            their repos, branch links and sources (no login needed)
+                            chip, on a GPU or GPU family (--gpu "Adreno 619",
+                            "Adreno 6xx", "Mali Valhall"), or where an area (metal,
+                            gles, gpu, wifi, audio...) works, with their repos,
+                            branch links, GPU work and sources (no login needed)
   catalog <name, codename or model>
                             search every Android phone and tablet (Google Play's
                             list); prints the repo-add line to use for each
@@ -397,13 +464,20 @@ Media (proof screenshots and clips; images 15 MB, videos 95 MB):
                             a photo update: uploads the files and posts them with
                             the text on the phone's page (maintainers; up to 10 files)
   updates <device>          the phone's updates, newest first
-  media-upload <file> --device SLUG [--area A] [--fork-id N] [--caption T]
-  media-list [--device SLUG] [--area A] [--fork-id N] [--limit N]
+  media-upload <file> --device SLUG [--area A] [--history ID] [--feature ID] [--fork-id N] [--caption T]
+                            --history: the status change it proves (ids: history);
+                            --feature: the notable feature it shows (ids: features)
+  media-link <id> [--history ID|none] [--feature ID|none] [--caption T]
+                            link an upload to a status change or a feature (the
+                            uploader, an admin or a maintainer of the phone)
+  media-list [--device SLUG] [--area A] [--history ID] [--feature ID] [--fork-id N] [--limit N]
   media-delete <id>         the uploader or an admin
 
 Devices (admin):
-  device-set <slug> [--base oneios|other] [--ios-version V] [--image-url URL]
+  device-set <slug> [--gpu G] [--base oneios|other] [--ios-version V] [--image-url URL]
              [--image-credit T] [--image-license L] [--image-source-url URL]
+                            --gpu (a maintainer may set it too): the GPU when the
+                            chip table gets it wrong, e.g. --gpu "Adreno 619"
 
 Offline:
   queue <write command> [args]  append the command to ./TRACKER_QUEUE.md
@@ -630,8 +704,9 @@ function cmdFlush() {
 
 async function cmdStatusSet(positionals, flags) {
   const [device, area, state] = positionals;
-  if (!device || !area || !state) throw usage("usage: status-set <device> <area> <state> --detail TEXT --source REF [--os ios|macos|tvos] [--version V]");
+  if (!device || !area || !state) throw usage("usage: status-set <device> <area> <state> --detail TEXT --source REF [--os ios|macos|tvos] [--version V] [--photo FILE ...]");
   checkState(state);
+  const photos = photosOf(flags);
   const os = str(flags, "os") ? checkOs(flags.os) : undefined;
   const osVersion = str(flags, "version") || str(flags, "os-version") || undefined;
   await checkArea(area);
@@ -644,14 +719,44 @@ async function cmdStatusSet(positionals, flags) {
     auth: true,
     body: { state, detail, source, ...(os ? { os } : {}), ...(osVersion ? { os_version: osVersion } : {}) },
   });
-  out({ ok: true, device, area, state, detail, source, ...(os ? { os } : {}), ...(osVersion ? { os_version: osVersion } : {}), server: res });
+  // Photos are linked to the change just written (its status_history row).
+  const historyId = res?.status?.history_id;
+  if (photos.length && !historyId) throw invalid("the server did not return the status change's id; upload with media-upload --area instead");
+  const media = photos.length ? await uploadLinked(photos, device, { historyId, caption: detail }) : undefined;
+  out({ ok: true, device, area, state, detail, source, ...(os ? { os } : {}), ...(osVersion ? { os_version: osVersion } : {}), ...(media ? { media } : {}), server: res });
 }
 
 /* ------------------------------------------------------------------ */
 /* references: which ports to start from and borrow parts from         */
 /* ------------------------------------------------------------------ */
 
-/** One phone as a reference: its chip, family, what works, and its repos with branch links. */
+const GPU_AREAS = ["gpu", "metal", "gles"];
+const GPU_ISSUE_KINDS = ["white-widgets", "black-ui", "gpu-fault", "out-of-memory", "artifacts", "slow", "crash", "other"];
+const GPU_ISSUE_STATES = ["open", "workaround", "fixed"];
+/** The JSON body of a GPU issue from flags; checks kind and state before anything is sent. */
+function gpuIssueBody(flags) {
+  if (str(flags, "kind") && !GPU_ISSUE_KINDS.includes(flags.kind)) throw invalid(`--kind must be one of: ${GPU_ISSUE_KINDS.join(", ")}`);
+  if (str(flags, "state") && !GPU_ISSUE_STATES.includes(flags.state)) throw invalid(`--state must be one of: ${GPU_ISSUE_STATES.join(", ")}`);
+  const b = {};
+  for (const [k, fl] of [["title", "title"], ["kind", "kind"], ["state", "state"], ["cause", "cause"], ["fix", "fix"], ["detail", "detail"], ["source", "source"], ["os_version", "version"]]) {
+    if (typeof flags[fl] === "string") b[k] = flags[fl];
+  }
+  return b;
+}
+const GPU_METHODS = ["native-metal", "metal-vulkan", "metal-gl", "gles", "virtio-gpu", "cpu", "other", "unknown"];
+
+function fpsText(a) {
+  if (a.fps_low == null && a.fps_high == null) return "";
+  return a.fps_low != null && a.fps_high != null && a.fps_high !== a.fps_low ? `${a.fps_low}-${a.fps_high}` : String(a.fps_low ?? a.fps_high);
+}
+
+/** Phones by GPU work first (Metal, GL ES, compositing that works), then everything that works. */
+function byGpuWork(a, b) {
+  const g = (r) => Object.values(r.gpu_areas).filter((x) => x.state === "works").length * 2 + Object.values(r.gpu_areas).filter((x) => x.state === "in-progress").length;
+  return g(b) - g(a) || b.works.length - a.works.length;
+}
+
+/** One phone as a reference: its chip, GPU, family, what works, and its repos with branch links. */
 function referenceOf(d, extra = {}) {
   const repos = new Map();
   for (const f of d.forks || []) repos.set(f.repo, f);
@@ -662,6 +767,36 @@ function referenceOf(d, extra = {}) {
     chip: d.soc || "",
     model: d.model || "",
     family: d.family || "",
+    gpu: d.gpu || "",
+    gpu_family: d.gpu_family || "",
+    gpu_driver: d.gpu_driver || "",
+    // How the acceleration works and how fast, when recorded (gpu-set).
+    gpu_accel: d.gpu_accel
+      ? {
+          method: d.gpu_accel.method,
+          how: d.gpu_accel.stack,
+          fps: fpsText(d.gpu_accel),
+          fps_note: d.gpu_accel.fps_note,
+          repos: d.gpu_accel.repos,
+          source: d.gpu_accel.source,
+        }
+      : null,
+    // What the GPU does on this phone: GPU compositing, Metal, OpenGL ES (state, detail, source).
+    gpu_areas: Object.fromEntries(
+      (d.statuses || [])
+        .filter((s) => GPU_AREAS.includes(s.area_slug) && s.state !== "unknown")
+        .map((s) => [s.area_slug, { state: s.state, detail: s.detail || "", source: s.source || "" }]),
+    ),
+    // Porting records of its repos (UniXNU's device records): per repo, how many areas are verified on the device.
+    porting: (d.porting || []).slice(0, 5).map((p) => ({
+      record: p.record,
+      repo: p.repo,
+      os: p.os_profile,
+      device_verified: p.counts.device_verified,
+      implemented: p.counts.implemented,
+      gpu: p.area_status.gpu || "",
+      network: p.area_status.network || "",
+    })),
     ios: d.ios_version || "",
     works: (d.statuses || []).filter((s) => s.state === "works").map((s) => s.area_slug),
     in_progress: (d.statuses || []).filter((s) => s.state === "in-progress").map((s) => s.area_slug),
@@ -691,11 +826,14 @@ function chipTerms(chip) {
 }
 
 /**
- * references [--chip TEXT] [--device SLUG] [--area AREA] [--limit N]:
+ * references [--chip TEXT] [--gpu TEXT] [--device SLUG] [--area AREA] [--limit N]:
  * the tracker as a map for porting. --chip: phones on that chip (search by
- * name or part number), with their repos, branches and what works. --device:
- * that phone plus the phones on its chip. --area: where that area works
- * (gpu, wifi, audio ...), with the repo and branch to read and the source.
+ * name or part number), with their repos, branches and what works. --gpu:
+ * phones on that GPU or GPU family, GPU work (metal, gles, gpu) first.
+ * --device: that phone plus the phones on its chip and its GPU family.
+ * --area: where that area works (gpu, wifi, audio ...), with the repo and
+ * branch to read and the source. Every phone carries its GPU, GPU family,
+ * the open driver to read, and its gpu_areas.
  */
 async function cmdReferences(flags) {
   const limit = Number(str(flags, "limit")) || 25;
@@ -718,6 +856,23 @@ async function cmdReferences(flags) {
       .sort((a, b) => b.works.length - a.works.length)
       .slice(0, limit);
   }
+  // The same GPU (exact model first, then the family: "Adreno 6xx", "Mali Valhall (JM)" ...).
+  const gpuQuery = str(flags, "gpu");
+  const sameGpu = async (q, exact) => {
+    const r = await api(`/api/devices?gpu=${encodeURIComponent(q)}&limit=500`);
+    return (r.devices || [])
+      .filter((d) => d.slug !== result.device?.slug)
+      .map((d) => referenceOf(d))
+      .sort((a, b) => (exact ? (b.gpu === exact) - (a.gpu === exact) : 0) || byGpuWork(a, b))
+      .slice(0, limit);
+  };
+  if (gpuQuery) {
+    result.gpu = gpuQuery;
+    result.same_gpu = await sameGpu(gpuQuery, "");
+  } else if (result.device?.gpu_family) {
+    // With --device: the phones on the same GPU family, exact GPU first.
+    result.same_gpu = await sameGpu(result.device.gpu_family, result.device.gpu);
+  }
   if (str(flags, "area")) {
     const area = flags.area;
     await checkArea(area);
@@ -734,8 +889,8 @@ async function cmdReferences(flags) {
       .sort((a, b) => b.works.length - a.works.length)
       .slice(0, limit);
   }
-  if (!result.device && !result.same_chip && !result.works_on) {
-    throw usage('usage: references [--chip "Snapdragon 778G"] [--device SLUG] [--area gpu] [--limit N]');
+  if (!result.device && !result.same_chip && !result.works_on && !result.same_gpu) {
+    throw usage('usage: references [--chip "Snapdragon 778G"] [--gpu "Adreno 619" | "Adreno 6xx" | "Mali Valhall"] [--device SLUG] [--area metal|gles|gpu|wifi...] [--limit N]');
   }
   out(result);
 }
@@ -836,13 +991,19 @@ async function cmdRepoClaim(cmd, positionals, flags) {
 async function cmdMediaUpload(positionals, flags) {
   const file = positionals[0];
   const device = str(flags, "device");
-  if (!file || !device) throw usage("usage: media-upload <file> --device SLUG [--area A] [--fork-id N] [--caption T]");
-  const media = await uploadFile(file, device, { area: str(flags, "area"), forkId: str(flags, "fork-id"), caption: str(flags, "caption") });
+  if (!file || !device) throw usage("usage: media-upload <file> --device SLUG [--area A] [--history ID] [--feature ID] [--fork-id N] [--caption T]");
+  const media = await uploadFile(file, device, {
+    area: str(flags, "area"),
+    forkId: str(flags, "fork-id"),
+    caption: str(flags, "caption"),
+    historyId: str(flags, "history"),
+    featureId: str(flags, "feature"),
+  });
   out({ ok: true, media: { ...media, url: TRACKER_URL + media.url } });
 }
 
 /** POST /api/media for one file; returns the media row. */
-async function uploadFile(file, device, { area = "", forkId = "", caption = "" } = {}) {
+async function uploadFile(file, device, { area = "", forkId = "", caption = "", historyId = "", featureId = "" } = {}) {
   let st;
   try {
     st = fs.statSync(file);
@@ -858,6 +1019,8 @@ async function uploadFile(file, device, { area = "", forkId = "", caption = "" }
   form.append("device", device);
   if (area) form.append("area", area);
   if (forkId) form.append("fork_id", forkId);
+  if (historyId) form.append("history_id", String(historyId));
+  if (featureId) form.append("feature_id", String(featureId));
   if (caption) form.append("caption", caption.slice(0, 500));
   form.append("file", blob, path.basename(file));
   const r = await api("/api/media", { method: "POST", auth: true, form });
@@ -871,7 +1034,7 @@ async function uploadFile(file, device, { area = "", forkId = "", caption = "" }
  */
 async function cmdUpdate(positionals, flags) {
   const [device, ...files] = positionals;
-  if (str(flags, "photo")) files.push(flags.photo);
+  files.push(...photosOf(flags));
   const text = str(flags, "text") || str(flags, "body");
   if (!device || (!text && !files.length)) {
     throw usage('usage: update <device> [photo-or-clip ...] --text "what changed" [--area A]');
@@ -1015,6 +1178,122 @@ async function main() {
       }
       if (str(flags, "os")) q.set("os", checkOs(flags.os, true));
       out(await api(`/api/status${q.toString() ? `?${q}` : ""}`));
+      return;
+    }
+    case "features": {
+      const device = positionals[0] || str(flags, "device");
+      if (!device) throw usage("usage: features <device>");
+      out(await api(`/api/devices/${encodeURIComponent(device)}/features`));
+      return;
+    }
+    case "feature-add": {
+      const [device, name, state] = positionals;
+      if (!device || !name) throw usage('usage: feature-add <device> "<name>" [<state>] --detail TEXT --source REF [--os ios|macos|tvos] [--photo FILE ...]');
+      if (state) checkState(state);
+      const photos = photosOf(flags);
+      if (!str(flags, "detail")) info("warning: no --detail. Say what was observed.");
+      if (!str(flags, "source")) info("warning: no --source. Cite the log, commit or video it comes from.");
+      const body = { name, ...(state ? { state } : {}), detail: str(flags, "detail"), source: str(flags, "source"), ...(str(flags, "os") ? { os: checkOs(flags.os) } : {}) };
+      const r = await api(`/api/devices/${encodeURIComponent(device)}/features`, { method: "POST", auth: true, body });
+      const media = photos.length ? await uploadLinked(photos, device, { featureId: r.feature.id, caption: str(flags, "detail") || name }) : undefined;
+      out(media ? { ...r, media } : r);
+      return;
+    }
+    case "feature-set": {
+      const [device, id] = positionals;
+      if (!device || !id) throw usage("usage: feature-set <device> <id> [--state S] [--name N] [--detail T] [--source R] [--os OS] [--photo FILE ...]");
+      const photos = photosOf(flags);
+      const body = {};
+      if (str(flags, "state")) body.state = (checkState(flags.state), flags.state);
+      for (const k of ["name", "detail", "source"]) if (flags[k] !== undefined) body[k] = str(flags, k);
+      if (str(flags, "os")) body.os = checkOs(flags.os);
+      const r = Object.keys(body).length
+        ? await api(`/api/devices/${encodeURIComponent(device)}/features/${encodeURIComponent(id)}`, { method: "PATCH", auth: true, body })
+        : null;
+      if (!r && !photos.length) throw usage("feature-set: nothing to change (--state, --name, --detail, --source, --os or --photo)");
+      const media = photos.length ? await uploadLinked(photos, device, { featureId: id, caption: str(flags, "detail") }) : undefined;
+      out({ ...(r ?? { ok: true }), ...(media ? { media } : {}) });
+      return;
+    }
+    case "porting": {
+      const q = new URLSearchParams();
+      if (positionals[0]) q.set("device", positionals[0]);
+      for (const k of ["device", "repo", "codename", "component", "framework", "area", "status", "limit", "offset"]) if (str(flags, k)) q.set(k, flags[k]);
+      if (![...q.keys()].length) throw usage("usage: porting [<device>] [--repo R] [--codename C] [--component Adreno740] [--area gpu --status device-verified] [--framework UniXNU]");
+      out(await api(`/api/porting?${q}`));
+      return;
+    }
+    case "porting-get": {
+      const key = positionals[0];
+      if (!key) throw usage("usage: porting-get <record>   (e.g. uke-nsr-xine or unixnu:uke-nsr-xine; keys from porting)");
+      out(await api(`/api/porting/${encodeURIComponent(key)}`));
+      return;
+    }
+    case "components": {
+      const q = new URLSearchParams();
+      if (positionals.length) q.set("q", positionals.join(" "));
+      if (str(flags, "framework")) q.set("framework", flags.framework);
+      out(await api(`/api/porting/components${q.toString() ? `?${q}` : ""}`));
+      return;
+    }
+    case "gpu-issues": {
+      const q = new URLSearchParams();
+      if (positionals[0]) q.set("device", positionals[0]);
+      for (const k of ["kind", "state", "q"]) if (str(flags, k)) q.set(k, flags[k]);
+      out(await api(`/api/gpu/issues${q.toString() ? `?${q}` : ""}`));
+      return;
+    }
+    case "gpu-issue-add": {
+      const device = positionals[0];
+      const title = positionals[1] || str(flags, "title");
+      if (!device || !title) {
+        throw usage('usage: gpu-issue-add <device> "<symptom>" --kind white-widgets|black-ui|gpu-fault|out-of-memory|artifacts|slow|crash|other [--state open|workaround|fixed] --cause "..." [--fix "..."] --source REF [--version V]');
+      }
+      const b = { ...gpuIssueBody(flags), title };
+      if (!b.source) info("warning: no --source. Cite the log, commit or video that shows it.");
+      out(await api(`/api/devices/${encodeURIComponent(device)}/gpu/issues`, { method: "POST", auth: true, body: b }));
+      return;
+    }
+    case "gpu-issue-set": {
+      const [device, id] = positionals;
+      if (!device || !id) throw usage('usage: gpu-issue-set <device> <id> [--state fixed --fix "..."] [--kind K] [--title T] [--cause T] [--detail T] [--source R] [--version V]');
+      const b = gpuIssueBody(flags);
+      if (!Object.keys(b).length) throw usage("gpu-issue-set: give at least one field, e.g. --state fixed --fix \"...\"");
+      out(await api(`/api/devices/${encodeURIComponent(device)}/gpu/issues/${encodeURIComponent(id)}`, { method: "PATCH", auth: true, body: b }));
+      return;
+    }
+    case "gpu-issue-remove": {
+      const [device, id] = positionals;
+      if (!device || !id) throw usage("usage: gpu-issue-remove <device> <id>");
+      out(await api(`/api/devices/${encodeURIComponent(device)}/gpu/issues/${encodeURIComponent(id)}`, { method: "DELETE", auth: true }));
+      return;
+    }
+    case "gpu-get": {
+      const device = positionals[0] || str(flags, "device");
+      if (!device) throw usage("usage: gpu-get <device>");
+      out(await api(`/api/devices/${encodeURIComponent(device)}/gpu`));
+      return;
+    }
+    case "gpu-set": {
+      const device = positionals[0];
+      if (!device) {
+        throw usage('usage: gpu-set <device> --method native-metal|metal-vulkan|metal-gl|gles|virtio-gpu|cpu|other --stack "A -> B -> C" --fps 40-58 --fps-note "idle lock screen" [--repos OWNER/REPO,...] --detail T --source REF [--version V]');
+      }
+      if (str(flags, "method") && !GPU_METHODS.includes(flags.method)) throw invalid(`--method must be one of: ${GPU_METHODS.join(", ")}`);
+      const b = {};
+      for (const [k, fl] of [["method", "method"], ["stack", "stack"], ["fps", "fps"], ["fps_note", "fps-note"], ["detail", "detail"], ["source", "source"], ["os_version", "version"]]) {
+        if (typeof flags[fl] === "string") b[k] = flags[fl];
+      }
+      if (typeof flags.repos === "string") b.repos = flags.repos.split(",").map((s) => s.trim()).filter(Boolean);
+      if (!Object.keys(b).length) throw usage("gpu-set: give at least --method (and --stack, --fps, --fps-note, --repos, --detail, --source)");
+      if (!b.source && !str(flags, "source")) info("warning: no --source. Cite the log, commit or video the method and frame rate come from.");
+      out(await api(`/api/devices/${encodeURIComponent(device)}/gpu`, { method: "PUT", auth: true, body: b }));
+      return;
+    }
+    case "feature-remove": {
+      const [device, id] = positionals;
+      if (!device || !id) throw usage("usage: feature-remove <device> <id>");
+      out(await api(`/api/devices/${encodeURIComponent(device)}/features/${encodeURIComponent(id)}`, { method: "DELETE", auth: true }));
       return;
     }
     case "history": {
@@ -1235,11 +1514,29 @@ async function main() {
       return cmdReferences(flags);
     case "media-list": {
       const q = new URLSearchParams();
-      for (const [k, fl] of [["device", "device"], ["area", "area"], ["fork_id", "fork-id"], ["limit", "limit"], ["offset", "offset"]]) {
+      for (const [k, fl] of [["device", "device"], ["area", "area"], ["fork_id", "fork-id"], ["history_id", "history"], ["feature_id", "feature"], ["limit", "limit"], ["offset", "offset"]]) {
         if (str(flags, fl)) q.set(k, flags[fl]);
       }
       const r = await api(`/api/media${q.toString() ? `?${q}` : ""}`);
       out({ ...r, media: (r.media || []).map((m) => ({ ...m, url: TRACKER_URL + m.url })) });
+      return;
+    }
+    case "media-link": {
+      const id = positionals[0];
+      const b = {};
+      for (const [k, fl] of [["history_id", "history"], ["feature_id", "feature"]]) {
+        if (flags[fl] === undefined) continue;
+        const v = str(flags, fl);
+        if (v === "none") b[k] = null;
+        else if (/^\d+$/.test(v)) b[k] = Number(v);
+        else throw usage(`--${fl} takes an id, or none to unlink`);
+      }
+      if (flags.caption !== undefined) b.caption = str(flags, "caption");
+      if (!id || !/^\d+$/.test(id) || !Object.keys(b).length) {
+        throw usage("usage: media-link <media id> [--history ID|none] [--feature ID|none] [--caption T]  (ids: media-list, history, features)");
+      }
+      const r = await api(`/api/media/${id}`, { method: "PATCH", auth: true, body: b });
+      out({ ok: true, media: { ...r.media, url: TRACKER_URL + r.media.url } });
       return;
     }
     case "media-delete": {
@@ -1250,8 +1547,8 @@ async function main() {
     }
     case "device-set": {
       const slug = positionals[0];
-      if (!slug) throw usage("usage: device-set <slug> [--base oneios|other] [--ios-version V] [--image-url URL] [--image-credit T] [--image-license L] [--image-source-url URL]");
-      const map = { base: "base", ios_version: "ios-version", image_url: "image-url", image_credit: "image-credit", image_license: "image-license", image_source_url: "image-source-url", best_result: "best-result", notes: "notes" };
+      if (!slug) throw usage("usage: device-set <slug> [--gpu G] [--base oneios|other] [--ios-version V] [--image-url URL] [--image-credit T] [--image-license L] [--image-source-url URL]");
+      const map = { gpu: "gpu", base: "base", ios_version: "ios-version", image_url: "image-url", image_credit: "image-credit", image_license: "image-license", image_source_url: "image-source-url", best_result: "best-result", notes: "notes" };
       const b = {};
       for (const [k, fl] of Object.entries(map)) if (typeof flags[fl] === "string") b[k] = flags[fl];
       if (b.base && !["oneios", "other"].includes(b.base)) throw invalid("--base must be oneios or other");

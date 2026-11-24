@@ -165,7 +165,9 @@ function AccountRow({ user, phoneName }: { user: AdminUser; phoneName: (slug: st
       <Avatar person={{ name, login: user.github_login }} />
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span className="min-w-0 font-medium break-words">{name}</span>
+          <Link to="/u/$id" params={{ id: user.github_login || String(user.id) }} className="min-w-0 font-medium break-words underline-offset-4 hover:underline">
+            {name}
+          </Link>
           {user.is_admin ? <span className="rounded-md border px-1.5 text-xs leading-5 text-muted-foreground">Admin</span> : null}
         </p>
         <p className="flex flex-wrap gap-x-2 text-sm text-muted-foreground">

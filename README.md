@@ -1,7 +1,7 @@
 # iOSOnAnd
 
 A status tracker for running iOS on Android phones (OneiOS and every other
-port it knows of). It lists devices, the state of 24 checklist areas per
+port it knows of). It lists devices, the state of 28 checklist areas per
 device, the repos that support each phone and what they are based on, proof
 uploads (on R2), posts and a changelog of every write. Most writes come from AI
 coding agents through `cli.mjs`. Built with TanStack Start and shadcn on
@@ -21,13 +21,11 @@ sources are in [`content/docs/`](content/docs).
 | `/docs/permissions` | [permissions.mdx](content/docs/permissions.mdx) | trust levels, claims, scopes, 401/403/409 |
 | `/docs/data-model` | [data-model.mdx](content/docs/data-model.mdx) | tables, areas and their scope, repos, support rows, lineage, media, data sources |
 | `/docs/uploads` | [uploads.mdx](content/docs/uploads.mdx) | images and clips on R2: types, limits, Range |
-| `/docs/getting-started` | [getting-started.mdx](content/docs/getting-started.mdx) | local run, scripts, tests, deploy |
-| `/docs/reddit` | [reddit.mdx](content/docs/reddit.mdx) | Reddit posts and claims |
-| `/docs/hakios-registry` | [hakios-registry.mdx](content/docs/hakios-registry.mdx) | the HakiOS ports registry sync |
-| `/docs/hackiosx` | [hackiosx.mdx](content/docs/hackiosx.mdx) | the hackiosx.dev sync |
+| `/docs/sources` | [sources.mdx](content/docs/sources.mdx) | where each row comes from; why Reddit posts stay claims |
 | `/api-reference` | [src/lib/openapi.ts](src/lib/openapi.ts) | every endpoint (OpenAPI 3.1 at `/api/openapi.json`) |
 
-[PLAN.md](PLAN.md) is the build plan. [AGENTS.md](AGENTS.md) is the brief for
+Setup, deploy and admin runbooks are in [docs-internal/](docs-internal/README.md), which is not
+published. [PLAN.md](PLAN.md) is the build plan. [AGENTS.md](AGENTS.md) is the brief for
 agents working on this repo. [SKILL.md](SKILL.md) is the drop-in skill for
 agents that update the tracker from a fork (`/docs/agents` explains it).
 
@@ -53,14 +51,14 @@ safe to run on every start:
 
 `node scripts/sync-hakios.mjs [--apply]` combines the HakiOS ports registry
 (hakios-developers.com) with the tracker: its phones, repos and per-feature
-states, without overwriting maintainers' rows (docs: `/docs/hakios-registry`).
+states, without overwriting maintainers' rows (`docs-internal/hakios-registry.md`).
 `node scripts/sync-hackiosx.mjs [--apply]` does the same for the project pages
 of hackiosx.dev, through a hand-checked sentence map (`scripts/hackiosx-map.json`,
-docs: `/docs/hackiosx`). `node scripts/sync-reddit.mjs [--apply]` adds new
+`docs-internal/hackiosx.md`). `node scripts/sync-reddit.mjs [--apply]` adds new
 r/hackios port posts, the phones (`scripts/reddit-map.json`) and repos they are
 about, and with `--claims` the porters' own status claims. It reads the Arctic
 Shift archive of Reddit in parallel: what is new since the last sync, or `--all`
-for the whole history (docs: `/docs/reddit`). `reddit-fetch` reads the archive too.
+for the whole history (`docs-internal/reddit.md`). `reddit-fetch` reads the archive too.
 `node scripts/tracker-prs.mjs [--apply]` opens a pull request on each claimed
 repo (not your own) that adds the tracker guide, an agent-instructions section
 and a Claude Code skill, skipping repos that have them or an open PR
@@ -82,7 +80,7 @@ Log in at `/login` with the `ADMIN_EMAIL` and `ADMIN_PASSWORD` from
 Tests run against a running tracker: `bun test tests/api` (`TRACKER_URL`
 defaults to `http://127.0.0.1:3001`; `unit.test.ts` and `docs.test.ts` need
 no tracker). The other scripts, the tests and the
-deploy steps are on `/docs/getting-started`. Production runs at
+deploy steps are in `docs-internal/getting-started.md`. Production runs at
 `https://hackios.appaiproxy.com` (`bun run deploy`).
 
 ## Use the CLI
@@ -93,7 +91,7 @@ deploy steps are on `/docs/getting-started`. Production runs at
 `--token`, then `TRACKER_TOKEN`, then the one saved at login.
 
 ```sh
-node cli.mjs check                 # API reachable, 24 areas, devices, login state
+node cli.mjs check                 # API reachable, 28 areas, devices, login state
 node cli.mjs login --admin         # local dev: log in as the admin from .dev.vars
 node cli.mjs whoami
 node cli.mjs status-set s24-ultra wifi in-progress --detail "joins, no IP yet" --source "docs/hardware.md"

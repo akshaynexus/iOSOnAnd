@@ -1,26 +1,41 @@
 import { useEffect, useMemo, useState } from "react";
 import { InfiniteSentinel } from "@/components/InfiniteSentinel";
-import { LayoutGrid, Rows3, SlidersHorizontal, Table2, X } from "lucide-react";
+import { ArrowDownUp, Check, LayoutGrid, Rows3, SlidersHorizontal, Table2, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FacetFilter } from "@/components/FacetFilter";
 import { Button } from "@/components/ui/button";
 import { Sheet } from "@/components/ui/sheet";
-import { NativeSelect } from "@/components/Field";
 import { DeviceCard, type DeviceCardData, type Density } from "@/components/DeviceCard";
 import { DevicesTable } from "@/components/DevicesTable";
 import { useThemeMode } from "@/components/common";
 import { Reveal, withViewTransition } from "@/components/motion";
 import { familiesOfDevice, familyName, forksByRepo, mainRepoOf } from "@/components/repoInfo";
-import { boots, makerOf, reported, runsMacos, stateCounts } from "@/lib/areas";
+import { accelerated, boots, lastChanged, makerOf, rankScore, reported, runsMacos, stateCounts } from "@/lib/areas";
 import type { Area, Device, Fork } from "@/lib/client";
 import { parseDate } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
 type View = "cards" | "table";
-type Sort = "working" | "name" | "updated";
+type Sort = "best" | "working" | "verified" | "updated" | "gpu" | "fps" | "ios" | "repos" | "name" | "maker";
+/** The sort options, grouped as they show in the menu. */
+const SORT_GROUPS: Array<{ label: string; items: Array<[Sort, string]> }> = [
+  { label: "Progress", items: [["best", "Best overall"], ["working", "Most working areas"], ["verified", "Most verified on device"], ["updated", "Recently updated"]] },
+  { label: "Graphics", items: [["gpu", "GPU acceleration"], ["fps", "Highest frame rate"]] },
+  { label: "Software and repos", items: [["ios", "Newest iOS"], ["repos", "Most repos"]] },
+  { label: "A to Z", items: [["name", "Name"], ["maker", "Maker"]] },
+];
+const SORT_LABELS = Object.fromEntries(SORT_GROUPS.flatMap((g) => g.items)) as Record<Sort, string>;
+/** How far the GPU acceleration goes, by method (gpu_accel), for the "GPU acceleration" sort. */
+const METHOD_RANK: Record<string, number> = { "native-metal": 6, "metal-vulkan": 5, "virtio-gpu": 4, "metal-gl": 4, gles: 3, other: 2, cpu: 1, unknown: 0 };
+const iosRank = (v: string) => {
+  const m = /(\d+)(?:\.(\d+))?/.exec(v || "");
+  return m ? Number(m[1]) * 100 + Number(m[2] ?? 0) : -1;
+};
 const VIEW_KEY = "iosonand.overview.view";
 const DENSITY_KEY = "iosonand.overview.density";
 const PAGE = 24;
-/** The owner's main device: first under the default sort. */
-const MAIN_DEVICE = "s24-ultra";
 
 function readView(): View {
   try {
@@ -75,8 +90,10 @@ export function DeviceBrowser({
   const setBase = (v: string) => (onFamilyChange ? onFamilyChange(v) : setLocalBase(v));
   const [bootOnly, setBootOnly] = useState(false);
   const [macOnly, setMacOnly] = useState(false);
-  const [maker, setMaker] = useState("");
-  const [sort, setSort] = useState<Sort>("working");
+  const [gpuOnly, setGpuOnly] = useState(false);
+  const [makers, setMakers] = useState<string[]>([]);
+  const [gpuFams, setGpuFams] = useState<string[]>([]);
+  const [sort, setSort] = useState<Sort>("best");
   const [shown, setShown] = useState(PAGE);
 
   const repoMap = useMemo(() => forksByRepo(forks), [forks]);
@@ -90,11 +107,13 @@ export function DeviceBrowser({
       })),
     [devices, areas, repoMap],
   );
-  const makers = useMemo(() => {
+  const count = (keys: string[]) => {
     const m = new Map<string, number>();
-    for (const d of devices) m.set(makerOf(d), (m.get(makerOf(d)) ?? 0) + 1);
-    return [...m.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
-  }, [devices]);
+    for (const k of keys) if (k) m.set(k, (m.get(k) ?? 0) + 1);
+    return [...m.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([value, n]) => ({ value, label: value, count: n }));
+  };
+  const makerOptions = useMemo(() => count(devices.map((d) => makerOf(d))), [devices]);
+  const gpuOptions = useMemo(() => count(devices.map((d) => d.gpu_family ?? "")), [devices]);
   const familyOptions = useMemo(() => {
     const m = new Map<string, number>();
     let none = 0;
@@ -114,278 +133,194 @@ export function DeviceBrowser({
       if (base && base !== "none" && !families.includes(base)) return false;
       if (bootOnly && !boots(d)) return false;
       if (macOnly && !runsMacos(d)) return false;
-      if (maker && makerOf(d) !== maker) return false;
+      if (gpuOnly && !accelerated(d)) return false;
+      if (makers.length && !makers.includes(makerOf(d))) return false;
+      if (gpuFams.length && !gpuFams.includes(d.gpu_family ?? "")) return false;
       return true;
     });
     const time = (v: string) => parseDate(v)?.getTime() ?? 0;
+    const now = Math.max(0, ...rows.map((r) => lastChanged(r.device)));
+    const scores = new Map(out.map((r) => [r.device.slug, rankScore(r.device, areas, now)]));
+    const score = (d: Device) => scores.get(d.slug) ?? 0;
+    // Each sort's key, highest first; ties fall back to best overall.
+    const repoCount = (d: Device) => new Set([...d.forks.map((f) => f.repo), ...(d.supported_by ?? []).map((s) => s.repo)]).size;
+    const fps = (d: Device) => d.gpu_accel?.fps_high ?? d.gpu_accel?.fps_low ?? -1;
+    const gpuRank = (d: Device) =>
+      (d.gpu_accel ? METHOD_RANK[d.gpu_accel.method] ?? 0 : 0) * 1000 +
+      (d.statuses.some((s) => s.area_slug === "metal" && s.state === "works") ? 500 : 0) +
+      (accelerated(d) ? 200 : 0) +
+      Math.max(0, fps(d));
+    const verified = (d: Device) => Math.max(0, ...(d.porting ?? []).map((p) => p.counts.device_verified));
+    const key: Record<Exclude<Sort, "name" | "maker">, (d: Device, c: DeviceCardData["counts"]) => number> = {
+      best: (d) => score(d),
+      working: (_d, c) => c.works * 1000 + reported(c),
+      verified,
+      updated: (d) => time(d.updated),
+      gpu: gpuRank,
+      fps,
+      ios: (d) => iosRank(d.ios_version ?? ""),
+      repos: repoCount,
+    };
     return out
       .map((r, i) => ({ r, i }))
       .sort((a, b) => {
-        if (sort === "name") return a.r.device.name.localeCompare(b.r.device.name);
-        if (sort === "updated") return time(b.r.device.updated) - time(a.r.device.updated) || a.i - b.i;
-        // Default: the main device, then OneiOS-based phones, then by working areas.
-        const pin = (d: Device) => (d.slug === MAIN_DEVICE ? 0 : d.base === "oneios" ? 1 : 2);
-        return (
-          pin(a.r.device) - pin(b.r.device) ||
-          b.r.counts.works - a.r.counts.works ||
-          reported(b.r.counts) - reported(a.r.counts) ||
-          b.r.device.forks.length - a.r.device.forks.length ||
-          a.i - b.i
-        );
+        const da = a.r.device;
+        const db = b.r.device;
+        if (sort === "name") return da.name.localeCompare(db.name);
+        if (sort === "maker") return makerOf(da).localeCompare(makerOf(db)) || da.name.localeCompare(db.name);
+        const k = key[sort];
+        return k(db, b.r.counts) - k(da, a.r.counts) || score(db) - score(da) || a.i - b.i;
       })
       .map((x) => x.r);
-  }, [rows, base, bootOnly, macOnly, maker, sort]);
+  }, [rows, base, bootOnly, macOnly, gpuOnly, makers, gpuFams, sort, areas]);
 
   // A filter change starts the list from the top again.
-  useEffect(() => setShown(PAGE), [base, bootOnly, macOnly, maker, sort, devices]);
+  useEffect(() => setShown(PAGE), [base, bootOnly, macOnly, gpuOnly, makers, gpuFams, sort, devices]);
 
   const visible = view === "cards" ? filtered.slice(0, density === "compact" ? shown * 2 : shown) : filtered;
   const limit = density === "compact" ? shown * 2 : shown;
-  const filtering = !!(base || bootOnly || macOnly || maker);
+  const filtering = !!(base || bootOnly || macOnly || gpuOnly || makers.length || gpuFams.length);
   const [sheetOpen, setSheetOpen] = useState(false);
   const clearFilters = () => {
     setBase("");
     setBootOnly(false);
-    setMaker("");
+    setMacOnly(false);
+    setGpuOnly(false);
+    setMakers([]);
+    setGpuFams([]);
   };
-  const activeCount = (base ? 1 : 0) + (maker ? 1 : 0) + (bootOnly ? 1 : 0) + (macOnly ? 1 : 0);
+  const activeCount = (base ? 1 : 0) + makers.length + gpuFams.length + (bootOnly ? 1 : 0) + (macOnly ? 1 : 0) + (gpuOnly ? 1 : 0);
 
-  // The controls, inline from sm up and in the Filters sheet below sm. `p`
-  // prefixes the ids so the two sets never share one.
-  const familySelect = (p: string, className: string) =>
+  // The controls (shadcn): search, faceted filters, toggles, a grouped sort menu and the layout tabs.
+  const SHEET_ROW = "flex flex-col gap-2";
+  const SHEET_LABEL = "text-sm font-medium";
+  // Every control: 32px tall, fully rounded, a thin border on a clear background.
+  const CONTROL = "h-8 rounded-full border-border bg-transparent dark:bg-transparent pointer-coarse:h-10";
+  const familyFacet = (className?: string) =>
     familyOptions.list.length > 0 ? (
-      <NativeSelect
-        id={`${p}flt-base`}
-        aria-label={p ? undefined : "Based on"}
-        value={base}
-        onChange={(e) => {
-          const v = e.target.value;
-          withViewTransition(() => setBase(v));
-        }}
-        className={className}
-      >
-        <option value="">Any family</option>
-        {familyOptions.list.map(([f, n]) => (
-          <option key={f} value={f}>
-            {familyName(f)} ({n})
-          </option>
-        ))}
-        {familyOptions.none > 0 ? <option value="none">No repo ({familyOptions.none})</option> : null}
-      </NativeSelect>
+      <FacetFilter
+        title="Family"
+        single
+        className={cn(CONTROL, className)}
+        selected={base ? [base] : []}
+        onChange={(v) => withViewTransition(() => setBase(v[0] ?? ""))}
+        options={[
+          ...familyOptions.list.map(([f, n]) => ({ value: f, label: familyName(f), count: n })),
+          ...(familyOptions.none > 0 ? [{ value: "none", label: "No repo", count: familyOptions.none }] : []),
+        ]}
+      />
     ) : null;
-  const makerSelect = (p: string, className: string) => (
-    <NativeSelect
-      id={`${p}flt-maker`}
-      aria-label={p ? undefined : "Maker"}
-      value={maker}
-      onChange={(e) => {
-        const v = e.target.value;
-        withViewTransition(() => setMaker(v));
-      }}
-      className={className}
-    >
-      <option value="">Any maker</option>
-      {makers.map(([m, n]) => (
-        <option key={m} value={m}>
-          {m} ({n})
-        </option>
-      ))}
-    </NativeSelect>
+  const makerFacet = (className?: string) => (
+    <FacetFilter title="Maker" className={cn(CONTROL, className)} selected={makers} onChange={(v) => withViewTransition(() => setMakers(v))} options={makerOptions} />
   );
-  const bootsToggle = (className: string) => (
-    <label
-      className={cn(
-        "inline-flex cursor-pointer items-center gap-2 rounded-md border border-input px-2.5 text-sm hover:bg-muted dark:bg-input/30",
-        className,
-      )}
+  const gpuFacet = (className?: string) =>
+    gpuOptions.length ? (
+      <FacetFilter title="GPU" className={cn(CONTROL, className)} selected={gpuFams} onChange={(v) => withViewTransition(() => setGpuFams(v))} options={gpuOptions} />
+    ) : null;
+  const toggle = (label: string, on: boolean, set: (v: boolean) => void) => (
+    <Button
+      variant={on ? "secondary" : "outline"}
+      size="sm"
+      aria-pressed={on}
+      className={cn(CONTROL, on && "border-foreground/30 bg-muted dark:bg-muted")}
+      onClick={() => withViewTransition(() => set(!on))}
     >
-      <input
-        type="checkbox"
-        className="size-4 accent-(--brand)"
-        checked={bootOnly}
-        onChange={(e) => {
-          const v = e.target.checked;
-          withViewTransition(() => setBootOnly(v));
-        }}
-      />
-      Boots
-    </label>
+      {on ? <Check aria-hidden /> : null}
+      {label}
+    </Button>
   );
-  const macToggle = (className: string) => (
-    <label
-      className={cn(
-        "inline-flex cursor-pointer items-center gap-2 rounded-md border border-input px-2.5 text-sm hover:bg-muted dark:bg-input/30",
-        className,
-      )}
-    >
-      <input
-        type="checkbox"
-        className="size-4 accent-(--brand)"
-        checked={macOnly}
-        onChange={(e) => {
-          const v = e.target.checked;
-          withViewTransition(() => setMacOnly(v));
-        }}
-      />
-      macOS
-    </label>
-  );
-  const sortSelect = (p: string, className: string) => (
-    <NativeSelect
-      id={`${p}flt-sort`}
-      aria-label={p ? undefined : "Sort"}
+  const sortMenu = (className?: string) => (
+    <Select
       value={sort}
-      onChange={(e) => {
-        const v = e.target.value as Sort;
-        withViewTransition(() => setSort(v));
+      items={SORT_LABELS}
+      onValueChange={(v) => {
+        if (v) withViewTransition(() => setSort(v as Sort));
       }}
-      className={className}
     >
-      <option value="working">Most working areas</option>
-      <option value="updated">Recently updated</option>
-      <option value="name">Name</option>
-    </NativeSelect>
+      <SelectTrigger size="sm" aria-label="Sort" className={cn(CONTROL, "min-w-40 border", className)}>
+        <ArrowDownUp className="text-muted-foreground" aria-hidden />
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent align="end" alignItemWithTrigger={false}>
+        {SORT_GROUPS.map((g, i) => (
+          <SelectGroup key={g.label}>
+            {i ? <SelectSeparator /> : null}
+            <SelectLabel>{g.label}</SelectLabel>
+            {g.items.map(([v, l]) => (
+              <SelectItem key={v} value={v}>
+                {l}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        ))}
+      </SelectContent>
+    </Select>
   );
-  const SEG =
-    "inline-flex h-7 items-center gap-1.5 rounded px-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring pointer-coarse:h-10 pointer-coarse:px-3";
-  const viewToggle = (className?: string) => (
-    <div role="group" aria-label="View" className={cn("inline-flex rounded-md border p-0.5", className)}>
-      {(
-        [
-          ["cards", "Cards", LayoutGrid],
-          ["table", "Table", Table2],
-        ] as const
-      ).map(([v, label, Icon]) => (
-        <button
-          key={v}
-          type="button"
-          aria-pressed={view === v}
-          onClick={() => {
-            setView(v);
-            save(VIEW_KEY, v);
-          }}
-          className={cn(
-            SEG,
-            className && "flex-1 justify-center",
-            view === v ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          <Icon className="size-4" aria-hidden />
-          {label}
-        </button>
-      ))}
-    </div>
-  );
-  const densityToggle = (wide: boolean) =>
-    view === "cards" ? (
-      <div role="group" aria-label="Density" className={cn("inline-flex rounded-md border p-0.5", wide && "w-full")}>
+  // One switch for the layout: cards, compact cards, table.
+  const layout = view === "table" ? "table" : density === "compact" ? "compact" : "cards";
+  const setLayout = (v: string) => {
+    const nextView: View = v === "table" ? "table" : "cards";
+    setView(nextView);
+    save(VIEW_KEY, nextView);
+    if (v !== "table") {
+      const d: Density = v === "compact" ? "compact" : "comfortable";
+      setDensity(d);
+      save(DENSITY_KEY, d);
+    }
+  };
+  const layoutTabs = (wide?: boolean) => (
+    <Tabs value={layout} onValueChange={(v) => setLayout(String(v))} className={cn("gap-0", wide && "w-full")}>
+      <TabsList aria-label="Layout" className={cn("h-8! border bg-transparent p-0.5 pointer-coarse:h-10!", wide && "w-full")}>
         {(
           [
-            ["comfortable", "Comfortable", LayoutGrid],
+            ["cards", "Cards", LayoutGrid],
             ["compact", "Compact", Rows3],
+            ["table", "Table", Table2],
           ] as const
         ).map(([v, label, Icon]) => (
-          <button
-            key={v}
-            type="button"
-            aria-pressed={density === v}
-            title={label}
-            onClick={() => {
-              setDensity(v);
-              save(DENSITY_KEY, v);
-            }}
-            className={cn(
-              SEG,
-              wide && "flex-1 justify-center",
-              density === v ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            <Icon className="size-4" aria-hidden />
-            {wide ? (
-              label
-            ) : (
-              <>
-                <span className="hidden lg:inline">{label}</span>
-                <span className="sr-only lg:hidden">{label}</span>
-              </>
-            )}
-          </button>
+          <TabsTrigger key={v} value={v} title={label} aria-label={label} className="h-full px-2.5 text-sm dark:data-active:bg-muted data-active:bg-muted">
+            <Icon aria-hidden />
+            {wide ? label : null}
+          </TabsTrigger>
         ))}
-      </div>
-    ) : null;
-
-  const INLINE = "h-8 w-auto min-w-36 flex-none";
-  const SHEET_ROW = "flex flex-col gap-1.5";
-  const SHEET_LABEL = "text-sm font-medium";
-  const chip =
-    "inline-flex h-8 shrink-0 items-center gap-1 rounded-full border bg-muted/60 pr-1.5 pl-3 text-sm outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring";
-
+      </TabsList>
+    </Tabs>
+  );
   return (
-    <section aria-labelledby="devices-heading" className="flex scroll-mt-20 flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <h2 id="devices-heading" className="mr-auto text-base font-semibold">
+    <section aria-labelledby="devices-heading" className="flex scroll-mt-20 flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <h2 id="devices-heading" className="mr-2 shrink-0 text-base font-semibold">
           Phones{" "}
           <span className="font-normal text-muted-foreground tabular-nums">
             {filtering ? `${filtered.length} of ${devices.length}` : devices.length}
           </span>
         </h2>
-        {/* Phones: one Filters button; the controls open in a bottom sheet. */}
-        <Button variant="outline" size="sm" className="sm:hidden" onClick={() => setSheetOpen(true)} aria-haspopup="dialog">
+        {/* Below xl: one Filters button; the filters open in a sheet, so the row never wraps. */}
+        <Button variant="outline" size="sm" className={cn(CONTROL, "xl:hidden")} onClick={() => setSheetOpen(true)} aria-haspopup="dialog">
           <SlidersHorizontal aria-hidden />
           Filters
-          {activeCount > 0 ? (
-            <span className="ml-0.5 inline-flex min-w-5 items-center justify-center rounded-full bg-foreground px-1.5 text-xs leading-5 font-medium text-background tabular-nums">
-              {activeCount}
-            </span>
-          ) : null}
+          {activeCount > 0 ? <Badge className="ml-0.5 rounded-full tabular-nums">{activeCount}</Badge> : null}
         </Button>
-        <div className="hidden flex-wrap items-center gap-2 sm:flex">
-          {familySelect("", INLINE)}
-          {makerSelect("", INLINE)}
-          {bootsToggle("h-8")}
-          {macToggle("h-8")}
-          {sortSelect("", INLINE)}
-          {viewToggle()}
-          {densityToggle(false)}
+        <div className="hidden min-w-0 items-center gap-2 xl:flex">
+          {toggle("Boots", bootOnly, setBootOnly)}
+          {toggle("GPU accelerated", gpuOnly, setGpuOnly)}
+          {toggle("macOS", macOnly, setMacOnly)}
+          <span className="mx-0.5 h-5 w-px shrink-0 bg-border" aria-hidden />
+          {familyFacet()}
+          {makerFacet()}
+          {gpuFacet()}
+        </div>
+        {filtering ? (
+          <Button variant="ghost" size="sm" className="hidden rounded-full text-muted-foreground xl:inline-flex" onClick={() => withViewTransition(clearFilters)}>
+            Reset
+            <X aria-hidden />
+          </Button>
+        ) : null}
+        <div className="ml-auto flex shrink-0 items-center gap-2">
+          {sortMenu("hidden sm:flex")}
+          {layoutTabs()}
         </div>
       </div>
-
-      {filtering ? (
-        <ul aria-label="Active filters" className="-mt-1 flex flex-wrap gap-2 sm:hidden">
-          {base ? (
-            <li>
-              <button type="button" className={chip} onClick={() => withViewTransition(() => setBase(""))} aria-label={`Remove filter: ${base === "none" ? "No repo" : familyName(base)}`}>
-                {base === "none" ? "No repo" : familyName(base)}
-                <X className="size-4 text-muted-foreground" aria-hidden />
-              </button>
-            </li>
-          ) : null}
-          {maker ? (
-            <li>
-              <button type="button" className={chip} onClick={() => withViewTransition(() => setMaker(""))} aria-label={`Remove filter: ${maker}`}>
-                {maker}
-                <X className="size-4 text-muted-foreground" aria-hidden />
-              </button>
-            </li>
-          ) : null}
-          {bootOnly ? (
-            <li>
-              <button type="button" className={chip} onClick={() => withViewTransition(() => setBootOnly(false))} aria-label="Remove filter: Boots">
-                Boots
-                <X className="size-4 text-muted-foreground" aria-hidden />
-              </button>
-            </li>
-          ) : null}
-          {macOnly ? (
-            <li>
-              <button type="button" className={chip} onClick={() => withViewTransition(() => setMacOnly(false))} aria-label="Remove filter: macOS">
-                macOS
-                <X className="size-4 text-muted-foreground" aria-hidden />
-              </button>
-            </li>
-          ) : null}
-        </ul>
-      ) : null}
 
       <Sheet
         open={sheetOpen}
@@ -404,33 +339,30 @@ export function DeviceBrowser({
           </>
         }
       >
-        <div className="flex flex-col gap-4">
-          {familyOptions.list.length > 0 ? (
-            <div className={SHEET_ROW}>
-              <label htmlFor="sheet-flt-base" className={SHEET_LABEL}>
-                Based on
-              </label>
-              {familySelect("sheet-", "")}
+        <div className="flex flex-col gap-5">
+          <div className={SHEET_ROW}>
+            <span className={SHEET_LABEL}>Show only</span>
+            <div className="flex flex-wrap gap-2">
+              {toggle("Boots", bootOnly, setBootOnly)}
+              {toggle("GPU accelerated", gpuOnly, setGpuOnly)}
+              {toggle("macOS", macOnly, setMacOnly)}
             </div>
-          ) : null}
-          <div className={SHEET_ROW}>
-            <label htmlFor="sheet-flt-maker" className={SHEET_LABEL}>
-              Maker
-            </label>
-            {makerSelect("sheet-", "")}
-          </div>
-          {bootsToggle("h-11 w-full")}
-          {macToggle("h-11 w-full")}
-          <div className={SHEET_ROW}>
-            <label htmlFor="sheet-flt-sort" className={SHEET_LABEL}>
-              Sort
-            </label>
-            {sortSelect("sheet-", "")}
           </div>
           <div className={SHEET_ROW}>
-            <span className={SHEET_LABEL}>View</span>
-            {viewToggle("w-full")}
-            {densityToggle(true)}
+            <span className={SHEET_LABEL}>Filter by</span>
+            <div className="flex flex-wrap gap-2">
+              {familyFacet()}
+              {makerFacet()}
+              {gpuFacet()}
+            </div>
+          </div>
+          <div className={SHEET_ROW}>
+            <span className={SHEET_LABEL}>Sort</span>
+            {sortMenu("w-full")}
+          </div>
+          <div className={SHEET_ROW}>
+            <span className={SHEET_LABEL}>Layout</span>
+            {layoutTabs(true)}
           </div>
         </div>
       </Sheet>
@@ -439,14 +371,7 @@ export function DeviceBrowser({
         <div className="rounded-lg border border-dashed px-4 py-10 text-center">
           <p>{devices.length === 0 ? emptyText : "No phones match these filters."}</p>
           {filtering ? (
-            <Button
-              variant="link"
-              onClick={() => {
-                setBase("");
-                setBootOnly(false);
-                setMaker("");
-              }}
-            >
+            <Button variant="link" onClick={clearFilters}>
               Clear filters
             </Button>
           ) : null}

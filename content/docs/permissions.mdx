@@ -9,14 +9,12 @@ Reads are public. Every write needs a login: a session cookie from `/login`, or
 
 ## Log in
 
-- **Continue with GitHub** on `/login` and `/signup` (when the tracker has a GitHub OAuth App:
-  `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`). A new account is bound to the GitHub login, has no
+- **Continue with GitHub** on `/login` and `/signup`. A new account is bound to the GitHub login, has no
   password, and lands on `/profile/keys` to make an API key for its CLI or agent. Logged in
   already, the same button on the profile's GitHub tab links GitHub to that account. GitHub's
   token is used once to read the login and id, and is not stored.
 - People sign up and log in at `/signup` and `/login` with an email and a password (10 to 256
-  characters). Logging in with exactly `ADMIN_EMAIL` and `ADMIN_PASSWORD` (`.dev.vars` locally,
-  wrangler secrets in production) creates that account if needed and makes it an admin.
+  characters).
 - Link GitHub on the GitHub tab of `/profile` (a new account lands there after signing up), two
   ways: in the browser (your username gives a one-time code; put it in a secret gist and paste the
   gist's link), or from a terminal or a coding agent with `node cli.mjs link --email ADDR`, which
@@ -31,16 +29,29 @@ Reads are public. Every write needs a login: a session cookie from `/login`, or
 The Admin tab of `/profile` (`/profile?tab=admin`, admins only; the header shows an Admin link, and
 the old `/admin` address redirects there): pending device claims and repo claims with
 Approve and Reject, and every account with its GitHub login and what it maintains
-(`GET /api/users`). An admin is `users.is_admin = 1`; the bootstrap admin comes from `ADMIN_EMAIL`
-and `ADMIN_PASSWORD`, and another account is made an admin in the database:
-`wrangler d1 execute oneios-tracker --remote --command "UPDATE users SET is_admin = 1 WHERE github_login = 'LOGIN'"`.
+(`GET /api/users`). Admins are set by the people who run the tracker.
+
+## Profiles and what is public
+
+Every account has a public profile at `/u/<GitHub login>` (or `/u/<id>` without a linked GitHub; an id
+link to a linked account redirects to the login; `GET /api/users/{login or id}`): the name, the GitHub
+login, the month it joined, the phones and repos it maintains, its 20 newest status changes and
+how many notable features it recorded. The email never shows. Maintainer names on phone pages and
+in the repo list link to these profiles.
+
+Account events (sign-ups, new accounts from GitHub sign-in, GitHub links, removed accounts) stay
+out of the public changelog. Admins see accounts in the Admin tab, and get those events too with
+`GET /api/changelog?accounts=1`.
+
+A signed-in account without GitHub sees a "Link your GitHub account" bar: one click goes through
+the GitHub sign-in, which links GitHub to that account and comes back to the same page, so the
+tracker can match the repos it owns.
 
 ## Passwords
 
-- Stored as PBKDF2-SHA256 (100,000 rounds, the most Workers allow) with a per-user salt. With
-  `PASSWORD_PEPPER` set, the password is first run through HMAC-SHA256 with that secret, which
-  never enters the database, so a leaked database alone cannot be cracked. Older hashes are
-  upgraded at the next login.
+- Stored as PBKDF2-SHA256 with a per-user salt, plus a server-side secret that never enters the
+  database, so a leaked database alone cannot be cracked. Older hashes are upgraded at the next
+  login.
 - A login for an email with no account takes as long as a wrong password, and both answer the
   same 401.
 - Change it on `/profile` (`POST /api/auth/password`). It needs the current password, logs out
@@ -65,8 +76,7 @@ Every API call counts against a per-minute limit. Over it is 429 `rate limited` 
 | reads | IP | 300 |
 
 A logged-in admin is not counted for writes, uploads or calls out to GitHub and Reddit (sync
-scripts write hundreds of rows), but is counted for sign-in. The limits are Workers rate-limit bindings (`ratelimits` in `wrangler.jsonc`, mirrored in
-`src/lib/ratebuckets.ts`). They count per Cloudflare location, so they are approximate.
+scripts write hundreds of rows), but is counted for sign-in. The limits are approximate.
 
 ## Trust levels
 
@@ -81,7 +91,7 @@ Each endpoint has one of these levels. `GET /api/docs` and the
 | repo | admin, or the maintainer of that repo | update the repo, add `claimed` support rows and lineage, step down |
 | uploader | admin, or who uploaded it | delete an upload |
 | poster | admin, or a maintainer of any device | add Reddit posts |
-| admin | `users.is_admin = 1` | everything, plus review claims, add devices, areas and users, delete rows, set `reproduced` or `merged`, `kind`, `base`, photos, `merged`/`ported`/`primary` support, run the Reddit fetch |
+| admin | set by the people who run the tracker | everything, plus review claims, add devices, areas and users, delete rows, set `reproduced` or `merged`, `kind`, `base`, photos, `merged`/`ported`/`primary` support, run the Reddit fetch |
 
 You maintain a device when you hold an approved claim on it. There are two ways to get one:
 

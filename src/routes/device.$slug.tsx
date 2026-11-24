@@ -6,19 +6,21 @@ import { RouteError, RoutePending } from "@/components/Page";
 import { useAuth } from "@/components/auth";
 import { StateLabel, StatusBar } from "@/components/StatusBadge";
 import { AreaTable } from "@/components/AreaTable";
-import { ForkDialog } from "@/components/ForkDialog";
 import { ClaimPanel } from "@/components/ClaimPanel";
-import { AddRepoToPhone, PortPromptBox, ThisIsMine } from "@/components/RepoClaim";
-import { ClaimThisPhone, isDependency, isUnclaimed } from "@/components/ClaimCallout";
+import { AddRepoToPhone, PortPromptBox } from "@/components/RepoClaim";
+import { ClaimThisPhone } from "@/components/ClaimCallout";
 import { DeviceUpdates } from "@/components/DeviceUpdates";
-import { BasedOnChips, ReposTable, forkHref } from "@/components/ReposTable";
+import { NotableFeatures } from "@/components/NotableFeatures";
+import { GpuAccelSection } from "@/components/GpuAccel";
+import { PortingRecords } from "@/components/PortingRecords";
+import { RepoNetwork } from "@/components/RepoNetwork";
 import { MediaGallery, UploadButton } from "@/components/Media";
 import { devicePhoto } from "@/components/DeviceCard";
 import { PhoneOutline } from "@/components/common";
-import { ONEIOS_REPO, familiesOfDevice, supportPhrase, supportersOf } from "@/components/repoInfo";
+import { familiesOfDevice } from "@/components/repoInfo";
 import { FamilyChip } from "@/components/DeviceCard";
-import { applicableAreas, applies, entryFor, stateCounts, isExtra } from "@/lib/areas";
-import { OS_LABELS, forkMaintainer, loadDevice, maintainersOf, type Os, type Area, type Device, type Fork } from "@/lib/client";
+import { applicableAreas, applies, entryFor, stateCounts } from "@/lib/areas";
+import { OS_LABELS, loadDevice, maintainersOf, type Os, type Area, type Device } from "@/lib/client";
 import { LinkedText } from "@/components/SourceLink";
 import { cn, formatDate, relativeTime, vtName } from "@/lib/utils";
 import { SITE_URL, absoluteUrl, jsonLd, seo } from "@/lib/seo";
@@ -117,52 +119,6 @@ function DevicePhoto({ device }: { device: Device }) {
   );
 }
 
-/** Every repo that supports this phone, upstream first, and how. */
-function SupportedBy({ device, forks }: { device: Device; forks: Map<string, Fork> }) {
-  const rows = supportersOf(device);
-  if (rows.length === 0) return null;
-  return (
-    <section aria-labelledby="supported-heading" className="flex flex-col gap-3">
-      <h2 id="supported-heading" className="text-base font-semibold">
-        Supported by
-      </h2>
-      <ul className="flex flex-col divide-y rounded-lg border">
-        {rows.map((s) => {
-          const fork = forks.get(s.repo.toLowerCase());
-          const kind = s.kind === "upstream" ? "Main repo" : s.kind === "standalone" ? "Standalone port" : "Fork";
-          return (
-            <li key={s.repo} className="flex flex-col gap-1.5 px-4 py-3 sm:flex-row sm:items-center sm:gap-4">
-              <div className="min-w-0 flex-1">
-                <a
-                  href={fork ? forkHref(fork) : `https://github.com/${s.repo}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex min-h-8 items-center font-medium break-all hover:underline"
-                >
-                  {s.repo}
-                </a>
-                <p className="text-xs text-muted-foreground">
-                  {kind}, {supportPhrase(s.support, s.via).toLowerCase()}, {fork && !isUnclaimed(fork) ? `maintained by ${forkMaintainer(fork)}` : "unclaimed"}
-                  {s.note ? `: ${s.note}` : null}
-                </p>
-              </div>
-              {fork && isUnclaimed(fork) && !isDependency(fork) ? (
-                <ThisIsMine repo={s.repo} device={device.slug} devices={[{ slug: device.slug, name: device.name }]} compact label="Claim" />
-              ) : null}
-              <div className="flex flex-wrap items-center gap-2 text-xs sm:justify-end">
-                <span className="text-muted-foreground">Based on</span>
-                <BasedOnChips
-                  fork={fork ?? { repo: s.repo, kind: s.kind, base_project: s.base_project || (s.repo === ONEIOS_REPO ? "OneiOS" : "") }}
-                />
-              </div>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
-  );
-}
-
 function DevicePage() {
   const { device, areas } = Route.useLoaderData();
   const { canEdit } = useAuth();
@@ -174,13 +130,15 @@ function DevicePage() {
     (o) => o === "ios" || editable || (device.os_statuses?.[o]?.length ?? 0) > 0 || !!device[`${o}_version` as "macos_version" | "tvos_version"],
   );
   const osStatuses = os === "ios" ? device.statuses : (device.os_statuses?.[os] ?? []);
-  const rows = areas.map((area) => ({ area, entry: entryFor({ statuses: osStatuses }, area.slug), applies: applies(area, device) }));
+  // OneiOS-only areas (Return to One UI, IPC, kernel memory) are left out for phones on another base.
+  const rows = areas
+    .filter((area) => applies(area, device))
+    .map((area) => ({ area, entry: entryFor({ statuses: osStatuses }, area.slug), applies: true }));
   const counts = stateCounts(device, areas);
   const maintainers = maintainersOf(device);
   const forkMap = useMemo(() => new Map(device.forks.map((f) => [f.repo.toLowerCase(), f])), [device.forks]);
   const areaNames = useMemo(() => Object.fromEntries(areas.map((a) => [a.slug, a.name])), [areas]);
   const applicable = applicableAreas(device, areas);
-  const iosAreas = areas.filter((a) => !isExtra(a)).length;
   const families = familiesOfDevice(device, forkMap);
 
   return (
@@ -223,9 +181,32 @@ function DevicePage() {
             <dl className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-lg border px-4 py-3 sm:gap-x-8">
               <Fact label="Model">{device.model || <span className="text-muted-foreground">Not recorded</span>}</Fact>
               <Fact label="SoC">{device.soc || <span className="text-muted-foreground">Not recorded</span>}</Fact>
+              <Fact label="GPU">
+                {device.gpu ? (
+                  <span title={device.gpu_driver ? `Open driver to read: ${device.gpu_driver}` : undefined}>
+                    {device.gpu}
+                    {device.gpu_family ? <span className="text-muted-foreground"> · {device.gpu_family}</span> : null}
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground">Not recorded</span>
+                )}
+              </Fact>
               <Fact label="Maintainer">
                 <span className="inline-block" style={{ viewTransitionName: vtName("repo", device.slug) }}>
-                  {maintainers.length > 0 ? maintainers.join(", ") : <span className="text-muted-foreground">Unclaimed</span>}
+                  {device.maintainer_users?.length ? (
+                    device.maintainer_users.map((m, i) => (
+                      <span key={m.id}>
+                        {i ? ", " : ""}
+                        <Link to="/u/$id" params={{ id: m.github_login || String(m.id) }} className="underline-offset-4 hover:underline">
+                          {m.label}
+                        </Link>
+                      </span>
+                    ))
+                  ) : maintainers.length > 0 ? (
+                    maintainers.join(", ")
+                  ) : (
+                    <span className="text-muted-foreground">Unclaimed</span>
+                  )}
                 </span>
               </Fact>
               <Fact label="Updated">
@@ -240,7 +221,6 @@ function DevicePage() {
               <div className="col-span-2 flex flex-col gap-1.5">
                 <dt className="text-xs text-muted-foreground">
                   {applicable.length} iOS areas
-                  {applicable.length < iosAreas ? `, ${iosAreas - applicable.length} not applicable` : ""}
                 </dt>
                 <dd>
                   <div className="w-full md:max-w-xl" style={{ viewTransitionName: vtName("bar", device.slug) }}><StatusBar counts={counts} /></div>
@@ -270,7 +250,7 @@ function DevicePage() {
 
       <ClaimThisPhone device={device} />
 
-      <SupportedBy device={device} forks={forkMap} />
+      <RepoNetwork device={device} editable={editable} />
 
       <section aria-labelledby="areas-heading" className="flex scroll-mt-20 flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -303,27 +283,17 @@ function DevicePage() {
         <AreaTable deviceSlug={device.slug} rows={rows} editable={editable} os={os} />
       </section>
 
+      <GpuAccelSection device={device} editable={editable} />
+
+      <PortingRecords records={device.porting ?? []} />
+
+      <NotableFeatures deviceSlug={device.slug} features={device.features ?? []} editable={editable} />
+
       <DeviceUpdates deviceSlug={device.slug} editable={editable} onPosted={() => setUploads((n) => n + 1)} />
 
       <MediaGallery deviceSlug={device.slug} areaNames={areaNames} reloadKey={uploads} />
 
       <section className="flex flex-col gap-3">
-        <div className="flex items-center gap-3">
-          <h2 className="text-base font-semibold">Repos</h2>
-          <span className="ml-auto flex items-center gap-2">
-            {/* Your own GitHub repo for this phone: claim it (src/lib/repos.ts). */}
-            <AddRepoToPhone device={{ slug: device.slug, name: device.name }} />
-            {editable ? <ForkDialog deviceSlug={device.slug} /> : null}
-          </span>
-        </div>
-        <ReposTable
-          forks={device.forks}
-          deviceNames={{ [device.slug]: device.name }}
-          showDevice={false}
-          canEdit={canEdit}
-          areas={applicable}
-          emptyText="No forks for this phone yet."
-        />
         <PortPromptBox device={device.slug} deviceName={device.name} />
       </section>
 

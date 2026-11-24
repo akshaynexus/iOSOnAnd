@@ -11,6 +11,8 @@ export interface Device {
   name: string;
   model: string;
   soc: string;
+  /** The GPU when named on the device (migration 0017); '' = from the chip. */
+  gpu?: string;
   repo_kind: string;
   status: State;
   best_result: string;
@@ -48,6 +50,8 @@ export interface DeviceStatus {
   detail: string;
   source: string;
   updated: string;
+  /** On a write: the status_history row it added, to link photos to (migration 0015). */
+  history_id?: number;
 }
 
 export interface Fork {

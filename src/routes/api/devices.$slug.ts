@@ -101,6 +101,9 @@ async function handleDelete({ request, params }: ApiCtx): Promise<Response> {
   await exec('UPDATE media SET update_id = NULL WHERE device_slug = ?', [slug]);
   await exec('DELETE FROM device_updates WHERE device_slug = ?', [slug]);
   await exec('DELETE FROM media WHERE device_slug = ?', [slug]);
+  await exec('DELETE FROM gpu_accel WHERE device_slug = ?', [slug]);
+  await exec('DELETE FROM gpu_issues WHERE device_slug = ?', [slug]);
+  await exec('UPDATE porting_records SET device_slug = NULL WHERE device_slug = ?', [slug]);
   await exec('DELETE FROM devices WHERE slug = ?', [slug]);
   await appendChangelog(actorName(user), `device ${slug} removed`);
   return json({ deleted: slug });

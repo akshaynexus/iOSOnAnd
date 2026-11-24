@@ -15,6 +15,42 @@ import { MultipartError, boundaryOf, indexOfBytes, parseMultipart } from '../../
 import { imageSize, sniff } from '../../src/lib/sniff';
 import { checkProofFile } from '../../src/lib/repoproof';
 import { BUCKETS, bucketFor } from '../../src/lib/ratebuckets';
+import { gpuFamily, gpuInfo, gpuMatches, gpuOfSoc } from '../../src/lib/gpu';
+
+describe('GPU from the chip', () => {
+  test('chips map to their GPU by part number or name; unknown chips stay empty', () => {
+    expect(gpuOfSoc('Snapdragon 695 (SM6375)')).toBe('Adreno 619');
+    expect(gpuOfSoc('Snapdragon 860 (SM8150-AC)')).toBe('Adreno 640');
+    expect(gpuOfSoc('Snapdragon 865+ (SM8250-AB)')).toBe('Adreno 650');
+    expect(gpuOfSoc('Snapdragon 8s Gen 3 (SM8635)')).toBe('Adreno 735');
+    expect(gpuOfSoc('Snapdragon 8 Elite Gen 5 for Galaxy (SM8850)')).toBe('Adreno 840');
+    expect(gpuOfSoc('Tensor G2 (GS201)')).toBe('Mali-G710 MP7');
+    expect(gpuOfSoc('Helio P35 (MT6765)')).toBe('PowerVR GE8320');
+    expect(gpuOfSoc('Exynos 2400')).toBe('Xclipse 940');
+    expect(gpuOfSoc('Snapdragon 712 (SDM710)')).toBe('Adreno 616');
+    expect(gpuOfSoc('Snapdragon 7s Gen 3 (SM7635)')).toBe('Adreno 810');
+    expect(gpuOfSoc('MediaTek')).toBe('');
+    expect(gpuOfSoc('')).toBe('');
+  });
+  test('families and drivers', () => {
+    expect(gpuFamily('Adreno 619')).toEqual({ family: 'Adreno 6xx', driver: 'freedreno / Turnip (msm)' });
+    expect(gpuFamily('Adreno 506').driver).toBe('freedreno (msm)');
+    expect(gpuFamily('Mali-G57 MC2').family).toBe('Mali Valhall (JM)');
+    expect(gpuFamily('Mali-G710 MP7')).toEqual({ family: 'Mali Valhall (CSF)', driver: 'Panthor' });
+    expect(gpuFamily('Mali-G310 V2').family).toBe('Mali Valhall (CSF)');
+    expect(gpuFamily('Mali-G52 MC2').family).toBe('Mali Bifrost');
+    expect(gpuFamily('Mali-400 MP4').driver).toBe('Lima');
+    expect(gpuFamily('Immortalis-G720 MC12').family).toBe('Mali 5th gen and later');
+  });
+  test("the device's own gpu wins; matching by model or family", () => {
+    expect(gpuInfo({ soc: 'Snapdragon 845 (SDM845)' })).toMatchObject({ gpu: 'Adreno 630', gpu_source: 'chip', gpu_family: 'Adreno 6xx' });
+    expect(gpuInfo({ soc: 'Snapdragon 845', gpu: 'Adreno 999' }).gpu_source).toBe('device');
+    expect(gpuInfo({ soc: 'MediaTek' })).toMatchObject({ gpu: '', gpu_source: '', gpu_family: '' });
+    const i = gpuInfo({ soc: 'Snapdragon 695' });
+    for (const q of ['Adreno 619', 'adreno 6xx', 'adreno']) expect(gpuMatches(i, q)).toBe(true);
+    for (const q of ['Adreno 618', 'Mali', '']) expect(gpuMatches(i, q)).toBe(false);
+  });
+});
 
 describe('rate-limit buckets', () => {
   test('each request type lands in the right bucket', () => {

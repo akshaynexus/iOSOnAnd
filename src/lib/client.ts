@@ -91,6 +91,10 @@ export interface Media {
   device_slug: string;
   fork_id: number | null;
   area_slug: string | null;
+  /** The status change it is evidence for (status_history id). */
+  history_id?: number | null;
+  /** The notable feature it shows. */
+  feature_id?: number | null;
   url: string;
   content_type: string;
   kind: "image" | "video";
@@ -100,6 +104,80 @@ export interface Media {
   caption: string;
   user: UserRef | null;
   created: string;
+}
+
+/** A known GPU issue on a phone (GET /api/devices/:slug/gpu/issues, /api/gpu/issues). */
+export interface GpuIssue {
+  id: number;
+  device_slug: string;
+  kind: "white-widgets" | "black-ui" | "gpu-fault" | "out-of-memory" | "artifacts" | "slow" | "crash" | "other";
+  kind_label: string;
+  state: "open" | "workaround" | "fixed";
+  title: string;
+  cause: string;
+  fix: string;
+  detail: string;
+  source: string;
+  os_version: string;
+  who: string;
+  created: string;
+  updated: string;
+}
+
+/** A port repo's porting record from a porting framework (UniXNU), summary form. */
+export interface PortingRecordSummary {
+  key: string;
+  framework: string;
+  record: string;
+  codename: string;
+  repo: string;
+  device_slug: string | null;
+  title: string;
+  soc: string;
+  os_profile: string;
+  summary: string;
+  counts: { device_verified: number; host_verified: number; implemented: number; planned: number };
+  area_status: Record<string, string>;
+  page_url: string;
+  source_url: string;
+  imported: string;
+}
+
+export interface PortingArea {
+  id: string;
+  status: string;
+  components: string[];
+  completion: string[];
+  limits: string[];
+  next_action: string[];
+  procedure: string[];
+  evidence: Array<{ kind: string; reference: string; result: string }>;
+}
+
+export interface PortingRecord extends PortingRecordSummary {
+  areas: PortingArea[];
+  components: string[];
+}
+
+export function getPortingRecord(key: string, opts?: CallOptions): Promise<{ record: PortingRecord }> {
+  return req(`/api/porting/${encodeURIComponent(key)}`, undefined, opts);
+}
+
+/** How a phone's GPU acceleration works and how fast (GET /api/devices/:slug/gpu). */
+export interface GpuAccel {
+  device_slug: string;
+  method: "native-metal" | "metal-vulkan" | "metal-gl" | "gles" | "virtio-gpu" | "cpu" | "other" | "unknown";
+  method_label: string;
+  stack: string;
+  fps_low: number | null;
+  fps_high: number | null;
+  fps_note: string;
+  repos: string[];
+  detail: string;
+  source: string;
+  os_version: string;
+  who: string;
+  updated: string;
 }
 
 /** The system a status is about: ios covers iOS and iPadOS. */
@@ -193,6 +271,19 @@ export interface DeviceRow {
   name: string;
   model: string;
   soc: string;
+  /** The GPU: the device's own, else from the chip; '' when unknown. */
+  gpu?: string;
+  gpu_source?: "device" | "chip" | "";
+  /** E.g. "Adreno 6xx", "Mali Valhall (JM)". */
+  gpu_family?: string;
+  /** The open driver whose code is the hardware reference, e.g. "freedreno / Turnip (msm)". */
+  gpu_driver?: string;
+  /** How the GPU acceleration works and how fast; null when nobody recorded it. */
+  gpu_accel?: GpuAccel | null;
+  /** Known GPU issues, open first. */
+  gpu_issues?: GpuIssue[];
+  /** Porting records of its repos (UniXNU's device records), best-verified first. */
+  porting?: PortingRecordSummary[];
   repo_kind: string;
   status: AreaState;
   best_result: string;
@@ -206,6 +297,10 @@ export interface DeviceRow {
   tvos_version?: string;
   /** Status rows for other systems than iOS, by system (macos, tvos). */
   os_statuses?: Record<string, DeviceStatusEntry[]>;
+  /** Other notable features: what the checklist does not list, or uncommon hardware that works. */
+  features?: DeviceFeature[];
+  /** The maintainers with their user ids (links to /u/<id>). */
+  maintainer_users?: Array<{ id: number; label: string; github_login: string | null }>;
   image_url?: string;
   image_credit?: string;
   image_license?: string;
@@ -744,6 +839,72 @@ export interface DeviceUpdate {
   media: Media[];
 }
 
+/** One of a phone's other notable features (migration 0014). */
+export interface DeviceFeature {
+  id: number;
+  device_slug: string;
+  name: string;
+  os: Os | string;
+  state: AreaState;
+  detail: string;
+  source: string;
+  who: string;
+  created: string;
+  updated: string;
+  /** Photos and clips linked to it. */
+  media?: Media[];
+}
+
+type FeatureInput = { name?: string; state?: AreaState; detail?: string; source?: string; os?: Os };
+
+export type GpuAccelInput = Partial<Pick<GpuAccel, "method" | "stack" | "fps_note" | "detail" | "source" | "os_version">> & {
+  fps?: string;
+  repos?: string[];
+};
+
+export function setGpuAccel(slug: string, input: GpuAccelInput, opts?: CallOptions): Promise<{ accel: GpuAccel }> {
+  return req(`/api/devices/${encodeURIComponent(slug)}/gpu`, { method: "PUT", body: JSON.stringify(input) }, opts);
+}
+
+export function addFeature(slug: string, input: FeatureInput & { name: string }, opts?: CallOptions): Promise<{ feature: DeviceFeature }> {
+  return req(`/api/devices/${encodeURIComponent(slug)}/features`, { method: "POST", body: JSON.stringify(input) }, opts);
+}
+
+export function updateFeature(slug: string, id: number, input: FeatureInput, opts?: CallOptions): Promise<{ feature: DeviceFeature }> {
+  return req(`/api/devices/${encodeURIComponent(slug)}/features/${id}`, { method: "PATCH", body: JSON.stringify(input) }, opts);
+}
+
+export function deleteFeature(slug: string, id: number, opts?: CallOptions): Promise<{ ok: true }> {
+  return req(`/api/devices/${encodeURIComponent(slug)}/features/${id}`, { method: "DELETE" }, opts);
+}
+
+/** A public profile (GET /api/users/:id): never the email. */
+export interface UserProfile {
+  id: number;
+  display_name: string;
+  github_login: string | null;
+  is_admin: boolean;
+  created: string;
+  maintains: string[];
+  devices: Array<{ slug: string; name: string; image_url: string; soc: string; ios_version: string; works: number; boots: number }>;
+  repos: Array<{ id: number; repo: string; device_slug: string | null; kind: string; base_project: string; best_result: string; since: string }>;
+  recent: StatusChange[];
+  features: number;
+}
+
+/** The /u/<param> of a profile: the GitHub login when linked, else the user id. */
+export function profileParam(u: { id: number; github_login?: string | null }): string {
+  return u.github_login || String(u.id);
+}
+
+export const loadUserProfile = createServerFn({ method: "GET" })
+  .validator((id: unknown) => String(id))
+  .handler(async ({ data: id }): Promise<UserProfile | null> => {
+    if (!/^(\d{1,15}|[A-Za-z0-9][A-Za-z0-9-]{0,38})$/.test(id)) return null;
+    const res = await serverGet<{ user: UserProfile }>(import("@/routes/api/users.$id"), `/api/users/${encodeURIComponent(id)}`, { id });
+    return res.ok ? res.data.user : null;
+  });
+
 /** One status change on a phone (GET /api/devices/:slug/history). */
 export interface StatusChange {
   id: number;
@@ -758,6 +919,8 @@ export interface StatusChange {
   source: string;
   who: string;
   created: string;
+  /** Photos and clips linked to this change. */
+  media?: Media[];
 }
 
 export function listStatusHistory(
@@ -782,9 +945,21 @@ export function deleteDeviceUpdate(slug: string, id: number, opts?: CallOptions)
 }
 
 /** Every device's slug and name (GET /api/devices?brief=1), for pickers. */
+/** Every tracked phone's slug and name, page by page (for pickers). */
 export async function listDeviceNames(opts?: CallOptions): Promise<Array<{ slug: string; name: string }>> {
-  const res: { devices: Array<{ slug: string; name: string }> } = await req('/api/devices?brief=1&limit=500', undefined, opts);
-  return res.devices;
+  const out: Array<{ slug: string; name: string }> = [];
+  let offset: number | null = 0;
+  while (offset !== null) {
+    const res: { devices: Array<{ slug: string; name: string }>; next?: number | null } = await req(
+      `/api/devices?brief=1&limit=500&offset=${offset}`,
+      undefined,
+      opts,
+    );
+    out.push(...res.devices);
+    offset = res.next ?? null;
+    if (!res.devices.length) break;
+  }
+  return out;
 }
 
 /** Add a collaborator to a repo you maintain, by their GitHub login. */

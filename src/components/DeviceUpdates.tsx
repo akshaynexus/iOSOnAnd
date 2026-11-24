@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { PrimaryAction } from "@/components/common";
 import { useAuth } from "@/components/auth";
 import { useAction } from "@/components/useAction";
-import { checkFile, stripImage } from "@/components/Media";
+import { LinkedMedia, checkFile, stripImage } from "@/components/Media";
 import { StateLabel } from "@/components/StatusBadge";
 import { LinkedText, SourceLink } from "@/components/SourceLink";
 import {
@@ -193,6 +193,7 @@ function ChangeLine({ c, bare = false }: { c: StatusChange; bare?: boolean }) {
           <SourceLink source={c.source} />
         </div>
       ) : null}
+      <LinkedMedia items={c.media} className="pt-1" />
     </li>
   );
 }

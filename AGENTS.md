@@ -20,7 +20,8 @@ README.md describes what exists now.
 | `src/routes/` | pages, and `api/` routes |
 | `src/lib/` | DB, auth (`scopes.ts`: key scopes; `password.ts`: change and reset; `ratelimit.ts`, `ratebuckets.ts`: rate limits; `mail.ts`: Email Service), repos and repo claims, forks, media (R2, `multipart.ts`, `sniff.ts`), GitHub, Reddit and changelog helpers |
 | `src/components/` | UI, `ui/` is shadcn |
-| `content/docs/*.mdx` | the `/docs` pages (Fumadocs, compiled at build by `fumadocs-mdx`; order in `meta.json`) |
+| `content/docs/*.mdx` | the public `/docs` pages (Fumadocs, compiled at build by `fumadocs-mdx`; order in `meta.json`) |
+| `docs-internal/` | setup, deploy, admin and sync runbooks; not published |
 | `src/lib/openapi.ts` | the API description: `/api/openapi.json`, `/api/docs` and `/api-reference` come from it |
 | `.dev.vars.example` | empty placeholder keys, never real values |
 
@@ -36,8 +37,11 @@ README.md describes what exists now.
 
 ## Docs and the API description
 
-- A change to how the tracker runs, who may write, the data or the CLI flow
-  updates the matching `content/docs/*.mdx` page in the same change.
+- A change to who may write, the data or the CLI flow updates the matching
+  `content/docs/*.mdx` page in the same change. Setup, deploy, admin and sync
+  details (secrets and their names, `.dev.vars`, wrangler commands, how admins
+  are made, bucket names, `login --admin`) go in `docs-internal/`, never in the
+  public `content/docs`.
 - A new or changed handler under `src/routes/api/` updates `OPERATIONS` (and
   `TITLES`) in `src/lib/openapi.ts`. `tests/api/openapi.test.ts` fails when
   a route or method is missing there.

@@ -3,6 +3,10 @@
 // Used by GET /api/devices, GET /api/devices/:slug and GET /api/search, so the
 // dashboard's matrix gets every cell from one list call.
 
+import { gpuInfo, type GpuInfo } from '@/lib/gpu';
+import { gpuAccelBySlug, gpuIssuesBySlug, type GpuAccel, type GpuIssue } from '@/lib/gpuAccel';
+import { portingBySlug, type PortingRecordSummary } from '@/lib/porting';
+import { featuresBySlug, type DeviceFeature } from '@/lib/features';
 import { queryAll } from '@/lib/db';
 import { BASES, HttpError, MAINTAINERS_SQL, oneOf, str } from '@/lib/auth';
 import type { Claim, Device, DeviceStatus, RedditPost } from '@/lib/types';
@@ -48,11 +52,15 @@ export const CLAIM_SELECT = `SELECT c.*, u.display_name, u.github_login FROM cla
 export interface DeviceDetail extends Device {
   area_names: Record<string, string>;
   statuses: Array<DeviceStatus & { area_name: string }>;
+  /** Other notable features: what the checklist does not list, or uncommon hardware that works (migration 0014). */
+  features: DeviceFeature[];
   /** Status rows for other systems than iOS (macos, tvos), by system. */
   os_statuses: Record<string, Array<DeviceStatus & { area_name: string }>>;
   forks: ForkView[];
   claims: ClaimView[];
   maintainers: string[];
+  /** The maintainers with their user ids (for links to /u/<id>). */
+  maintainer_users: Array<{ id: number; label: string; github_login: string | null }>;
   posts: RedditPost[];
   /** Every repo that supports the device (repo_devices), upstream first. */
   supported_by: SupportedBy[];
@@ -63,6 +71,14 @@ export interface DeviceDetail extends Device {
   families: string[];
   /** families[0], or '' when the device has no repo. */
   family: string;
+  /** The GPU and its family and open driver (src/lib/gpu.ts). */
+  gpu: string;
+  gpu_source: GpuInfo['gpu_source'];
+  gpu_family: string;
+  gpu_driver: string;
+  gpu_accel: GpuAccel | null;
+  gpu_issues: GpuIssue[];
+  porting: PortingRecordSummary[];
 }
 
 const CHUNK = 90; // D1 allows at most 100 bound parameters per statement
@@ -99,6 +115,7 @@ export async function withDetails(devices: Device[], withPosts = false): Promise
     ),
   ]);
   const forks = await forkViews(forkRows);
+  const [features, accel, porting, issues] = await Promise.all([featuresBySlug(slugs), gpuAccelBySlug(slugs), portingBySlug(slugs), gpuIssuesBySlug(slugs)]);
   const area_names: Record<string, string> = {};
   for (const a of areas) area_names[a.slug] = a.name;
   const group = <T extends { device_slug: string | null }>(rows: T[]) => {
@@ -120,10 +137,13 @@ export async function withDetails(devices: Device[], withPosts = false): Promise
     const families = deviceFamilies(sup, fk.get(d.slug) ?? []);
     // Approved claims and repo maintainers (src/lib/auth.ts, MAINTAINERS_SQL), one entry per user.
     const maintainers = [...new Set((mt.get(d.slug) ?? []).map((m) => claimLabel(m.display_name, m.github_login, m.user_id)))];
+    // The same people with their ids, so pages can link to their profiles (/u/<id>).
+    const maintainerUsers = [...new Map((mt.get(d.slug) ?? []).map((m) => [m.user_id, { id: m.user_id, label: claimLabel(m.display_name, m.github_login, m.user_id), github_login: m.github_login }])).values()];
     return {
       ...d,
       area_names,
       // statuses: the iOS (and iPadOS) checklist, as always; os_statuses: the other systems' rows, by system.
+      features: features.get(d.slug) ?? [],
       statuses: (st.get(d.slug) ?? []).filter((s) => (s.os ?? 'ios') === 'ios'),
       os_statuses: (st.get(d.slug) ?? [])
         .filter((s) => (s.os ?? 'ios') !== 'ios')
@@ -131,10 +151,18 @@ export async function withDetails(devices: Device[], withPosts = false): Promise
       forks: fk.get(d.slug) ?? [],
       claims: dc.map(mapClaimRow),
       maintainers,
+      maintainer_users: maintainerUsers,
       posts: withPosts ? posts : [],
       supported_by: sup,
       families,
       family: families[0] ?? '',
+      // The GPU (its own gpu field, else from the chip), its family and the open driver to read.
+      ...gpuInfo(d),
+      // How the acceleration works and how fast (migration 0018), or null.
+      gpu_accel: accel.get(d.slug) ?? null,
+      gpu_issues: issues.get(d.slug) ?? [],
+      // Porting records of its repos from a porting framework (UniXNU), best-verified first.
+      porting: porting.get(d.slug) ?? [],
       latest_media: media.get(d.slug)?.latest ?? null,
       media_count: media.get(d.slug)?.count ?? 0,
     };
@@ -144,6 +172,7 @@ export async function withDetails(devices: Device[], withPosts = false): Promise
 /** The v2 device fields (migrations/0004) and their caps; base and image_* are admin-only on PATCH. */
 export const DEVICE_TEXT: Record<string, number> = {
   base: 16,
+  gpu: 64,
   ios_version: 64,
   macos_version: 64,
   tvos_version: 64,

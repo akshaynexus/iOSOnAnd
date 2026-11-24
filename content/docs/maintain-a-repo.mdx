@@ -24,7 +24,7 @@ Repo: {REPO or "<OWNER/REPO>"}{, phone: DEVICE}
    node cli.mjs areas
    node cli.mjs status-set {DEVICE} <area> works|in-progress|broken --detail "<what I can show>" --source "<link>"
    Only claim what the repo or I can show. Ask me when unsure.
-5. Attach proof when I give you screenshots or clips: node cli.mjs media-upload <file> --device {DEVICE} --area <area> --caption "..."
+5. Attach proof when I give you screenshots or clips: add --photo <file> (repeatable) to the status-set or feature-add it proves, so the photo is linked to that change; or node cli.mjs media-upload <file> --device {DEVICE} --area <area> --caption "..."
 6. Check the result: node cli.mjs whoami
 ```
 

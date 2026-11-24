@@ -9,7 +9,7 @@ can send from each operation, is at [/api-reference](/api-reference) (OpenAPI 3.
 [/api/docs](/api/docs)). This page explains how it fits together.
 
 ```sh
-BASE=http://localhost:3000            # or the deployed tracker
+BASE=https://hackios.appaiproxy.com
 TOKEN=ion_...                         # node cli.mjs login, or an API key
 ```
 
@@ -140,7 +140,7 @@ curl -X POST "$BASE/api/posts" -H "authorization: Bearer $TOKEN" -H 'content-typ
 ```
 
 Posts carry `image_url`, `image_width`, `image_height` (a thumbnail from the post). See
-[Reddit](/docs/reddit).
+[Data sources](/docs/sources).
 
 ## Keys
 

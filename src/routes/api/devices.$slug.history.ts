@@ -2,7 +2,8 @@
 // (public; ?os= ios, macos, tvos or all, the default; ?limit= default 50, max
 // 200, ?offset=). Each row: area, system and version, the state before (null
 // when the area had no row, or for history read back from the changelog) and
-// after, the detail and source, who and when.
+// after, the detail and source, who and when, and `media`: the photos and
+// clips linked to the change (media.history_id).
 // -> {history, total, limit, offset, next}
 
 import { createFileRoute } from '@tanstack/react-router';
@@ -10,6 +11,7 @@ import { queryFirst } from '@/lib/db';
 import { HttpError, json, paged, pageParams } from '@/lib/auth';
 import { apiHandlers, type ApiCtx } from '@/lib/api';
 import { osOf } from '@/lib/status';
+import { mediaByLink, type Media } from '@/lib/media';
 
 export interface StatusChange {
   id: number;
@@ -24,6 +26,7 @@ export interface StatusChange {
   source: string;
   who: string;
   created: string;
+  media?: Media[];
 }
 
 async function handleGet({ request, params }: ApiCtx): Promise<Response> {
@@ -47,7 +50,8 @@ async function handleGet({ request, params }: ApiCtx): Promise<Response> {
     vals,
     pageParams(sp, 50, 200),
   );
-  return json({ history: rows, ...page });
+  const media = await mediaByLink('history_id', rows.map((r) => r.id));
+  return json({ history: rows.map((r) => ({ ...r, media: media.get(r.id) ?? [] })), ...page });
 }
 
 export const Route = createFileRoute('/api/devices/$slug/history')({

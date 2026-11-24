@@ -58,7 +58,8 @@ async function handleGet({ request }: { request: Request }): Promise<Response> {
       await exec('UPDATE users SET github_id = ?, github_login = ?, github_linked_at = ? WHERE id = ?', [gh.id, gh.login, nowIso(), current.id]);
       await appendChangelog(actorName(current), `linked github @${gh.login} (GitHub sign-in)`);
     }
-    return go(saved.redirect === '/' ? '/profile?tab=github' : saved.redirect);
+    // Back where linking started (the home page shows "Your repos on the tracker" next).
+    return go(saved.redirect);
   }
 
   let user = owner;

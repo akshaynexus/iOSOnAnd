@@ -6,12 +6,10 @@ import { PhoneOutline } from "@/components/common";
 import { SegmentBar, devicePhoto } from "@/components/DeviceCard";
 import { CountUp, Reveal, reducedMotion, useSeenOnce } from "@/components/motion";
 import { ONEIOS_REPO, familiesOfDevice, familyName, forksByRepo, mainRepoOf } from "@/components/repoInfo";
-import { applicableAreas, boots, stateCounts } from "@/lib/areas";
+import { applicableAreas, boots, lastChanged, rankScore, stateCounts } from "@/lib/areas";
 import { forkKind, type Dashboard, type Device, type Media, type Post } from "@/lib/client";
 import { cn, formatDate, parseDate, relativeTime } from "@/lib/utils";
 
-/** OneiOS's primary phone: featured first when it is in the data. */
-const MAIN_DEVICE = "s24-ultra";
 /** Named family segments before the rest is grouped as "Other". */
 const TOP_FAMILIES = 6;
 /**
@@ -39,17 +37,16 @@ interface FamilySlice {
 }
 
 /** The phone to feature: the main device, else the OneiOS phone with the most working areas. */
+/** The phone to feature: the best overall (rankScore), whatever project it runs. */
 function featuredDevice(devices: Device[], areas: Dashboard["areas"]): Device | null {
-  const main = devices.find((d) => d.slug === MAIN_DEVICE);
-  if (main) return main;
+  const now = Math.max(0, ...devices.map(lastChanged));
   let best: Device | null = null;
-  let works = -1;
+  let top = -1;
   for (const d of devices) {
-    if (d.base !== "oneios") continue;
-    const n = stateCounts(d, areas).works;
-    if (n > works) {
+    const s = rankScore(d, areas, now);
+    if (s > top) {
       best = d;
-      works = n;
+      top = s;
     }
   }
   return best;
@@ -356,7 +353,9 @@ export function OverviewSummary({
       featured: featuredDevice(devices, areas),
       phones: devices.length,
       booting: devices.filter(boots).length,
-      oneios: devices.filter((d) => d.base === "oneios").length,
+      // GPU acceleration of any kind: compositing, Metal or OpenGL ES working.
+      accelerated: devices.filter((d) => d.statuses.some((s) => ["gpu", "metal", "gles"].includes(s.area_slug) && s.state === "works")).length,
+      metal: devices.filter((d) => d.statuses.some((s) => s.area_slug === "metal" && s.state === "works")).length,
       repos: forks.length,
       mainRepos,
       slices,
@@ -398,7 +397,7 @@ export function OverviewSummary({
               sub={`${summary.mainRepos} main, ${summary.repos - summary.mainRepos} forks and ports`}
               to="repos"
             />
-            <Stat label="OneiOS phones" value={summary.oneios} />
+            <Stat label="GPU accelerated" value={summary.accelerated} sub={summary.metal > 0 ? `${summary.metal} with Metal` : undefined} />
           </dl>
         </Reveal>
       </div>

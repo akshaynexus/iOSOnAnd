@@ -1,5 +1,6 @@
 // /api/devices — GET list (?q= searches slug/name/model/SoC/notes, ?state=,
-// ?base=, ?family= (a label in its families), ?limit= (default and max 500),
+// ?base=, ?family= (a label in its families), ?gpu= (the GPU or its family:
+// "Adreno 619", "Adreno 6xx", "Mali Valhall", "mali-g57"), ?limit= (default and max 500),
 // ?offset=, ?brief=1 (only {slug, name} per device, for pickers); public; each device carries families/family,
 // statuses, forks, claims, maintainers, supported_by and media, read in a
 // fixed number of queries; -> {devices, total, limit, offset, next}), POST
@@ -27,6 +28,7 @@ import {
 import { apiHandlers, type ApiCtx } from '@/lib/api';
 import { DEVICE_TEXT, deviceField, likeEscape, withDetails } from '@/lib/devices';
 import { appendChangelog } from '@/lib/changelog';
+import { gpuMatches } from '@/lib/gpu';
 import type { Device } from '@/lib/types';
 
 async function handleGet({ request }: ApiCtx): Promise<Response> {
@@ -56,11 +58,16 @@ async function handleGet({ request }: ApiCtx): Promise<Response> {
   }
   const w = where.length ? `WHERE ${where.join(' AND ')}` : '';
   const family = sp.get('family')?.trim() || null;
-  if (family) {
+  const gpu = sp.get('gpu')?.trim().slice(0, 64) || null;
+  if (family || gpu) {
     // families is derived (src/lib/forks.ts deviceFamilies), so this filter
     // runs on the detailed rows; there are a few hundred devices at most.
     const all = await withDetails(await queryAll<Device>(`SELECT * FROM devices ${w} ORDER BY slug`, vals));
-    const hit = all.filter((d) => d.families.some((f) => f.toLowerCase() === family.toLowerCase()));
+    const hit = all.filter(
+      (d) =>
+        (!family || d.families.some((f) => f.toLowerCase() === family.toLowerCase())) &&
+        (!gpu || gpuMatches(d, gpu)),
+    );
     const rows = hit.slice(page.offset, page.offset + page.limit);
     return json({ devices: rows, ...pageInfo(hit.length, page.limit, page.offset, rows.length) });
   }

@@ -55,9 +55,9 @@ export async function upsertStatus(
     [device, area, os, osVersion, state, detail, source, now],
   );
   if (!row) throw new HttpError(500, 'status write failed', 'retry');
-  await exec(
+  const hist = await queryFirst<{ id: number }>(
     `INSERT INTO status_history (device_slug, area_slug, os, os_version, old_state, state, detail, source, who, user_id, created)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
     [device, area, os, row.os_version ?? '', before?.state ?? null, state, detail, source, actorName(user), user.id ?? null, now],
   );
   if (osVersion) {
@@ -66,5 +66,6 @@ export async function upsertStatus(
   }
   const tag = os === 'ios' ? (osVersion ? `[${osVersion}] ` : '') : `[${osVersion || OS_LABELS[os]}] `;
   await appendChangelog(actorName(user), `status ${device}/${area} -> ${state}${detail || tag ? `: ${tag}${detail.slice(0, 200)}` : ''}`);
-  return row;
+  // history_id: link photos to this change (POST /api/media history_id, CLI status-set --photo).
+  return { ...row, history_id: hist?.id };
 }

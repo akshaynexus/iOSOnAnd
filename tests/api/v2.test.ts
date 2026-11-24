@@ -137,6 +137,126 @@ describe('devices, areas and the not-applicable rule', () => {
     expect((await call('GET', `/api/devices/no-such-${Date.now()}/history`)).status).toBe(404);
   });
 
+  test('the GPU: from the chip, set on the device, filtered by model or family', async () => {
+    expect((await call('PATCH', `/api/devices/${DEV}`, { who: admin, body: { soc: 'Snapdragon 695 (SM6375)' } })).status).toBe(200);
+    let d = (await call('GET', `/api/devices/${DEV}`)).body.device;
+    expect(d).toMatchObject({ gpu: 'Adreno 619', gpu_source: 'chip', gpu_family: 'Adreno 6xx', gpu_driver: 'freedreno / Turnip (msm)' });
+    expect((await call('GET', '/api/devices?gpu=adreno%206xx&limit=500')).body.devices.map((x: any) => x.slug)).toContain(DEV);
+    expect((await call('GET', '/api/devices?gpu=Mali%20Valhall&limit=500')).body.devices.map((x: any) => x.slug)).not.toContain(DEV);
+    expect((await call('PATCH', `/api/devices/${DEV}`, { who: admin, body: { gpu: 'Adreno 620' } })).status).toBe(200);
+    d = (await call('GET', `/api/devices/${DEV}`)).body.device;
+    expect(d).toMatchObject({ gpu: 'Adreno 620', gpu_source: 'device', gpu_family: 'Adreno 6xx' });
+    expect((await call('PATCH', `/api/devices/${DEV}`, { who: admin, body: { gpu: '', soc: '' } })).status).toBe(200);
+    expect((await call('GET', `/api/devices/${DEV}`)).body.device).toMatchObject({ gpu: '', gpu_source: '' });
+  });
+
+  test('GPU acceleration: method, chain and frame rate; maintainers write, everyone reads', async () => {
+    expect((await call('PUT', `/api/devices/${DEV}/gpu`, { who: admin, body: { stack: 'x' } })).status).toBe(400); // method first
+    expect((await call('PUT', `/api/devices/${DEV}/gpu`, { who: admin, body: { method: 'magic' } })).status).toBe(400);
+    expect((await call('PUT', `/api/devices/${DEV}/gpu`, { who: bob.who, body: { method: 'cpu' } })).status).toBe(403);
+    const put = await call('PUT', `/api/devices/${DEV}/gpu`, {
+      who: admin,
+      body: { method: 'metal-vulkan', stack: 'AdrenoMetal -> metal2vulkan -> Turnip', fps: '58-40', fps_note: 'idle lock screen', repos: ['UniXNU/AdrenoMetal'], source: 'test' },
+    });
+    expect(put.status).toBe(200);
+    expect(put.body.accel).toMatchObject({ method: 'metal-vulkan', method_label: 'Metal over Vulkan', fps_low: 40, fps_high: 58, repos: ['UniXNU/AdrenoMetal'] });
+    expect((await call('PUT', `/api/devices/${DEV}/gpu`, { who: admin, body: { repos: ['not a repo'] } })).status).toBe(400);
+    // Fields not sent keep their value.
+    const fps = await call('PUT', `/api/devices/${DEV}/gpu`, { who: admin, body: { fps: '30' } });
+    expect(fps.body.accel).toMatchObject({ method: 'metal-vulkan', fps_low: 30, fps_high: null, stack: 'AdrenoMetal -> metal2vulkan -> Turnip' });
+    expect((await call('GET', `/api/devices/${DEV}/gpu`)).body.gpu.accel.method).toBe('metal-vulkan');
+    expect((await call('GET', `/api/devices/${DEV}`)).body.device.gpu_accel.fps_low).toBe(30);
+    expect((await call('DELETE', `/api/devices/${DEV}/gpu`, { who: admin })).status).toBe(200);
+    expect((await call('GET', `/api/devices/${DEV}`)).body.device.gpu_accel).toBeNull();
+  });
+
+  test('GPU issues: log, find across phones, mark fixed, remove; maintainers write', async () => {
+    const add = await call('POST', `/api/devices/${DEV}/gpu/issues`, {
+      who: admin,
+      body: { title: `White widgets ${RUN}`, kind: 'white-widgets', cause: 'no hardware HEVC encoder', source: 'test' },
+    });
+    expect(add.status).toBe(201);
+    expect(add.body.issue).toMatchObject({ kind: 'white-widgets', state: 'open', kind_label: 'White widgets or snapshots' });
+    const id = add.body.issue.id;
+    expect((await call('POST', `/api/devices/${DEV}/gpu/issues`, { who: admin, body: { kind: 'black-ui' } })).status).toBe(400); // title
+    expect((await call('POST', `/api/devices/${DEV}/gpu/issues`, { who: admin, body: { title: 'x', kind: 'nope' } })).status).toBe(400);
+    expect((await call('POST', `/api/devices/${DEV}/gpu/issues`, { who: bob.who, body: { title: 'x' } })).status).toBe(403);
+    expect((await call('GET', `/api/gpu/issues?kind=white-widgets&q=${RUN}`)).body.issues.map((i: any) => i.id)).toContain(id);
+    const fixed = await call('PATCH', `/api/devices/${DEV}/gpu/issues/${id}`, { who: admin, body: { state: 'fixed', fix: 'paravirtual encoder' } });
+    expect(fixed.body.issue).toMatchObject({ state: 'fixed', fix: 'paravirtual encoder', cause: 'no hardware HEVC encoder' });
+    expect((await call('GET', `/api/devices/${DEV}`)).body.device.gpu_issues[0].id).toBe(id);
+    expect((await call('GET', `/api/devices/${DEV}/gpu`)).body.gpu.issues.length).toBe(1);
+    expect((await call('DELETE', `/api/devices/${DEV}/gpu/issues/${id}`, { who: admin })).status).toBe(200);
+    expect((await call('PATCH', `/api/devices/${DEV}/gpu/issues/${id}`, { who: admin, body: { state: 'open' } })).status).toBe(404);
+  });
+
+  test('porting records and components: admin import, public reads, filters, on the device', async () => {
+    const rec = {
+      framework: 'TestFW',
+      record: `rec-${RUN}`,
+      codename: 'testcode',
+      repo: `test-owner/rec-${RUN}`,
+      device_slug: DEV,
+      os_profile: 'ipados-27.0.1-24A446',
+      summary: 'test record',
+      areas: [
+        { id: 'gpu', status: 'device-verified', components: [`Comp${RUN}`], completion: ['Metal renders'], procedure: ['./build'] },
+        { id: 'network', status: 'planned', components: [] },
+      ],
+    };
+    expect((await call('POST', '/api/porting', { who: alice.who, body: { records: [rec] } })).status).toBe(403);
+    expect((await call('POST', '/api/porting', { who: admin, body: { records: [{ framework: 'x' }] } })).status).toBe(400);
+    expect((await call('POST', '/api/porting', { who: admin, body: { records: [rec] } })).body.imported).toBe(1);
+    expect((await call('POST', '/api/porting/components', { who: admin, body: { components: [{ framework: 'TestFW', id: `Comp${RUN}`, function: 'test GPU driver', hardware: ['Adreno 999'] }] } })).body.imported).toBe(1);
+    const byDev = await call('GET', `/api/porting?device=${DEV}`);
+    expect(byDev.body.records[0]).toMatchObject({ key: `testfw:rec-${RUN}`, counts: { device_verified: 1, planned: 1 }, area_status: { gpu: 'device-verified' } });
+    expect((await call('GET', `/api/porting?component=Comp${RUN}`)).body.total).toBe(1);
+    expect((await call('GET', `/api/porting?device=${DEV}&area=gpu&status=planned`)).body.total).toBe(0);
+    const full = await call('GET', `/api/porting/testfw:rec-${RUN}`);
+    expect(full.body.record.areas[0]).toMatchObject({ id: 'gpu', completion: ['Metal renders'], procedure: ['./build'] });
+    const comps = await call('GET', `/api/porting/components?q=comp${RUN}`);
+    expect(comps.body.components[0].used_by[0]).toMatchObject({ repo: `test-owner/rec-${RUN}`, area: 'gpu', status: 'device-verified' });
+    expect((await call('GET', `/api/devices/${DEV}`)).body.device.porting.map((p: any) => p.record)).toContain(`rec-${RUN}`);
+    expect((await call('GET', '/api/porting/nope-nope')).status).toBe(404);
+    if (LOCAL) localSql(`DELETE FROM porting_records WHERE framework = 'TestFW'; DELETE FROM porting_components WHERE framework = 'TestFW';`);
+  });
+
+  test('other notable features: add, read on the device, change, remove; maintainers only', async () => {
+    const add = await call('POST', `/api/devices/${DEV}/features`, { who: admin, body: { name: 'IR blaster', detail: 'test', source: 'https://example.test/log' } });
+    expect(add.status).toBe(201);
+    expect(add.body.feature).toMatchObject({ name: 'IR blaster', state: 'works', os: 'ios' });
+    const id = add.body.feature.id;
+    expect((await call('POST', `/api/devices/${DEV}/features`, { who: admin, body: { name: 'ir blaster' } })).status).toBe(409);
+    expect((await call('POST', `/api/devices/${DEV}/features`, { who: admin, body: { state: 'works' } })).status).toBe(400);
+    expect((await call('POST', `/api/devices/${DEV}/features`, { who: alice.who, body: { name: 'Stylus' } })).status).toBe(403);
+
+    const list = await call('GET', `/api/devices/${DEV}/features`);
+    expect(list.body.features.map((f: any) => f.name)).toContain('IR blaster');
+    expect((await call('GET', `/api/devices/${DEV}`)).body.device.features.some((f: any) => f.id === id)).toBe(true);
+
+    const set = await call('PATCH', `/api/devices/${DEV}/features/${id}`, { who: admin, body: { state: 'in-progress', os: 'macos' } });
+    expect(set.body.feature).toMatchObject({ state: 'in-progress', os: 'macos', detail: 'test' });
+    expect((await call('DELETE', `/api/devices/${DEV}/features/${id}`, { who: admin })).status).toBe(200);
+    expect((await call('DELETE', `/api/devices/${DEV}/features/${id}`, { who: admin })).status).toBe(404);
+  });
+
+  test('a public profile shows what someone maintains and their changes, never the email; account events stay out of the changelog', async () => {
+    const p = await call('GET', `/api/users/${alice.id}`);
+    expect(p.status).toBe(200);
+    expect(p.body.user).toMatchObject({ id: alice.id, maintains: expect.any(Array), devices: expect.any(Array), repos: expect.any(Array), recent: expect.any(Array) });
+    expect(JSON.stringify(p.body)).not.toContain(alice.email);
+    expect(p.body.user.email).toBeUndefined();
+    expect((await call('GET', '/api/users/999999999')).status).toBe(404);
+
+    const log = await call('GET', '/api/changelog?limit=500');
+    expect(log.status).toBe(200);
+    const accountish = /^(registered a new account|created account |github sign-in:|github login:|linked github|unlinked github)|^account .* removed$/;
+    expect(log.body.changelog.some((c: any) => accountish.test(c.summary))).toBe(false);
+    // Admins can ask for them.
+    const all = await call('GET', '/api/changelog?limit=500&accounts=1', { who: admin });
+    expect(all.body.total).toBeGreaterThanOrEqual(log.body.total);
+  });
+
   test('device fields: base and image_* are admin-only, ios_version is not; bad values are 400', async () => {
     const r = await call('PATCH', `/api/devices/${DEV}`, {
       who: admin,
@@ -677,6 +797,41 @@ describe('media', () => {
     // The header also works for a JSON-less cookie write elsewhere; a bearer token needs none of this.
     expect((await call('DELETE', `/api/media/${ok.body.media.id}`, { who: alice.who, headers: { 'x-requested-with': 'iosonand' } })).status).toBe(200);
     made.media = made.media.filter((id) => id !== ok.body.media.id);
+  });
+
+  const XRW = { 'x-requested-with': 'iosonand' }; // admin's login is a cookie session
+  test('photos link to a status change and a notable feature; the links stay on the device', async () => {
+    const st = await call('PUT', `/api/status/${DEV}/audio`, { who: admin, body: { state: 'in-progress', detail: `photo ${RUN}`, source: 'test' } });
+    expect(st.status).toBe(200);
+    const hid = st.body.status.history_id;
+    expect(typeof hid).toBe('number');
+    // Linked to the change: the area comes from it; another area is 400; another device's change is 404.
+    const up = await call('POST', '/api/media', { who: admin, headers: XRW, form: form({ device: DEV, history_id: String(hid) }, { bytes: PNG, name: 'a.png' }) });
+    expect(up.status).toBe(201);
+    made.media.push(up.body.media.id);
+    expect(up.body.media).toMatchObject({ history_id: hid, area_slug: 'audio', feature_id: null });
+    expect((await call('POST', '/api/media', { who: admin, headers: XRW, form: form({ device: DEV, area: 'wifi', history_id: String(hid) }, { bytes: PNG, name: 'a.png' }) })).status).toBe(400);
+    expect((await call('POST', '/api/media', { who: admin, headers: XRW, form: form({ device: DEVO, history_id: String(hid) }, { bytes: PNG, name: 'a.png' }) })).status).toBe(404);
+    const hist = await call('GET', `/api/devices/${DEV}/history?limit=5`);
+    expect(hist.body.history.find((h: any) => h.id === hid).media.map((m: any) => m.id)).toEqual([up.body.media.id]);
+    expect((await call('GET', `/api/media?history_id=${hid}`)).body.media.map((m: any) => m.id)).toEqual([up.body.media.id]);
+
+    // Linked to a feature afterwards (PATCH); a stranger is 403; the feature lists it; removing the feature keeps the upload.
+    const ft = await call('POST', `/api/devices/${DEV}/features`, { who: admin, body: { name: `Hinge ${RUN}`, detail: 'test' } });
+    const fid = ft.body.feature.id;
+    expect((await call('PATCH', `/api/media/${up.body.media.id}`, { who: bob.who, body: { feature_id: fid } })).status).toBe(403);
+    const link = await call('PATCH', `/api/media/${up.body.media.id}`, { who: admin, body: { feature_id: fid } });
+    expect(link.status).toBe(200);
+    expect(link.body.media).toMatchObject({ feature_id: fid, history_id: hid, area_slug: 'audio' });
+    expect((await call('PATCH', `/api/media/${up.body.media.id}`, { who: admin, body: {} })).status).toBe(400);
+    const feats = await call('GET', `/api/devices/${DEV}/features`);
+    expect(feats.body.features.find((f: any) => f.id === fid).media.map((m: any) => m.id)).toEqual([up.body.media.id]);
+    expect((await call('DELETE', `/api/devices/${DEV}/features/${fid}`, { who: admin })).status).toBe(200);
+    const after = await call('GET', `/api/media/${up.body.media.id}`);
+    expect(after.body.media).toMatchObject({ feature_id: null, history_id: hid });
+    // Unlink the change: the area stays.
+    const un = await call('PATCH', `/api/media/${up.body.media.id}`, { who: admin, body: { history_id: null } });
+    expect(un.body.media).toMatchObject({ history_id: null, area_slug: 'audio' });
   });
 
   test('delete: only the uploader or an admin; afterwards /media/<key> is 404', async () => {

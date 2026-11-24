@@ -154,7 +154,12 @@ Replace the text and \`<sha>\` with the real ones, then read it back with
 
 ## Photos and clips
 
+Link a screenshot or clip to the change or feature it proves with \`--photo\`
+(repeat it for more files), or post a general progress update:
+
 \`\`\`sh
+${T} status-set ${device} touch works --detail "..." --source <url> --photo home-screen.jpg
+${T} feature-add ${device} "<name>" works --detail "..." --source <url> --photo clip.mp4
 ${T} update ${device} home-screen.jpg clip.mp4 --text "What changed" --area touch
 \`\`\`
 
@@ -189,6 +194,10 @@ tracker in the same session. Details and examples are in \`TRACKER.md\`.
 - Read first: \`status-get --device ${device}\`, and \`areas\` for the exact slug.
 - Record: \`status-set ${device} <area> <works|in-progress|broken|unknown> --detail "<what the build, log or test showed>" --source <commit, CI run or log URL>\`, then read it back.
 - Say which system it was on: \`--os ios\` (the default; iPadOS too), \`--os macos\` or \`--os tvos\`, with \`--version "<e.g. iOS 27.2>"\`.
+- Uncommon hardware that works, or something the areas don't cover: \`feature-add ${device} "<name>" works --detail "..." --source <url>\`.
+- A screenshot or clip that proves it: add \`--photo <file>\` to that \`status-set\` or \`feature-add\`.
+- A GPU issue (white widgets, black blurs, GPU faults, out of memory): \`gpu-issue-add ${device} "<symptom>" --kind <kind> --cause "..." --source <url>\`; when fixed, \`gpu-issue-set ${device} <id> --state fixed --fix "..."\`.
+- How the GPU acceleration works and how fast: \`gpu-set ${device} --method <native-metal|metal-vulkan|metal-gl|gles|virtio-gpu|cpu> --stack "<chain>" --fps <low-high> --fps-note "<what was measured>" --source <url>\`.
 - Auth comes from \`TRACKER_TOKEN\` or the CLI's saved login (\`login\`). Never
   write a key into a file in the repo, a commit or a \`--detail\`.
 - Only record what was observed on the phone or in CI; unproven stays

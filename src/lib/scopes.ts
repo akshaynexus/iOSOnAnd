@@ -15,7 +15,7 @@ export type Scope = (typeof SCOPES)[number];
 export const SCOPE_TEXT: Record<Scope, string> = {
   all: 'everything the owner may do, including keys, claims and account changes',
   read: 'only reads (GET) that need a login, such as /api/auth/me',
-  'status:write': 'status cells and device fields (PUT/POST /api/status..., PATCH /api/devices/{slug})',
+  'status:write': 'status cells, other notable features and device fields (PUT/POST /api/status..., /api/devices/{slug}/features..., PATCH /api/devices/{slug})',
   'fork:write': 'forks, repo claims and repo support rows (/api/forks..., /api/repos...)',
   'post:write': 'posts and the Reddit fetch (/api/posts..., /api/reddit/fetch)',
   'media:write': 'uploads and their deletion (/api/media...), and photo updates on a phone (/api/devices/{slug}/updates)',
@@ -26,6 +26,8 @@ const RULES: Array<[RegExp, RegExp, Scope]> = [
   [/^(GET|HEAD|OPTIONS)$/, /.*/, 'read'],
   [/.*/, /^\/api\/status(\/|$)/, 'status:write'],
   [/^PATCH$/, /^\/api\/devices\/[^/]+$/, 'status:write'],
+  [/.*/, /^\/api\/devices\/[^/]+\/features(\/|$)/, 'status:write'],
+  [/.*/, /^\/api\/devices\/[^/]+\/gpu(\/|$)/, 'status:write'],
   [/.*/, /^\/api\/(forks|repos)(\/|$)/, 'fork:write'],
   [/.*/, /^\/api\/(posts(\/|$)|reddit\/)/, 'post:write'],
   [/.*/, /^\/api\/media(\/|$)/, 'media:write'],

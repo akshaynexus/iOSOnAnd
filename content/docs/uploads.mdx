@@ -4,7 +4,7 @@ description: "Screenshots and clips as proof: who may upload, the allowed types 
 ---
 
 A maintainer attaches proof to a phone: a screenshot of a working area, a clip of the boot. Files
-are stored in Cloudflare R2 (the `MEDIA` binding, bucket `iosonand-media`); the database keeps one
+are stored in object storage; the database keeps one
 `media` row per file.
 
 ## Upload
@@ -16,7 +16,7 @@ node cli.mjs media-delete 14
 ```
 
 `media-upload` sends `POST /api/media` as `multipart/form-data` with the fields `device`
-(required), `fork_id`, `area`, `caption` and then `file`. With curl:
+(required), `fork_id`, `area`, `history_id`, `feature_id`, `caption` and then `file`. With curl:
 
 ```sh
 curl -H "authorization: Bearer $TOKEN" -F device=s25 -F area=wifi -F caption="joined WPA2" -F file=@wifi.png "$BASE/api/media"
@@ -28,6 +28,34 @@ curl -H "authorization: Bearer $TOKEN" -F device=s25 -F area=wifi -F caption="jo
 - From the site (session cookie) the page sends the header `X-Requested-With: iosonand`, because
   the body is not JSON ([API conventions](/docs/api#conventions)).
 - The answer is 201 with the media row; the file is at its `url`.
+
+## Link a photo to what it proves
+
+A photo or clip can be linked to a status change (the write that set an area) or to a
+[notable feature](/docs/data-model#device_features). The phone's "What changed" timeline and its
+features list show the linked files next to the change or feature.
+
+```sh
+# write a status and attach its proof in one go (repeat --photo, up to 10 files)
+node cli.mjs status-set s25 wifi works --detail "joins WPA2, 80 Mbit/s" --source "<commit>" --photo wifi.png
+# the same for a feature
+node cli.mjs feature-add s25 "IR blaster" works --detail "..." --source "<log>" --photo ir.mp4
+node cli.mjs feature-set s25 7 --photo ir2.jpg
+# link an upload afterwards, or unlink it with none
+node cli.mjs media-link 14 --history 812
+node cli.mjs media-link 14 --feature 7
+node cli.mjs media-link 14 --history none
+```
+
+- A status write answers with `history_id`, the change it added. Send it as `history_id` in the
+  upload; the upload's area becomes the change's (another `area` is 400).
+- `feature_id` links a notable feature. Both must belong to the upload's phone (404 otherwise).
+- `PATCH /api/media/{id}` with `{"history_id": N}`, `{"feature_id": N}` (null unlinks) or
+  `{"caption": "..."}` links or captions an existing upload: the uploader, an admin or a maintainer
+  of the phone.
+- `GET /api/devices/{slug}/history` and the feature lists carry each row's `media`;
+  `GET /api/media?history_id=` and `?feature_id=` list them too.
+- Removing a feature clears the link; the upload stays on the phone.
 
 ## Types and sizes
 
@@ -91,8 +119,3 @@ same from the Updates form (images lose their EXIF data first, as with any uploa
 
 An update is a claim like any other: it shows what the maintainer saw. A status change still goes
 through `status-set` with its detail and source.
-
-## Local dev and deploy
-
-`vite dev` uses the emulated R2 under `.wrangler/state`, so uploads work locally with no setup.
-For a deploy, create the bucket once: `wrangler r2 bucket create iosonand-media`.

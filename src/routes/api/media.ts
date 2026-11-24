@@ -1,8 +1,10 @@
 // /api/media — uploads (proof screenshots and clips) on R2.
-// GET ?device= ?fork_id= ?area= ?kind=image|video ?limit= (default 50, max
-// 500) ?offset= (public) -> {media: [Media], total, limit, offset, next},
-// newest first.
+// GET ?device= ?fork_id= ?area= ?history_id= ?feature_id= ?kind=image|video
+// ?limit= (default 50, max 500) ?offset= (public) -> {media: [Media], total,
+// limit, offset, next}, newest first.
 // POST multipart/form-data: device (required; or ?device=), fork_id?, area?,
+// history_id? (a status change of the device: the photo is its evidence, and
+// its area is the change's), feature_id? (a notable feature of the device),
 // caption?, then file (the text fields must come before the file part).
 // Admin or a maintainer of the device; a token needs media:write. The body is
 // streamed into R2 (src/lib/media.ts), never buffered whole. Checks, in
@@ -14,7 +16,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { queryFirst } from '@/lib/db';
 import { HttpError, actorName, json, nowIso, paged, pageParams, randomTokenString, requireDeviceEditor, requireUser } from '@/lib/auth';
 import { apiHandlers, type ApiCtx } from '@/lib/api';
-import { MEDIA_SELECT, R2Upload, loadMedia, mapMedia, mediaBucket, type MediaRow } from '@/lib/media';
+import { MEDIA_SELECT, R2Upload, loadMedia, mapMedia, mediaBucket, mediaLinks, type MediaRow } from '@/lib/media';
 import { MultipartError, boundaryOf, parseMultipart } from '@/lib/multipart';
 import { REQUEST_MAX } from '@/lib/sniff';
 import { appendChangelog } from '@/lib/changelog';
@@ -40,6 +42,13 @@ async function handleGet({ request }: ApiCtx): Promise<Response> {
   if (area) {
     where.push('m.area_slug = ?');
     vals.push(area);
+  }
+  for (const col of ['history_id', 'feature_id'] as const) {
+    const v = sp.get(col)?.trim();
+    if (!v) continue;
+    if (!/^\d{1,15}$/.test(v)) throw new HttpError(400, `bad ${col}`, `${col} is numeric`);
+    where.push(`m.${col} = ?`);
+    vals.push(Number(v));
   }
   if (kind) {
     if (kind !== 'image' && kind !== 'video') throw new HttpError(400, 'bad kind', 'kind must be image or video');
@@ -67,7 +76,7 @@ async function handlePost({ request }: ApiCtx): Promise<Response> {
   }
   const boundary = boundaryOf(request.headers.get('content-type'));
   if (!boundary || !request.body) {
-    throw new HttpError(415, 'multipart/form-data required', 'send multipart/form-data: device, fork_id?, area?, caption?, then file');
+    throw new HttpError(415, 'multipart/form-data required', 'send multipart/form-data: device, fork_id?, area?, history_id?, feature_id?, caption?, then file');
   }
   const query = new URL(request.url).searchParams;
   const fields: Record<string, string> = {};
@@ -75,6 +84,7 @@ async function handlePost({ request }: ApiCtx): Promise<Response> {
   let device = '';
   let forkId: number | null = null;
   let area: string | null = null;
+  let links = { history_id: null as number | null, feature_id: null as number | null };
   let fileSeen = false;
   try {
     await parseMultipart(request.body, boundary, {
@@ -98,6 +108,13 @@ async function handlePost({ request }: ApiCtx): Promise<Response> {
           }
           area = areaRaw;
         }
+        const l = await mediaLinks(device, {
+          history: fields.history_id || fields.history || query.get('history_id'),
+          feature: fields.feature_id || fields.feature || query.get('feature_id'),
+          area,
+        });
+        links = { history_id: l.history_id, feature_id: l.feature_id };
+        area = l.area;
         const forkRaw = fields.fork_id || query.get('fork_id')?.trim() || '';
         if (forkRaw) {
           if (!/^\d{1,15}$/.test(forkRaw) || !(await queryFirst('SELECT id FROM forks WHERE id = ?', [Number(forkRaw)]))) {
@@ -126,9 +143,9 @@ async function handlePost({ request }: ApiCtx): Promise<Response> {
   let row: { id: number } | null = null;
   try {
     row = await queryFirst<{ id: number }>(
-      `INSERT INTO media (device_slug, fork_id, area_slug, user_id, r2_key, content_type, bytes, width, height, caption, created, deleted)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0) RETURNING id`,
-      [device, forkId, area, user.id, up.r2Key, up.sniffed.type, up.total, up.width, up.height, fields.caption ?? '', nowIso()],
+      `INSERT INTO media (device_slug, fork_id, area_slug, history_id, feature_id, user_id, r2_key, content_type, bytes, width, height, caption, created, deleted)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0) RETURNING id`,
+      [device, forkId, area, links.history_id, links.feature_id, user.id, up.r2Key, up.sniffed.type, up.total, up.width, up.height, fields.caption ?? '', nowIso()],
     );
   } finally {
     if (!row) await up.abort();
@@ -136,7 +153,7 @@ async function handlePost({ request }: ApiCtx): Promise<Response> {
   if (!row) throw new HttpError(500, 'media record failed', 'retry the upload');
   await appendChangelog(
     actorName(user),
-    `media #${row.id} uploaded for ${device}${area ? `/${area}` : ''} (${up.sniffed.kind}, ${Math.ceil(up.total / 1024)} KB)`,
+    `media #${row.id} uploaded for ${device}${area ? `/${area}` : ''}${links.feature_id ? ` (feature #${links.feature_id})` : ''} (${up.sniffed.kind}, ${Math.ceil(up.total / 1024)} KB)`,
   );
   return json({ media: mapMedia(await loadMedia(String(row.id))) }, 201);
 }

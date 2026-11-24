@@ -22,7 +22,6 @@ node cli.mjs check                                # must print "ok": true
 
 ```sh
 node cli.mjs login              # GitHub gist proof (gh must be logged in); the CLI deletes the gist after
-node cli.mjs login --admin      # local dev only: ADMIN_EMAIL / ADMIN_PASSWORD from .dev.vars
 TRACKER_PASSWORD=... node cli.mjs login --email ADDR
 ```
 
@@ -72,6 +71,21 @@ node cli.mjs status-get --device <device> --area <area>   # read back
 node cli.mjs history <device>                   # what changed: each status change, before and after
 ```
 
+Something the areas don't cover, or uncommon hardware that works (an IR blaster, a stylus, a
+second screen), goes under the phone's other notable features:
+`feature-add <device> "<name>" works --detail "..." --source "..."` (`features <device>` lists
+them; `feature-set` and `feature-remove` change them).
+
+How the GPU acceleration works and how fast goes in one record per phone, with the frame rate
+measured and what it was measured on:
+`gpu-set <device> --method native-metal|metal-vulkan|metal-gl|gles|virtio-gpu|cpu --stack "A -> B -> C" --fps 40-58 --fps-note "idle lock screen" --repos OWNER/REPO --source "..."`
+(`gpu-get <device>` reads it; update `--fps` as the frame rate improves).
+
+A GPU problem goes in as an issue, so porters with the same symptom find the cause and the fix:
+`gpu-issue-add <device> "<symptom>" --kind white-widgets|black-ui|gpu-fault|out-of-memory|artifacts|slow|crash|other --cause "<what causes it>" [--fix "<what fixed it>" --state fixed] --source "<log or commit>"`.
+`gpu-issue-set <device> <id> --state fixed --fix "..."` closes it; `gpu-issues --kind white-widgets`
+lists every phone's issues of that kind.
+
 A status is about one system: `--os ios` (the default; also iPadOS), `--os macos` or `--os tvos`,
 with `--version` for the version it was seen on, e.g.
 `status-set <device> boot works --os macos --version "macOS 27.2" --detail "..." --source "..."`.
@@ -85,7 +99,10 @@ for any other phone the server answers 400 `area not applicable`.
 
 ```sh
 node cli.mjs references --chip "SM7325"          # phones on that chip: repos, branch links, what works
-node cli.mjs references --device <device>        # a tracked phone plus the phones on its chip
+node cli.mjs references --gpu "Adreno 619"       # phones on that GPU or family ("Adreno 6xx"), GPU work first
+node cli.mjs porting --codename <codename>       # UniXNU porting records: per area verified/implemented/planned
+node cli.mjs components wifi                     # UniXNU drivers matching "wifi", with the boards using them
+node cli.mjs references --device <device>        # a tracked phone plus the phones on its chip and GPU family
 node cli.mjs references --area gpu               # where an area works, with the repo, branch and source to read
 node cli.mjs catalog "<phone name or codename>"  # every Android phone and tablet (Google Play's list)
 ```
@@ -98,7 +115,10 @@ opens one). The "Port iOS to your phone" prompt there and on each phone's page w
 
 ```sh
 node cli.mjs update <device> shot.png clip.mp4 --text "what changed" --area <area>   # a photo update: files + text, on the phone's page
+node cli.mjs status-set <device> <area> works --detail "..." --source "..." --photo shot.png   # proof linked to the change
+node cli.mjs feature-add <device> "<name>" works --detail "..." --source "..." --photo clip.mp4  # proof linked to the feature
 node cli.mjs media-upload shot.png --device <device> --area <area> --caption "..."   # images 15 MB, videos 95 MB
+node cli.mjs media-link <media id> --history <change id>    # or --feature <id>; ids from history and features
 node cli.mjs media-list --device <device>
 node cli.mjs fork-sync --repo OWNER/REPO --best-result "boots to lock screen"
 node cli.mjs repo-lineage OWNER/REPO --base dipa-studio/ios-sweet --relation derived-from --note "README"

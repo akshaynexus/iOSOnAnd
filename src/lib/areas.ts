@@ -7,6 +7,7 @@
  */
 
 import type { Area, AreaState, Device, DeviceStatusEntry, Fork } from "@/lib/client";
+import { parseDate } from "@/lib/utils";
 
 export interface Category {
   id: string;
@@ -16,10 +17,10 @@ export interface Category {
 
 export const CATEGORIES: Category[] = [
   { id: "system", name: "Boot and system", slugs: ["boot", "return-to-oneui", "stability", "ipc", "kernel-mem"] },
-  { id: "display", name: "Display and GPU", slugs: ["gpu", "brightness"] },
+  { id: "display", name: "Display and GPU", slugs: ["gpu", "metal", "gles", "brightness"] },
   { id: "input", name: "Input", slugs: ["touch", "keyboard", "haptics", "sensors"] },
   { id: "media", name: "Audio and media", slugs: ["audio", "camera", "video-encode"] },
-  { id: "connectivity", name: "Connectivity", slugs: ["wifi", "bluetooth", "modem", "calls", "sms"] },
+  { id: "connectivity", name: "Connectivity", slugs: ["wifi", "bluetooth", "modem", "mobile-data", "hotspot", "calls", "sms"] },
   { id: "power", name: "Power and thermal", slugs: ["battery", "thermal"] },
   { id: "security", name: "Security and apps", slugs: ["passcode", "face-id", "wallet"] },
 ];
@@ -114,6 +115,11 @@ export function boots(d: Pick<Device, "statuses">): boolean {
   return entryFor(d, "boot")?.state === "works";
 }
 
+/** GPU compositing, Metal or OpenGL ES is reported as working (the Overview's "GPU accelerated"). */
+export function accelerated(d: Pick<Device, "statuses">): boolean {
+  return d.statuses.some((s) => (s.area_slug === "gpu" || s.area_slug === "metal" || s.area_slug === "gles") && s.state === "works");
+}
+
 export function entryFor(device: Pick<Device, "statuses">, areaSlug: string): DeviceStatusEntry | undefined {
   return device.statuses.find((s) => s.area_slug === areaSlug);
 }
@@ -151,4 +157,36 @@ export function forkMatches(f: Fork, deviceName: string, q: string): boolean {
 
 function words(q: string): string[] {
   return q.toLowerCase().split(/\s+/).filter(Boolean);
+}
+
+/** When the phone last changed: its own record or its newest status, in ms (0 when unknown). */
+export function lastChanged(d: Pick<Device, "updated" | "statuses">): number {
+  let t = parseDate(d.updated)?.getTime() ?? 0;
+  for (const s of d.statuses) t = Math.max(t, parseDate(s.updated)?.getTime() ?? 0);
+  return t;
+}
+
+/**
+ * How far along a phone is, for the default order and the featured phone, with
+ * no project favoured: what works (and what is under way), whether it boots,
+ * GPU, Metal and OpenGL ES acceleration, how recently it changed, and whether
+ * someone maintains it. `now` is the newest change in the list (not the
+ * clock), so the server and the browser rank the same way.
+ */
+export function rankScore(
+  d: Pick<Device, "statuses" | "base" | "updated"> & { maintainers?: string[] },
+  areas: Area[],
+  now: number,
+): number {
+  const c = stateCounts(d, areas);
+  let s = c.works * 3 + c["in-progress"];
+  if (boots(d)) s += 6;
+  const works = (slug: string) => entryFor(d, slug)?.state === "works";
+  if (works("gpu")) s += 2;
+  if (works("metal")) s += 3;
+  if (works("gles")) s += 2;
+  const days = (now - lastChanged(d)) / 86_400_000;
+  s += days <= 7 ? 6 : days <= 30 ? 3 : days <= 90 ? 1 : 0;
+  if ((d.maintainers?.length ?? 0) > 0) s += 2;
+  return s;
 }

@@ -10,7 +10,7 @@ import { MainRepos, ReposTable } from "@/components/ReposTable";
 import { ReposByBase } from "@/components/ReposByBase";
 import { YourReposToClaim } from "@/components/ClaimCallout";
 import { cn } from "@/lib/utils";
-import { MaintainPanel } from "@/components/RepoClaim";
+import { AddPhoneOrRepo, MaintainPanel, PortIosButton } from "@/components/RepoClaim";
 import { LineageTree } from "@/components/LineageTree";
 import { familyOfFork } from "@/components/repoInfo";
 import { FindReferences, ProjectsSection, StartCards, projectOfFamily } from "@/components/ProjectsSection";
@@ -164,7 +164,15 @@ function HomePage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
-        <h1 className="text-xl font-semibold tracking-tight">{TITLES[tab]}</h1>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-xl font-semibold tracking-tight">{TITLES[tab]}</h1>
+          {tab === "overview" || tab === "repos" ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <PortIosButton />
+              <AddPhoneOrRepo devices={deviceList} />
+            </div>
+          ) : null}
+        </div>
         {tab === "overview" ? (
           <p className="text-muted-foreground">What works on each phone that runs iOS through OneiOS or another port, area by area.</p>
         ) : null}

@@ -35,7 +35,7 @@ Repo: {REPO or "<OWNER/REPO>"}{, phone: DEVICE}
    node cli.mjs areas
    node cli.mjs status-set {DEVICE} <area> works|in-progress|broken --detail "<what I can show>" --source "<link>"
    Only claim what the repo or I can show. Ask me when unsure.
-5. Attach proof when I give you screenshots or clips: node cli.mjs media-upload <file> --device {DEVICE} --area <area> --caption "..."
+5. Attach proof when I give you screenshots or clips: add --photo <file> (repeatable) to the status-set or feature-add it proves, so the photo is linked to that change; or node cli.mjs media-upload <file> --device {DEVICE} --area <area> --caption "..."
 6. Check the result: node cli.mjs whoami
 ```
 
@@ -47,36 +47,67 @@ requests itself. `node cli.mjs --help` lists every command; these are the ones a
 | Goal | Command |
 |---|---|
 | reach the tracker | `node cli.mjs check` (API, areas, devices, login state) |
-| sign in | `login` (gist proof), `login --email ADDR`, `login --admin` (local dev) |
+| sign in | `login` (gist proof), `login --email ADDR` |
 | who am I, what may I write | `whoami`: `is_admin`, `maintains` (devices), `maintains_repos`, `token_scopes` |
 | own a repo | `repo-claim OWNER/REPO [--device D]`, `repo-verify ID`, `repo-add OWNER/REPO --device D` |
 | read | `areas`, `status-get --device D [--area A]`, `fork-list`, `media-list`, `lineage` |
-| write a status | `status-set D AREA STATE --detail "..." --source "..."` |
-| attach proof | `media-upload FILE --device D [--area A] [--caption T]` |
+| write a status | `status-set D AREA STATE --detail "..." --source "..." [--photo FILE ...]` (the photos are linked to this change) |
+| GPU acceleration | `gpu-set D --method metal-vulkan --stack "..." --fps 40-58 --fps-note "..." --repos R --source "..."`, `gpu-get D` |
+| GPU issues | `gpu-issue-add D "<symptom>" --kind white-widgets --cause "..." --source "..."`, `gpu-issue-set D ID --state fixed --fix "..."`, `gpu-issues --kind black-ui` (every phone) |
+| notable features | `features D`, `feature-add D "NAME" STATE --detail "..." --source "..." [--photo FILE ...]`, `feature-set D ID [--photo FILE ...]` |
+| attach proof | `media-upload FILE --device D [--area A] [--history ID] [--feature ID] [--caption T]`, `media-link ID --history ID\|--feature ID` |
 | repo facts | `fork-sync --repo OWNER/REPO --best-result T`, `repo-support`, `repo-lineage` |
 | keys | `keys`, `keys-create`, `keys-revoke`, `keys-rotate` |
 | offline | `queue ...`, `flush` |
 
-The tracker URL is, in order, `--url URL`, `TRACKER_URL`, or `http://localhost:3000`. The token is,
+The tracker URL is, in order, `--url URL` or `TRACKER_URL` (set it to `https://hackios.appaiproxy.com`). The token is,
 in order, `--token ion_...`, `TRACKER_TOKEN`, then the file the CLI saved at login
 (`~/.config/iosonand/tokens.json`, one token per tracker URL, mode 0600).
 
 ## Starting a new port
 
-The [Repos](/?tab=repos) tab and every phone's page carry a second prompt, "Port iOS to your
-phone". It has the agent look up the phone's specs (chip, GPU, storage, bootloader, a
-Mu-Silicium port), pick the project to start from, and borrow working parts from other ports,
-using `references`, which needs no login:
+The "Port iOS to your device" button on the home page (the agent asks which device, or reads it over `adb`),
+the [Repos](/?tab=repos) tab and every phone's page carry a second prompt. It gives the agent the CLI
+and the API description (`/api/openapi.json`; every read is public), and has it look up the
+device's specs (chip, GPU, storage, bootloader, a Mu-Silicium port), find the closest ports and what
+works or is broken on them, find GPU acceleration (`metal`, `gles`) and driver code that fits the
+specs, on the tracker and in other projects (Mesa and Linux drivers as the hardware reference), and
+pick the project to start from. It uses `references`, which needs no login:
 
 | Command | What it answers |
 |---|---|
 | `references --chip "SM7325"` | the phones on that chip (by part number or name), their repos with branch links, and what works on each |
-| `references --device <slug>` | a tracked phone, plus the phones on its chip |
+| `references --gpu "Adreno 619"` | the phones on that GPU or GPU family (`"Adreno 6xx"`, `"Mali Valhall"`), GPU work first: their `metal`, `gles` and `gpu` states with sources, the open driver to read, and their repos |
+| `references --device <slug>` | a tracked phone, plus the phones on its chip and on its GPU family |
 | `references --area gpu` | where an area works (gpu, wifi, audio ...), with the repo, branch and source to read |
+| `porting --codename <codename>`, `porting-get <record>`, `components <words>` | UniXNU's porting records (as on unixnu.com/devices): per port repo and area, verified on the device, host-tested, implemented or planned, with the components, limits, next step and build commands; and its drivers with the boards that run them |
 | `catalog "<name or codename>"` | the phone in Google Play's device list: codenames and model numbers |
 
+The prompt also names the known graphics failures and their causes, so ports don't debug them from
+scratch: white widgets (HEIC snapshots need a hardware HEVC encoder that VideoToolbox accepts; OneiOS
+publishes Apple's paravirtualized encoder service backed by the phone's MediaCodec, plus iOS 27's tile
+session), black widgets, blurs or lock screen (a Metal path that fails), and GPU faults or out-of-memory
+with heavy wallpapers. Each is recorded on the `metal`, `gles`, `gpu` or `video-encode` area.
+
 The agent shows the plan (base repo and branch, then the order of bring-up and the repos to borrow
-from) before it changes anything, and puts the port on the tracker once it boots.
+from) before it changes anything. New code is Rust; C or C++ only where Rust can't go (XNU, IOKit's
+C++ interfaces, patches to existing C code, vendor ABIs); Python only for small dev scripts. It points the agent at
+the Rust tools that exist: `tools/op10tool` in akshaynexus/iOSPlus10 for ios-sweet, HackiOS and other
+UEFI or fastboot ports (sparse images, IPSW download, UEFI unpack and patch, im4p, boot logs), and
+akshaynexus/OneiOS's `tools/oneios-tool` (symbolizer, log analysis, kernel collection, image build,
+signing, adb staging) and `runtime/` crates. As soon as the port's repo exists on GitHub, before it boots, the
+agent puts it on the tracker:
+
+1. `login`, then `repo-add OWNER/REPO --device <slug>`, or `--new-device "<phone name>" --model
+   <codename> --soc "<chip>"` when the tracker doesn't list the phone yet. The porter's GitHub login
+   owns the repo, so the claim is approved at once and they maintain the phone.
+2. `repo-lineage OWNER/REPO --base <base repo> --relation fork-of` records what it started from.
+3. The areas the plan starts on are set to `in-progress`, citing the repo.
+4. The first commit adds the `.gitignore` lines and an "iOSOnAnd tracker" section to the repo's
+   `AGENTS.md`, so every later session records what starts working or breaks
+   ([Keep the tracker updated](/docs/maintain-a-repo)).
+
+A new port gets its phone page on day one, and the page fills in as the work progresses.
 
 ## Auth for agents
 
@@ -148,7 +179,7 @@ Every error from the API is JSON with an `error` and usually a `hint` that says 
 The CLI prints both:
 
 ```text
-error: PUT http://localhost:3001/api/status/walk-8436/ipc -> 400 area not applicable
+error: PUT https://hackios.appaiproxy.com/api/status/walk-8436/ipc -> 400 area not applicable
   hint: ipc only applies to OneiOS-based ports
 ```
 
@@ -176,9 +207,9 @@ node cli.mjs flush            # later; sends in order, keeps the lines that fail
 
 ## A real session
 
-This transcript ran against a local tracker on 2026-11-23 (`TRACKER_URL=http://localhost:3001`)
+This transcript shows a session on 2026-11-23 (`TRACKER_URL=https://hackios.appaiproxy.com`)
 with a test account whose GitHub login was `walkdemo8436` and a test phone `walk-8436`. Output is
-shortened to the lines that matter; nothing else is changed.
+shortened to the lines that matter.
 
 ```text
 $ node cli.mjs login --email walk-8436@example.test
@@ -198,19 +229,19 @@ $ node cli.mjs whoami
 
 $ node cli.mjs keys-create --name agent --scopes status:write --expires-days 30
 Store the token now; it is never shown again. Use it with TRACKER_TOKEN=<token> node cli.mjs ...
-{"token":"ion_6WeliSLs...","meta":{"id":71,"scopes":["status:write"],"expires":"2026-12-22T20:14:28.573Z"}}
+{"token":"ion_…","meta":{"id":71,"scopes":["status:write"],"expires":"2026-12-22T20:14:28.573Z"}}
 
 $ TRACKER_TOKEN=ion_... node cli.mjs status-set walk-8436 touch works --detail "taps and swipes reach SpringBoard" --source "https://github.com/walkdemo8436/ios-walk#readme"
   "ok": true,
   "state": "works",
 
 $ TRACKER_TOKEN=ion_... node cli.mjs media-upload proof.png --device walk-8436 --area touch
-error: POST http://localhost:3001/api/media -> 403 token scope
+error: POST https://hackios.appaiproxy.com/api/media -> 403 token scope
   hint: needs media:write
 
 $ node cli.mjs keys-create --name uploads --scopes media:write
 $ TRACKER_TOKEN=ion_... node cli.mjs media-upload proof.png --device walk-8436 --area touch --caption "touch test"
-{"id":14,"url":"http://localhost:3001/media/walk-8436/2026-11-22-aBaN9f5lwUncMuHN.png","content_type":"image/png","bytes":9606,"width":256,"height":256}
+{"id":14,"url":"https://hackios.appaiproxy.com/media/walk-8436/2026-11-22-aBaN9f5lwUncMuHN.png","content_type":"image/png","bytes":9606,"width":256,"height":256}
 
 $ node cli.mjs repo-claim someone-else8436/ios-walk-2 --device walk-8436
 Claim #17 is pending (until 2026-11-23T20:14:29.444Z). To prove you can push to someone-else8436/ios-walk-2:
@@ -219,11 +250,11 @@ Claim #17 is pending (until 2026-11-23T20:14:29.444Z). To prove you can push to 
 then delete .iosonand-verify again.
 
 $ node cli.mjs repo-verify 17
-error: POST http://localhost:3001/api/repos/claim/17/verify -> 422 verification file not found or wrong
+error: POST https://hackios.appaiproxy.com/api/repos/claim/17/verify -> 422 verification file not found or wrong
   hint: no .iosonand-verify on the default branch of someone-else8436/ios-walk-2: write the claim's code alone to it, push, then retry
 
 $ node cli.mjs status-set walk-8436 ipc works --detail x --source y
-error: PUT http://localhost:3001/api/status/walk-8436/ipc -> 400 area not applicable
+error: PUT https://hackios.appaiproxy.com/api/status/walk-8436/ipc -> 400 area not applicable
   hint: ipc only applies to OneiOS-based ports
 ```
 

@@ -283,7 +283,7 @@ describe('served documents', () => {
   });
 
   test('/api-reference and /docs pages render', async () => {
-    for (const p of ['/api-reference', '/docs', '/docs/getting-started', '/docs/agents', '/docs/maintain-a-repo', '/docs/api-keys', '/docs/api', '/docs/uploads', '/docs/permissions', '/docs/data-model', '/docs/reddit']) {
+    for (const p of ['/api-reference', '/docs', '/docs/sources', '/docs/agents', '/docs/maintain-a-repo', '/docs/api-keys', '/docs/api', '/docs/uploads', '/docs/permissions', '/docs/data-model']) {
       const r = await fetch(`${BASE}${p}`);
       expect(r.status, p).toBe(200);
       expect(r.headers.get('content-type') || '', p).toContain('text/html');

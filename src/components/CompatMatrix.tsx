@@ -176,8 +176,10 @@ export function CompatMatrix({ areas, devices }: { areas: Area[]; devices: Devic
       const s = entryFor(c.device, a.slug)?.state;
       return s !== undefined && s !== "unknown";
     });
-  const emptyCount = areas.filter((a) => !hasData(a)).length;
-  const visibleAreas = hideEmpty ? areas.filter(hasData) : areas;
+  // An area that applies to none of the shown phones (OneiOS-only areas with no OneiOS phone) is left out.
+  const relevant = areas.filter((a) => columns.some((c) => applies(a, c.device)));
+  const emptyCount = relevant.filter((a) => !hasData(a)).length;
+  const visibleAreas = hideEmpty ? relevant.filter(hasData) : relevant;
   const groups = groupAreas(visibleAreas, (a) => a.slug);
 
   // The cell a popover points at goes away when the columns or rows change.

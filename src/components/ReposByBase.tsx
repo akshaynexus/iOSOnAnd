@@ -283,7 +283,18 @@ function RepoRow({
               </>
             ) : null}
             <dt className="text-muted-foreground">Maintainer</dt>
-            <dd className="min-w-0">{maintainer ?? "Nobody has claimed it yet"}</dd>
+            <dd className="min-w-0">
+              {f.maintainers?.length
+                ? f.maintainers.map((m, i) => (
+                    <span key={m.id}>
+                      {i ? ", " : ""}
+                      <Link to="/u/$id" params={{ id: m.github_login || String(m.id) }} className="underline-offset-4 hover:underline">
+                        {m.github_login ? `@${m.github_login}` : m.display_name || `user #${m.id}`}
+                      </Link>
+                    </span>
+                  ))
+                : (maintainer ?? "Nobody has claimed it yet")}
+            </dd>
             {branches.length ? (
               <>
                 <dt className="text-muted-foreground">Branches</dt>

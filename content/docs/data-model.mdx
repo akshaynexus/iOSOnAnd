@@ -1,6 +1,6 @@
 ---
 title: "Data model"
-description: "The tables, the 24 checklist areas and their scope, the states, repos with their supported devices and lineage, uploads, and where each row comes from."
+description: "The tables, the 26 checklist areas and their scope, the states, repos with their supported devices and lineage, uploads, and where each row comes from."
 ---
 
 The database is D1 (SQLite). `migrations/` is the source of truth; `schema.sql` is a reference
@@ -14,6 +14,7 @@ One row per phone.
 |---|---|
 | `slug` | primary key, lowercase letters, digits and dashes, e.g. `s24-ultra` |
 | `name`, `model`, `soc` | `Galaxy S24 Ultra`, `SM-S928`, `SM8650` |
+| `gpu` | the GPU when a maintainer or an admin names it, e.g. `Adreno 750`; empty means it comes from the chip (migration 0017) |
 | `repo_kind` | `home`, `fork`, `snapshot`, `mirror` or `none` |
 | `status` | the headline state, one of the four states below |
 | `best_result` | the furthest the port got, in one line |
@@ -32,19 +33,25 @@ Every device response also carries, computed:
   repos carry it. `family` is the first one, or empty when the phone has no repo; `unknown` only
   when no repo of the phone has a known family. `GET /api/devices?family=` filters on it.
 - `latest_media` (its newest image) and `media_count`.
+- `gpu`, `gpu_source`, `gpu_family` and `gpu_driver`: the GPU (the device's own `gpu`, else
+  looked up from the chip, `gpu_source` says which; empty when the chip is not known), its family
+  (`Adreno 6xx`, `Mali Bifrost`, `Mali Valhall (JM)`, `Mali Valhall (CSF)`, `PowerVR Rogue`,
+  `Xclipse (AMD RDNA)` ...) and the open driver whose code is the hardware reference for that family
+  (freedreno / Turnip, Lima, Panfrost, Panthor, Mesa powervr). `GET /api/devices?gpu=` filters on
+  the GPU or its family: `Adreno 619`, `Adreno 6xx`, `Mali-G57`, `Mali Valhall`.
 
 ## areas
 
-The checklist: 24 areas, the same for every device. `src/lib/areas.ts` groups them into
+The checklist: 28 areas, the same for every device (`metal` and `gles`, Metal and OpenGL ES acceleration, from migration 0013; `mobile-data` and `hotspot`, cellular data and Personal Hotspot, from migration 0016). `src/lib/areas.ts` groups them into
 categories for the Compatibility tab and the device page.
 
 | Category | Area slugs |
 |---|---|
 | Boot and system | `boot`, `return-to-oneui`, `stability`, `ipc`, `kernel-mem` |
-| Display and GPU | `gpu`, `brightness` |
+| Display and GPU | `gpu`, `metal`, `gles`, `brightness` |
 | Input | `touch`, `keyboard`, `haptics`, `sensors` |
 | Audio and media | `audio`, `camera`, `video-encode` |
-| Connectivity | `wifi`, `bluetooth`, `modem`, `calls`, `sms` |
+| Connectivity | `wifi`, `bluetooth`, `modem`, `mobile-data`, `hotspot`, `calls`, `sms` |
 | Power and thermal | `battery`, `thermal` |
 | Security and apps | `passcode`, `face-id`, `wallet` |
 
@@ -75,6 +82,84 @@ the phones where macOS boots or is under way, or that state a `macos_version`.
 ```sh
 node cli.mjs status-set <device> wifi works --os macos --version "macOS 27.2" --detail "..." --source "..."
 node cli.mjs status-get --device <device> --os all
+```
+
+## gpu_accel
+
+How a phone's GPU acceleration works and how fast (migration 0018), one row per phone, written by
+its maintainers or an admin (a key needs `status:write`):
+
+| Column | What |
+|---|---|
+| `method` | `native-metal` (a native Metal driver), `metal-vulkan` (Metal translated to Vulkan: metal2vulkan on Turnip or PanVK), `metal-gl` (Metal over OpenGL), `gles` (OpenGL ES only), `virtio-gpu` (forwarded to Android's GPU from a hosted guest, e.g. OneiOS), `cpu` (software rendering), `other`, `unknown` |
+| `stack` | the chain of components, e.g. `AdrenoMetal -> metal2vulkan -> Turnip -> Adreno740 kernel driver` |
+| `fps_low`, `fps_high`, `fps_note` | the measured frame rate (a range, or one number in `fps_low`) and what was measured |
+| `repos` | the code that does it, `OWNER/REPO` |
+| `detail`, `source`, `os_version`, `who`, `updated` | as on a status row |
+
+It shows under "GPU acceleration" on the phone's page (with the GPU, its family and the open
+driver), as `gpu_accel` on the device, at `GET /api/devices/{slug}/gpu`, and in `references`.
+
+```sh
+node cli.mjs gpu-get <device>
+node cli.mjs gpu-set <device> --method metal-vulkan --stack "AdrenoMetal -> metal2vulkan -> Turnip" \
+  --fps 40-58 --fps-note "idle lock screen" --repos UniXNU/AdrenoMetal --source "<link>"
+```
+
+## porting_records and porting_components
+
+Porting records and driver components imported from a porting framework (migration 0019): UniXNU's
+device records and `components.toml`, the data behind unixnu.com/devices. A record is one port repo:
+its codename, SoC, OS profile, summary, and for each area (cpu, memory, storage, display, input, gpu,
+network, audio, bluetooth, cellular, power ...) a status (`device-verified`, `host-verified`,
+`implemented`, `planned`, `not-applicable`), the components it uses, what it achieved, its limits, the
+next step, the build and boot commands and the first evidence. A component is a driver or tool with the
+hardware it drives, its repository and build stage; `used_by` lists the records that use it with that
+area's status. Read by everyone, written by an admin import.
+
+```sh
+node cli.mjs porting <device>                          # its repos' records, best-verified first
+node cli.mjs porting --component Ath12kWifi            # every board using that driver
+node cli.mjs porting --area gpu --status device-verified
+node cli.mjs porting-get uke-nsr-xine                  # one record in full
+node cli.mjs components wifi                           # drivers matching "wifi", with their boards
+```
+
+Device responses carry `porting` (the record summaries of the phone's repos), and the phone's page
+shows them under "Porting records".
+
+## gpu_issues
+
+Known GPU issues per phone (migration 0020), so a porter with the same symptom finds the cause and the
+fix: `kind` (`white-widgets`: HEIC snapshots fail without a hardware HEVC encoder; `black-ui`: black
+widgets, blurs, materials or lock screen from a failing Metal path; `gpu-fault`, `out-of-memory`,
+`artifacts`, `slow`, `crash`, `other`), `state` (`open`, `workaround`, `fixed`), `title` (the symptom),
+`cause`, `fix`, `detail`, `source`, `os_version`, and who changed it last. The phone's maintainers (or
+an admin) write them; a key needs `status:write`. They show in the phone's "GPU acceleration" card and
+as `gpu_issues` on the device.
+
+```sh
+node cli.mjs gpu-issue-add <device> "White widgets" --kind white-widgets --cause "no hardware HEVC encoder" --source "<log>"
+node cli.mjs gpu-issue-set <device> <id> --state fixed --fix "paravirtualized VideoToolbox encoder" --source "<commit>"
+node cli.mjs gpu-issues --kind white-widgets          # every phone that hit it, with the cause and fix
+```
+
+API: `GET/POST /api/devices/{slug}/gpu/issues`, `PATCH/DELETE /api/devices/{slug}/gpu/issues/{id}`,
+`GET /api/gpu/issues?kind=&state=&q=`.
+
+## device_features
+
+Other notable features of a phone (migration 0014): what the checklist does not list, or uncommon
+hardware that works (an IR blaster, a stylus, a second screen, a hinge sensor). Each row has a
+`name`, the system it is on (`os`), a `state`, `detail` and `source` like a status row, and who
+changed it last. The phone's maintainers (or an admin) write them; a key needs `status:write`.
+They show under "Other notable features" on the phone's page and as `features` on the device.
+
+```sh
+node cli.mjs features <device>
+node cli.mjs feature-add <device> "IR blaster" works --detail "what you saw" --source "log or video"
+node cli.mjs feature-set <device> <id> --state broken --detail "..."
+node cli.mjs feature-remove <device> <id>
 ```
 
 ## status_history
@@ -168,7 +253,8 @@ Everyone who maintains a repo: `fork_id`, `user_id`, `since`, `added_by`. A repo
 
 ## media
 
-Uploads on R2: `device_slug`, optional `fork_id` and `area_slug`, `user_id`, `r2_key`,
+Uploads on R2: `device_slug`, optional `fork_id` and `area_slug`, optional `history_id` (the
+status change it is evidence for) and `feature_id` (the notable feature it shows), `user_id`, `r2_key`,
 `content_type` (from the file bytes), `bytes`, `width`, `height`, `caption`, `created` and
 `deleted` (a soft delete; the R2 object is removed). See [Uploads](/docs/uploads).
 
@@ -183,14 +269,13 @@ A maintainer's post on a phone: `device_slug`, `user_id`, `body` (up to 2000 cha
 Every Android phone and tablet Google Play lists (`play_public/supported_devices.csv`), one row
 per brand and marketing name: `brand`, `name`, `codenames`, `models` and a lowercased `search`
 column. Not tracker data: it is what `GET /api/catalog?q=` and the "My phone isn't listed" picker
-search when someone adds a phone. `scripts/sync-catalog.mjs [--local|--remote]` replaces it
-(TVs, boxes, car units and watches are left out).
+search when someone adds a phone (TVs, boxes, car units and watches are left out).
 
 ## reddit_posts
 
 Links shown on the Updates tab: `title`, `url` (unique, stored as `https://www.reddit.com/r/...`
 without a query), `published` (`YYYY-MM-DD`), `note`, and a thumbnail from the post: `image_url`,
-`image_width`, `image_height`. See [Reddit](/docs/reddit).
+`image_width`, `image_height`. See [Data sources](/docs/sources).
 
 ## changelog
 
@@ -206,8 +291,7 @@ use). See [Permissions](/docs/permissions) and [API keys](/docs/api-keys).
 
 ## Where the data comes from
 
-`seed/seed.json` holds the starting data, loaded into an empty database by `bun run dev`. Its
-sources:
+The starting data came from these sources (see also [Data sources](/docs/sources)):
 
 - **OneiOS's own docs** (README, `docs/forks.md` and the device records) for the S24 Ultra and the
   phones supported through ported or merged fork work. Rows whose detail ends with
@@ -218,13 +302,13 @@ sources:
   `base_project`.
 - **`ios_version`** from what each device's best result, status details or notes state; empty
   when they state none.
-- **Photos** set by an admin with `device-set`, credited with author and licence and linked to
+- **Photos** set by an admin, credited with author and licence and linked to
   their source page.
 
 After the seed, rows change through the API; the changelog records each write. Two sync scripts
 write through it too, and never change a maintainer's row:
 
-- **The HakiOS ports registry** (`scripts/sync-hakios.mjs`, [HakiOS registry](/docs/hakios-registry)):
+- **The HakiOS ports registry**:
   detail starts with `HakiOS registry:`, source the port's registry page.
-- **hackiosx.dev** (`scripts/sync-hackiosx.mjs`, [hackiosx.dev](/docs/hackiosx)): detail starts
+- **hackiosx.dev**: detail starts
   with `hackiosx.dev`, source the section of its projects page.

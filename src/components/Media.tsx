@@ -336,6 +336,47 @@ export function UploadButton({
   );
 }
 
+/**
+ * The photos and clips linked to a status change or a notable feature, as
+ * small thumbnails: images open in the lightbox, clips in a new tab.
+ */
+export function LinkedMedia({ items, className }: { items?: Media[]; className?: string }) {
+  const [open, setOpen] = useState<number | null>(null);
+  if (!items?.length) return null;
+  const images = items.filter((m) => m.kind === "image");
+  return (
+    <>
+      <ul className={cn("flex flex-wrap gap-2", className)} aria-label="Photos and clips">
+        {items.map((m) => (
+          <li key={m.id}>
+            {m.kind === "video" ? (
+              <a
+                href={m.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={m.caption ? `Clip: ${m.caption}` : "Clip"}
+                className="block size-16 overflow-hidden rounded-md border bg-black outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <video src={m.url} muted playsInline preload="metadata" className="size-full object-cover" />
+              </a>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setOpen(images.indexOf(m))}
+                aria-label={m.caption ? `Photo: ${m.caption}` : "Photo"}
+                className="block size-16 overflow-hidden rounded-md border bg-muted outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <img src={m.url} alt="" loading="lazy" decoding="async" className="size-full object-cover" />
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+      {open !== null ? <Lightbox items={images} index={open} onIndex={setOpen} onClose={() => setOpen(null)} /> : null}
+    </>
+  );
+}
+
 function Lightbox({
   items,
   index,

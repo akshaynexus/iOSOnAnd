@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/auth";
 import { useAction } from "@/components/useAction";
 import { useThemeMode } from "@/components/common";
+import { LinkGithubBar } from "@/components/LinkGithub";
 import PillNav from "@/components/reactbits/PillNav";
 import type { PillNavItem } from "@/components/reactbits/PillNav";
 import { deviceMatches } from "@/lib/areas";
@@ -337,7 +338,14 @@ export function Page({ children }: { children: ReactNode }) {
   return (
     <>
       <SiteNav />
-      {full ? <main>{children}</main> : <main className="site-main mx-auto max-w-6xl pt-6">{children}</main>}
+      {full ? (
+        <main>{children}</main>
+      ) : (
+        <main className="site-main mx-auto max-w-6xl pt-6">
+          <LinkGithubBar />
+          {children}
+        </main>
+      )}
     </>
   );
 }

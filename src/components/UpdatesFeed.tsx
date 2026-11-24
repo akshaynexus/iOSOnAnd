@@ -5,7 +5,6 @@ import {
   Activity,
   BadgeCheck,
   CircleDot,
-  ExternalLink,
   GitFork,
   ListFilter,
   Newspaper,
@@ -252,11 +251,17 @@ function When({ value }: { value: string }) {
   );
 }
 
-function GroupHeading({ id, children }: { id: string; children: ReactNode }) {
+/** A day or week: its label flush with the page title, the count on the right. */
+function GroupHeading({ id, count, unit, children }: { id: string; count: number; unit: [string, string]; children: ReactNode }) {
   return (
-    <h2 id={id} className="px-1 text-sm font-semibold text-muted-foreground" suppressHydrationWarning>
-      {children}
-    </h2>
+    <div className="flex items-baseline justify-between gap-3">
+      <h2 id={id} className="text-sm font-semibold" suppressHydrationWarning>
+        {children}
+      </h2>
+      <span className="text-xs text-muted-foreground tabular-nums">
+        {count} {count === 1 ? unit[0] : unit[1]}
+      </span>
+    </div>
   );
 }
 
@@ -270,6 +275,7 @@ function repoHref(r: NoteRepo): string {
   return r.branch ? `${base}/tree/${r.branch.split("/").map(encodeURIComponent).join("/")}` : base;
 }
 
+/** The post's preview at a fixed size, so every row lines up; nothing when it has none. */
 function PostThumb({ post }: { post: FeedPost }) {
   const [failed, setFailed] = useState(false);
   if (!post.image_url || failed) return null;
@@ -280,7 +286,7 @@ function PostThumb({ post }: { post: FeedPost }) {
       rel="noopener noreferrer"
       tabIndex={-1}
       aria-hidden
-      className="block w-24 shrink-0 self-start overflow-hidden rounded-lg border bg-muted sm:w-40"
+      className="block h-[4.5rem] w-24 shrink-0 overflow-hidden rounded-lg border bg-muted sm:h-24 sm:w-32"
     >
       <img
         src={post.image_url}
@@ -289,64 +295,53 @@ function PostThumb({ post }: { post: FeedPost }) {
         decoding="async"
         draggable={false}
         referrerPolicy="no-referrer"
-        width={post.image_width ?? undefined}
-        height={post.image_height ?? undefined}
         onError={() => setFailed(true)}
-        className="aspect-[4/3] h-auto w-full object-cover"
+        className="size-full object-cover"
       />
     </a>
   );
 }
 
-function PostCard({ post, look }: { post: FeedPost; look: Lookups }) {
+function PostRow({ post, look }: { post: FeedPost; look: Lookups }) {
   const note = useMemo(() => parseNote(post.note ?? "", look.deviceByName), [post.note, look]);
-  const chips = note.phones.length + note.repos.length > 0;
+  const phones = note.phones.filter((p) => p.slug);
   return (
-    <article className="flex min-w-0 gap-3 rounded-[14px] border bg-card p-4 text-card-foreground sm:gap-4">
-      <div className="flex min-w-0 flex-1 flex-col gap-2">
+    <article className="flex min-w-0 items-start gap-4 px-4 py-4 sm:px-5">
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <h3 className="text-[15px] leading-snug font-semibold break-words">
           <a href={post.url} target="_blank" rel="noopener noreferrer" className="rounded-sm outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring">
             {post.title}
-            <ExternalLink className="ml-1 inline size-3.5 align-[-2px] text-muted-foreground" aria-hidden />
             <span className="sr-only"> (opens Reddit)</span>
           </a>
         </h3>
-        {chips ? (
-          <ul className="flex min-w-0 flex-wrap gap-1.5 pointer-coarse:gap-2" aria-label="Phones and repos">
-            {note.phones.map((p) =>
-              p.slug ? (
-                <li key={`d-${p.slug}`} className="min-w-0 max-w-full">
-                  <Link to="/device/$slug" params={{ slug: p.slug }} className={CHIP}>
-                    <Smartphone className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
-                    <span className="truncate">{look.deviceName(p.slug) ?? p.name}</span>
-                  </Link>
-                </li>
-              ) : null,
-            )}
+        <p className="text-xs text-muted-foreground">
+          <When value={post.published} />
+          {note.flair ? <span> · {note.flair}</span> : null}
+        </p>
+        {note.text ? <p className="line-clamp-2 text-sm break-words text-muted-foreground">{note.text}</p> : null}
+        {phones.length + note.repos.length > 0 ? (
+          <ul className="flex min-w-0 flex-wrap gap-1.5 pt-0.5 pointer-coarse:gap-2" aria-label="Phones and repos">
+            {phones.map((p) => (
+              <li key={`d-${p.slug}`} className="min-w-0 max-w-full">
+                <Link to="/device/$slug" params={{ slug: p.slug! }} className={CHIP}>
+                  <Smartphone className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
+                  <span className="truncate">{look.deviceName(p.slug!) ?? p.name}</span>
+                </Link>
+              </li>
+            ))}
             {note.repos.map((r) => (
               <li key={`r-${r.repo}-${r.branch ?? ""}`} className="min-w-0 max-w-full">
-                <a
-                  href={repoHref(r)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title={r.branch ? `${r.repo}, branch ${r.branch}` : r.repo}
-                  className={CHIP}
-                >
+                <a href={repoHref(r)} target="_blank" rel="noopener noreferrer" title={r.branch ? `${r.repo}, branch ${r.branch}` : r.repo} className={CHIP}>
                   <GitFork className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
-                  <span className="truncate">
+                  <span className="truncate font-mono">
                     {r.repo}
-                    {r.branch ? <span className="text-muted-foreground"> · {r.branch}</span> : null}
+                    {r.branch ? <span className="text-muted-foreground"> @{r.branch}</span> : null}
                   </span>
                 </a>
               </li>
             ))}
           </ul>
         ) : null}
-        {note.text ? <p className="line-clamp-3 text-sm break-words text-muted-foreground">{note.text}</p> : null}
-        <p className="text-xs text-muted-foreground">
-          <When value={post.published} />
-          {note.flair ? <span> · {note.flair}</span> : null}
-        </p>
       </div>
       <PostThumb post={post} />
     </article>
@@ -368,9 +363,9 @@ export function PostsFeed({ posts, next, total }: { posts: Post[]; next: number 
     [feed.items],
   );
   return (
-    <div className="flex max-w-3xl min-w-0 flex-col gap-6">
+    <div className="flex min-w-0 flex-col gap-8">
       {canPost ? (
-        <div className="flex justify-end">
+        <div className="-mt-2 flex justify-end">
           <AddPostDialog />
         </div>
       ) : null}
@@ -383,11 +378,13 @@ export function PostsFeed({ posts, next, total }: { posts: Post[]; next: number 
         <>
           {weeks.map((g) => (
             <section key={g.key || "undated"} aria-labelledby={`posts-${g.key}`} className="flex min-w-0 flex-col gap-3">
-              <GroupHeading id={`posts-${g.key}`}>{weekLabel(g.key)}</GroupHeading>
-              <ul className="flex min-w-0 flex-col gap-3">
+              <GroupHeading id={`posts-${g.key}`} count={g.items.length} unit={["post", "posts"]}>
+                {weekLabel(g.key)}
+              </GroupHeading>
+              <ul className="min-w-0 divide-y overflow-hidden rounded-[14px] border bg-card text-card-foreground">
                 {g.items.map((p) => (
                   <Reveal as="li" key={p.id} className="min-w-0">
-                    <PostCard post={p} look={look} />
+                    <PostRow post={p} look={look} />
                   </Reveal>
                 ))}
               </ul>
@@ -502,48 +499,121 @@ function RichSummary({ text, kind, look }: { text: string; kind: ChangeKind; loo
   return <p className="min-w-0 text-sm break-words">{out}</p>;
 }
 
-function ChangeBody({ entry, kind, look }: { entry: ChangelogEntry; kind: ChangeKind; look: Lookups }) {
-  const st = kind === "status" ? parseStatusChange(entry.summary) : null;
-  if (!st) return <RichSummary text={entry.summary} kind={kind} look={look} />;
-  const name = look.deviceName(st.device);
+/** One row of the log: an entry, or a batch of status writes to one phone with the same detail. */
+interface LogRow {
+  key: string;
+  kind: ChangeKind;
+  who: string;
+  created: string;
+  entry: ChangelogEntry;
+  /** Status writes merged into this row (one phone, one person, within minutes). */
+  batch?: { device: string; items: Array<{ area: string; state: string; detail: string }> };
+}
+
+const BATCH_WINDOW_MS = 10 * 60 * 1000;
+const ms = (iso: string) => Date.parse(/[zZ]|[+-]\d\d:?\d\d$/.test(iso) ? iso : `${iso}Z`) || 0;
+
+/** Merge runs of status writes a sync or a session made to one phone with one detail. */
+function toRows(entries: ChangelogEntry[]): LogRow[] {
+  const rows: LogRow[] = [];
+  for (const e of entries) {
+    const kind = classifyChange(e.summary);
+    const st = kind === "status" ? parseStatusChange(e.summary) : null;
+    const last = rows[rows.length - 1];
+    if (
+      st &&
+      last?.batch &&
+      last.who === e.who &&
+      last.batch.device === st.device &&
+      Math.abs(ms(last.created) - ms(e.created)) <= BATCH_WINDOW_MS &&
+      !last.batch.items.some((i) => i.area === st.area)
+    ) {
+      last.batch.items.push({ area: st.area, state: st.state, detail: st.detail });
+      continue;
+    }
+    rows.push({
+      key: `c${e.id}`,
+      kind,
+      who: e.who,
+      created: e.created,
+      entry: e,
+      batch: st ? { device: st.device, items: [{ area: st.area, state: st.state, detail: st.detail }] } : undefined,
+    });
+  }
+  return rows;
+}
+
+/** "[macOS 27.2] ..." in front of a detail names the system the change was on. */
+function splitTag(detail: string): { tag: string; text: string } {
+  const m = /^\[([^\]]{1,40})\]\s*/.exec(detail);
+  return m ? { tag: m[1], text: detail.slice(m[0].length) } : { tag: "", text: detail };
+}
+
+function AreaWithState({ area, state, look }: { area: string; state: string; look: Lookups }) {
+  return (
+    <span className="inline-flex min-w-0 items-center gap-1.5">
+      <span className="text-muted-foreground">{look.areaName(area) ?? area}</span>
+      <StateLabel state={state as AreaState} className="text-sm" />
+    </span>
+  );
+}
+
+function RowBody({ row, look }: { row: LogRow; look: Lookups }) {
+  if (!row.batch) return <RichSummary text={row.entry.summary} kind={row.kind} look={look} />;
+  const { device, items } = row.batch;
+  // Areas that share a detail (a sync writing several areas from one sentence) are listed together, the detail once.
+  const groups: Array<{ tag: string; text: string; items: typeof items }> = [];
+  for (const i of items) {
+    const { tag, text } = splitTag(i.detail);
+    const g = groups.find((x) => x.text === text && x.tag === tag);
+    if (g) g.items.push(i);
+    else groups.push({ tag, text, items: [i] });
+  }
   return (
     <>
-      <p className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 text-sm">
-        <Link to="/device/$slug" params={{ slug: st.device }} className={cn(INLINE_LINK, "min-w-0 break-words")}>
-          {name ?? st.device}
-        </Link>
-        <span className="text-muted-foreground">{look.areaName(st.area) ?? st.area}</span>
-        <StateLabel state={st.state as AreaState} className="text-sm" />
-      </p>
-      {st.detail ? (
-        <p className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-1 text-sm break-words text-muted-foreground">
-          <LinkedText text={st.detail} />
-        </p>
-      ) : null}
+      <Link to="/device/$slug" params={{ slug: device }} className={cn(INLINE_LINK, "w-fit min-w-0 text-sm break-words")}>
+        {look.deviceName(device) ?? device}
+      </Link>
+      <ul className="flex min-w-0 flex-col gap-2 text-sm">
+        {groups.map((g, n) => (
+          <li key={n} className="flex min-w-0 flex-col gap-0.5">
+            <span className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
+              {g.items.map((i) => (
+                <AreaWithState key={i.area} area={i.area} state={i.state} look={look} />
+              ))}
+              {g.tag ? <span className="text-xs text-muted-foreground">{g.tag}</span> : null}
+            </span>
+            {g.text ? (
+              <span className="min-w-0 break-words text-muted-foreground">
+                <LinkedText text={g.text} />
+              </span>
+            ) : null}
+          </li>
+        ))}
+      </ul>
     </>
   );
 }
 
-function ChangeRow({ entry, look }: { entry: ChangelogEntry; look: Lookups }) {
-  const kind = classifyChange(entry.summary);
-  const Icon = KIND_ICON[kind];
+function ChangeRow({ row, look }: { row: LogRow; look: Lookups }) {
+  const Icon = KIND_ICON[row.kind];
   return (
-    <div className="flex min-w-0 items-start gap-3 px-4 py-3">
-      <span
-        className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground"
-        title={KIND_LABEL[kind]}
-      >
+    <div className="grid min-w-0 grid-cols-[1.75rem_minmax(0,1fr)] items-start gap-x-3 px-4 py-3 sm:grid-cols-[1.75rem_minmax(0,1fr)_9rem] sm:px-5">
+      <span className="flex size-7 items-center justify-center rounded-md bg-muted text-muted-foreground" title={KIND_LABEL[row.kind]}>
         <Icon className="size-4" aria-hidden />
-        <span className="sr-only">{KIND_LABEL[kind]}</span>
+        <span className="sr-only">{KIND_LABEL[row.kind]}</span>
       </span>
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <ChangeBody entry={entry} kind={kind} look={look} />
-        <p className="text-xs text-muted-foreground">
-          {entry.who ? <span className="break-all">{entry.who}</span> : null}
-          {entry.who ? " · " : null}
-          <When value={entry.created} />
+      <div className="flex min-w-0 flex-col gap-1 pt-0.5">
+        <RowBody row={row} look={look} />
+        <p className="text-xs text-muted-foreground sm:hidden">
+          {row.who ? `${row.who} · ` : null}
+          <When value={row.created} />
         </p>
       </div>
+      <p className="hidden min-w-0 flex-col items-end pt-1 text-right text-xs text-muted-foreground sm:flex">
+        <When value={row.created} />
+        {row.who ? <span className="max-w-full truncate">{row.who}</span> : null}
+      </p>
     </div>
   );
 }
@@ -564,7 +634,7 @@ export function ChangelogFeed({
   const feed = usePaged(changelog, next, (offset) => listChangelogPage(offset, FEED_PAGE));
   const [filter, setFilter] = useState<ChangeFilter>("all");
   const shown = useMemo(() => feed.items.filter((c) => matches(filter, c)), [feed.items, filter]);
-  const days = useMemo(() => groupBy(shown, (c) => dayKey(c.created)), [shown]);
+  const days = useMemo(() => groupBy(shown, (c) => dayKey(c.created)).map((g) => ({ ...g, rows: toRows(g.items) })), [shown]);
 
   // A rare filter would page through the whole log: after a few pages that
   // add nothing it waits for a click instead.
@@ -579,10 +649,10 @@ export function ChangelogFeed({
   const paused = filter !== "all" && misses >= MAX_MISSES;
 
   if (feed.items.length === 0) {
-    return <p className="max-w-3xl rounded-[14px] border border-dashed px-4 py-10 text-center text-muted-foreground">No changes yet.</p>;
+    return <p className="rounded-[14px] border border-dashed px-4 py-10 text-center text-muted-foreground">No changes yet.</p>;
   }
   return (
-    <div className="flex max-w-3xl min-w-0 flex-col gap-6">
+    <div className="flex min-w-0 flex-col gap-8">
       <FilterBar value={filter} onChange={(f) => withViewTransition(() => setFilter(f))} />
       {days.length === 0 ? (
         <p className="rounded-[14px] border border-dashed px-4 py-10 text-center text-muted-foreground">{EMPTY_FILTER[filter]}</p>
@@ -593,11 +663,13 @@ export function ChangelogFeed({
             aria-labelledby={`changes-${g.key}`}
             className="flex min-w-0 flex-col gap-3"
           >
-            <GroupHeading id={`changes-${g.key}`}>{dayLabel(g.key)}</GroupHeading>
+            <GroupHeading id={`changes-${g.key}`} count={g.items.length} unit={["change", "changes"]}>
+              {dayLabel(g.key)}
+            </GroupHeading>
             <ul className="min-w-0 divide-y overflow-hidden rounded-[14px] border bg-card text-card-foreground">
-              {g.items.map((c) => (
-                <Reveal as="li" key={c.id} className="min-w-0">
-                  <ChangeRow entry={c} look={look} />
+              {g.rows.map((r) => (
+                <Reveal as="li" key={r.key} className="min-w-0">
+                  <ChangeRow row={r} look={look} />
                 </Reveal>
               ))}
             </ul>

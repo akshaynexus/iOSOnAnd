@@ -1,0 +1,40 @@
+---
+title: "Data sources"
+description: "Where the tracker's phones, repos and states come from, how each row says so, and why Reddit posts stay claims."
+---
+
+Every state on the tracker says where it came from: its `detail` names the source and its
+`source` links it. The UI shows that link next to the state.
+
+## Where rows come from
+
+| Source | How a row says so |
+|---|---|
+| A repo's maintainer, through the site, the CLI or their coding agent | their own detail and source: a commit, a log, a capture |
+| OneiOS's own docs, for the S24 Ultra and the phones its fork work was merged or ported from | detail ending `(OneiOS maintainer, date)` |
+| r/hackios posts and their porters' comments | detail starting `reddit claim (YYYY-MM-DD):`, source the thread |
+| The [HakiOS ports registry](https://hakios-developers.com) | detail starting `HakiOS registry:`, source the port's registry page |
+| [hackiosx.dev](https://hackiosx.dev/projects) | detail starting `hackiosx.dev`, source the section of its projects page |
+| GitHub (repo metadata, fork parents and READMEs) | the repo's lineage and family on the Repos tab |
+
+A row a maintainer wrote is never overwritten by a synced source: the registry, hackiosx.dev and
+Reddit only fill rows that are empty, unknown or an older claim of their own, and never lower a
+state. Phone photos are the makers' official product images or freely licensed Wikimedia Commons
+files, credited under each photo.
+
+## Why Reddit posts stay claims
+
+A Reddit post is the porter's own statement, usually a video or a screenshot. Nobody has rebuilt
+or rerun it. So:
+
+- A status taken from a thread has `detail` starting with `reddit claim (YYYY-MM-DD):`, the date
+  the thread was read, and `source` set to the thread's permalink.
+- A fork found through Reddit is `fork-claim` until someone reproduces it on hardware.
+- Nothing is inferred beyond what the post says. An area the post does not mention stays
+  `unknown`.
+
+The Updates tab lists the port threads, with a thumbnail from each post.
+
+To replace a claim with a verified state, a maintainer of the phone writes the status with their
+own detail and source (a log, a commit, a session folder). See [Maintain a repo](/docs/maintain-a-repo)
+and [Agent system](/docs/agents).

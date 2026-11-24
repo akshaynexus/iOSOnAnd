@@ -625,11 +625,15 @@ for (const t of threads) {
 
 const AREA_WORDS = {
   wifi: /\b(wi-?fi|wlan)\b/i,
-  gpu: /\b(gpu|metal|graphics acceleration|hardware acceleration)\b/i,
+  gpu: /\b(gpu|graphics acceleration|hardware acceleration)\b/i,
+  metal: /\b(metal(2vulkan)?|metal acceleration)\b/i,
+  gles: /\b(opengl( es)?|gles|open gl)\b/i,
   touch: /\b(touch ?screen|touch(?![ -]?id)|multitouch|buttons?)\b/i,
   audio: /\b(audio|sound|speakers?)\b/i,
   bluetooth: /\b(bluetooth)\b/i,
-  modem: /\b(lte|cellular|mobile data|volte|mobile network)\b/i,
+  modem: /\b(lte|cellular|volte|mobile network|baseband|sim card)\b/i,
+  'mobile-data': /\b(mobile data|cellular data|lte data|4g data|5g data|data connection)\b/i,
+  hotspot: /\b(hotspot|tethering)\b/i,
   calls: /\b(phone calls?|calls)\b/i,
   sms: /\b(sms)\b/i,
   camera: /\b(cameras?)\b/i,
