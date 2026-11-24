@@ -347,7 +347,6 @@ Login (the token is stored per tracker URL in ~/.config/iosonand/tokens.json):
                             hidden prompt. --register signs up when the login fails.
   login --admin             local dev only: log in as ADMIN_EMAIL / ADMIN_PASSWORD
                             from .dev.vars (signs up on a fresh DB)
-  login --token             exchange \`gh auth token\` (warned: sends a GitHub token)
   link --email ADDR         bind your gh identity to an email account (gist-proof)
   whoami                    login, email, admin flag, devices you maintain
   logout                    forget the token for this tracker
@@ -548,14 +547,8 @@ async function cmdLogin(flags) {
     return;
   }
   if (flags.token) {
-    info("warning: --token sends your GitHub token to the tracker. Prefer the gist-proof `login`.");
-    const ghToken = run("gh", ["auth", "token"]);
-    if (!ghToken) throw invalid("`gh auth token` printed nothing.");
-    const res = await api("/api/auth/token-check", { method: "POST", body: { token: ghToken } });
-    if (!res.token) throw invalid("the server returned no tracker token.");
-    saveToken(res.token);
-    out({ ok: true, method: "token-check", login: res.github_login || res.login || null, tracker: TRACKER_URL, saved_to: TOKENS_FILE });
-    return;
+    // The CLI never reads or sends a GitHub token: log in with the gist proof, an email, or an API key.
+    throw usage("login --token is gone: the tracker never takes a GitHub token. Use `login` (gist proof), `login --email ADDR`, or an API key (TRACKER_TOKEN=ion_...).");
   }
   // Gist-proof flow.
   const githubLogin = ghLogin();
@@ -1093,7 +1086,7 @@ async function main() {
     TRACKER_URL = process.env.TRACKER_URL;
     URL_FROM = "TRACKER_URL";
   }
-  // Global --token ion_... (login --token, a boolean, is left alone).
+  // Global --token ion_... (a tracker API key; GitHub tokens are never sent).
   const ti = argv.findIndex((a, i) => (a === "--token" && /^ion_/.test(argv[i + 1] || "")) || a.startsWith("--token="));
   if (ti !== -1) {
     const a = argv[ti];

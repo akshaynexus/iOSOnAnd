@@ -5,7 +5,6 @@
 //   1. gist owner id == claimed github_id   (proves account control)
 //   2. a gist file contains the unused nonce (proves freshness / binds challenge)
 //   3. gist created within 10 min           (narrows replay window)
-// Plus a token-check helper (GET /user with a provided token -> {id, login}).
 
 import { HttpError, env } from '@/lib/auth';
 
@@ -125,37 +124,6 @@ export async function verifyGistProof(opts: {
     createdAt: String(gist.created_at || ''),
     matchedFile: String((hit as { filename?: string }).filename || ''),
   };
-}
-
-/** Validate a user-supplied GitHub token (`gh auth token` style). */
-export async function fetchGitHubUser(ghToken: string): Promise<{ id: number; login: string }> {
-  let res: Response;
-  try {
-    res = await fetch('https://api.github.com/user', {
-      headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'iOSOnAnd-tracker/1.0', Authorization: `Bearer ${ghToken}` },
-    });
-  } catch (e) {
-    throw new HttpError(502, 'github unreachable', `could not reach api.github.com (${errMsg(e)})`);
-  }
-  if (res.status === 401) throw new HttpError(401, 'invalid github token', 'check `gh auth status`; re-login with gh and retry');
-  if (res.status === 403) {
-    throw new HttpError(
-      503,
-      'github rate limited',
-      'set GITHUB_TOKEN on the server to raise limits, then wait a minute and retry',
-    );
-  }
-  if (!res.ok) throw new HttpError(502, `github error ${res.status}`, 'retry in a bit');
-  let body: any;
-  try {
-    body = await res.json();
-  } catch {
-    throw new HttpError(502, 'github returned bad JSON', 'retry in a bit');
-  }
-  if (typeof body?.id !== 'number' || typeof body?.login !== 'string') {
-    throw new HttpError(502, 'unexpected github response', 'retry in a bit');
-  }
-  return { id: body.id, login: body.login };
 }
 
 /** Resolve a GitHub login to {id, login} via the public users API (no token needed). */
