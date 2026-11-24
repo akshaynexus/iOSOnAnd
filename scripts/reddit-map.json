@@ -1,0 +1,101 @@
+{
+  "_note": "scripts/sync-reddit.mjs: phones r/hackios threads port to that the tracker does not list yet (added with --apply when a thread with media, a repo or a port flair is about them), extra name aliases (lowercase phrase -> device slug) codenames (seen only in repo names) and reject_claims (status rows --claims must not write: a person read the sentence and it does not say that). Names, codenames and chips from Google Play's device list (GET /api/catalog).",
+  "aliases": {
+    "pixel 1": "pixel-1",
+    "google pixel 1": "pixel-1",
+    "s20fe": "s20-fe",
+    "samsung s20fe": "s20-fe",
+    "motorola g play 2023": "moto-g-play-2023",
+    "moto g play 2023": "moto-g-play-2023"
+  },
+  "codenames": {
+    "topaz": "redmi-note-12-4g",
+    "tapas": "redmi-note-12-4g",
+    "instantnoodle": "oneplus-8",
+    "d1x": "note10-5g",
+    "bonito": "pixel-3a-xl",
+    "a34x": "a34"
+  },
+  "new_devices": [
+    {
+      "slug": "oneplus-8",
+      "name": "OnePlus 8",
+      "model": "instantnoodle",
+      "soc": "Snapdragon 865 (SM8250)"
+    },
+    {
+      "slug": "note10-5g",
+      "name": "Galaxy Note10 5G",
+      "model": "SM-N971N",
+      "soc": "Exynos 9825"
+    },
+    {
+      "slug": "iqoo-13",
+      "name": "iQOO 13",
+      "model": "PD2408",
+      "soc": "Snapdragon 8 Elite (SM8750)"
+    },
+    {
+      "slug": "oppo-find-x9-pro",
+      "name": "OPPO Find X9 Pro",
+      "model": "CPH2791",
+      "soc": "Dimensity 9500"
+    },
+    {
+      "slug": "realme-p4x",
+      "name": "realme P4x",
+      "model": "",
+      "soc": "MediaTek"
+    },
+    {
+      "slug": "pixel-3a-xl",
+      "name": "Pixel 3a XL",
+      "model": "bonito",
+      "soc": "Snapdragon 670 (SDM670)"
+    },
+    {
+      "slug": "a34",
+      "name": "Galaxy A34 5G",
+      "model": "SM-A346B",
+      "soc": "Dimensity 1080"
+    },
+    {
+      "slug": "oppo-a15s",
+      "name": "OPPO A15s",
+      "model": "CPH2179",
+      "soc": "Helio P35 (MT6765)"
+    }
+  ],
+  "reject_claims": [
+    {
+      "device": "lenovo-tab-m10-fhd-plus",
+      "area": "touch",
+      "why": "the sentence is about ios-sweet on a Redmi phone"
+    },
+    {
+      "device": "note10-plus",
+      "area": "gpu",
+      "why": "'3 gpu cores' says the cores come up, not that GPU compositing works"
+    },
+    {
+      "device": "note9",
+      "area": "gpu",
+      "why": "upstream's Metal on Vulkan is in the tree; not shown running"
+    },
+    {
+      "device": "note9",
+      "area": "camera",
+      "why": "the S9+ camera driver is in the tree; not shown running"
+    },
+    {
+      "device": "s7",
+      "area": "sensors",
+      "why": "listed under 'Not working yet'"
+    },
+    {
+      "device": "s7",
+      "area": "modem",
+      "why": "listed under 'Not working yet'"
+    }
+  ]
+}

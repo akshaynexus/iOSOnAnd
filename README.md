@@ -57,8 +57,9 @@ states, without overwriting maintainers' rows (docs: `/docs/hakios-registry`).
 `node scripts/sync-hackiosx.mjs [--apply]` does the same for the project pages
 of hackiosx.dev, through a hand-checked sentence map (`scripts/hackiosx-map.json`,
 docs: `/docs/hackiosx`). `node scripts/sync-reddit.mjs [--apply]` adds new
-r/hackios port posts and the repos porters link, and lists the threads to read
-for claims (docs: `/docs/reddit`).
+r/hackios port posts, the phones (`scripts/reddit-map.json`) and repos they are
+about, and with `--claims` the porters' own status claims; `--archive` reads
+the whole history from the Arctic Shift archive in parallel (docs: `/docs/reddit`).
 `node scripts/sync-catalog.mjs [--local|--remote]` loads every Android phone and
 tablet Google Play lists into the device catalog that "add a phone" searches
 (`GET /api/catalog`, CLI `catalog`).
