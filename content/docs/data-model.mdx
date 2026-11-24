@@ -146,7 +146,8 @@ Every write adds a row: `who` (`@github_login`, the display name, or `user#id`),
 ## Accounts
 
 `users`, `sessions` (cookie logins), `api_tokens` (tokens and API keys, stored as SHA-256 hashes,
-with `scopes`, `expires` and `last_used`), `login_challenges` (gist-proof nonces, 10 minutes, one
+with `scopes`, `expires` and `last_used`), `password_resets` (reset links, stored as SHA-256 hashes,
+30 minutes, one use), `login_challenges` (gist-proof nonces, 10 minutes, one
 use). See [Permissions](/docs/permissions) and [API keys](/docs/api-keys).
 
 ## Where the data comes from

@@ -5,11 +5,44 @@
 //   src/lib/sniff.ts      magic bytes and image sizes
 //   src/lib/repoproof.ts  the .iosonand-verify check, with a stubbed fetch
 //                         (the success path needs no GitHub push here)
+//   src/lib/ratebuckets.ts which rate-limit bucket a request counts against,
+//                         and that its limits match wrangler.jsonc
 
 import { describe, expect, test } from 'bun:test';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { MultipartError, boundaryOf, indexOfBytes, parseMultipart } from '../../src/lib/multipart';
 import { imageSize, sniff } from '../../src/lib/sniff';
 import { checkProofFile } from '../../src/lib/repoproof';
+import { BUCKETS, bucketFor } from '../../src/lib/ratebuckets';
+
+describe('rate-limit buckets', () => {
+  test('each request type lands in the right bucket', () => {
+    expect(bucketFor('GET', '/api/devices')).toBe('read');
+    expect(bucketFor('HEAD', '/api/auth/me')).toBe('read');
+    for (const p of ['login', 'signup', 'register', 'link', 'password', 'password-reset', 'password-reset/confirm', 'gh-verify']) {
+      expect(bucketFor('POST', `/api/auth/${p}`)).toBe('auth');
+    }
+    expect(bucketFor('POST', '/api/reddit/fetch')).toBe('expensive');
+    expect(bucketFor('POST', '/api/repos/claim')).toBe('expensive');
+    expect(bucketFor('POST', '/api/repos/claim/12/verify')).toBe('expensive');
+    expect(bucketFor('POST', '/api/media')).toBe('upload');
+    expect(bucketFor('DELETE', '/api/media/3')).toBe('write');
+    expect(bucketFor('PUT', '/api/status/s24/display')).toBe('write');
+    expect(bucketFor('POST', '/api/auth/logout')).toBe('write');
+  });
+
+  test('BUCKETS match the ratelimits bindings in wrangler.jsonc', () => {
+    const text = readFileSync(path.join(import.meta.dir, '..', '..', 'wrangler.jsonc'), 'utf8');
+    const bindings = new Map<string, number>();
+    for (const m of text.matchAll(/"name":\s*"(RL_[A-Z_]+)"[^}]*?"limit":\s*(\d+),\s*"period":\s*(\d+)/g)) {
+      expect(m[3]).toBe('60');
+      bindings.set(m[1], Number(m[2]));
+    }
+    for (const { binding, limit } of Object.values(BUCKETS)) expect(bindings.get(binding)).toBe(limit);
+    expect(bindings.size).toBe(Object.keys(BUCKETS).length);
+  });
+});
 
 /** A stream that yields `bytes` in pieces of `size` (to cross every boundary). */
 function streamOf(bytes: Uint8Array, size: number): ReadableStream<Uint8Array> {

@@ -33,6 +33,7 @@ export const API_NOTES = [
   'cookie-authenticated writes need Content-Type: application/json, or the header X-Requested-With: iosonand (multipart uploads); an Origin from another site is 403, and Sec-Fetch-Site, when sent, must be same-origin or same-site; bearer-token clients are unaffected',
   'maintainer of a device = a user whose claim on it an admin approved (POST /api/claims, then POST /api/claims/:id/approve), or who maintains a repo of it (POST /api/repos/claim)',
   'API keys carry scopes (all | read | status:write | fork:write | post:write | media:write); each operation lists the scope it needs as x-scope. A key without it gets 403 {error:"token scope", hint:"needs <scope>"}; an expired key gets 401. A session cookie is not scoped',
+  'every call counts against a per-minute rate limit (per account for logged-in writes, else per IP; sign-in calls also per email); over it is 429 with Retry-After',
   'lists take ?limit= and ?offset= and answer {<items>, total, limit, offset, next}; next is the offset of the next page, null on the last one',
   'a status write on an area with scope oneios for a device whose base is not oneios is 400 "area not applicable"',
 ];
@@ -603,6 +604,18 @@ export const OPERATIONS: Operation[] = [
     description: 'ADMIN_EMAIL with ADMIN_PASSWORD always logs in as the admin (the account is created on first use). One generic 401 for any bad pair.', setsCookie: true,
     body: obj({ email: str(), password: str(undefined, { maxLength: 256 }) }, ['email', 'password']),
     ok: { 200: userWrap('SelfUserWithTrust') }, errors: [400, 401] },
+  { method: 'post', path: '/api/auth/password', auth: 'login', tag: 'auth', summary: 'change my password {current_password,new_password,revoke_tokens?}',
+    description: 'Ends every other session of the account. API keys stay unless revoke_tokens is true. 409 for a GitHub-only account (no password).',
+    body: obj({ current_password: str(undefined, { maxLength: 256 }), new_password: str(undefined, { minLength: 10, maxLength: 256 }), revoke_tokens: bool() }, ['current_password', 'new_password']),
+    ok: { 200: obj({ ok: { const: true }, sessions_ended: int(), tokens_revoked: int() }, ['ok', 'sessions_ended', 'tokens_revoked']) }, errors: [400, 401, 403, 409] },
+  { method: 'post', path: '/api/auth/password-reset', auth: 'public', tag: 'auth', summary: 'mail a password-reset link {email}',
+    description: 'Always the same 200, whether or not the email has an account. The link (/reset-password#token=...) works once, for 30 minutes; a new request replaces older links. 5 requests a minute per email.',
+    body: obj({ email: str(undefined, { format: 'email' }) }, ['email']),
+    ok: { 200: obj({ ok: { const: true }, hint: str() }, ['ok']) }, errors: [400] },
+  { method: 'post', path: '/api/auth/password-reset/confirm', auth: 'public', tag: 'auth', summary: 'set a new password with a reset link {token,password} -> session cookie',
+    description: 'Spends the link, ends every session, revokes every API key of the account and logs in.', setsCookie: true,
+    body: obj({ token: str('the token from the reset link'), password: str(undefined, { minLength: 10, maxLength: 256 }) }, ['token', 'password']),
+    ok: { 200: obj({ user: ref('SelfUserWithTrust'), tokens_revoked: int() }, ['user', 'tokens_revoked']) }, errors: [400, 410] },
   { method: 'post', path: '/api/auth/logout', auth: 'public', tag: 'auth', summary: 'end the cookie session', ok: { 200: obj({ ok: { const: true } }, ['ok']) } },
   { method: 'get', path: '/api/auth/me', auth: 'login', tag: 'auth', summary: 'current user -> {user, maintains: [device slugs], maintains_repos, can_post, is_admin, token_scopes?}',
     description: 'CLI: `whoami`. token_scopes: the scopes of the key the call was made with (absent with a session cookie).',
@@ -716,6 +729,9 @@ export const TITLES: Record<string, string> = {
   'POST /api/auth/register': 'Sign up (alias)',
   'POST /api/auth/login': 'Log in with email',
   'POST /api/auth/logout': 'Log out',
+  'POST /api/auth/password': 'Change my password',
+  'POST /api/auth/password-reset': 'Request a password reset',
+  'POST /api/auth/password-reset/confirm': 'Reset a password',
   'GET /api/auth/me': 'Who am I',
   'GET /api/auth/tokens': 'List my tokens',
   'POST /api/auth/tokens': 'Mint a token',
@@ -747,11 +763,12 @@ const ERROR_TEXT: Record<number, string> = {
   404: 'No such device, area, fork, post, claim, repo claim, upload, token or user.',
   405: 'Method not allowed; the Allow header lists the methods this path accepts.',
   409: 'Conflict: the row exists already (duplicate slug, fork, post URL, claim), the claim is not pending, or the GitHub account is linked to another user.',
-  410: 'The gist-proof challenge expired (10 minutes) or was used, or the repo claim expired (24 h): start again.',
+  410: 'The gist-proof challenge expired (10 minutes) or was used, the repo claim expired (24 h), or the password-reset link expired (30 minutes) or was used: start again.',
   411: 'An upload without Content-Length.',
   413: 'Body over 64 KB (JSON), or an upload over its limit (images 15 MB, videos 95 MB).',
   415: 'An upload that is not multipart/form-data, or a file that is not an allowed image or video (read from its bytes).',
   422: 'The gist does not prove the challenge (wrong owner, no nonce in it), or .iosonand-verify is missing or wrong.',
+  429: 'Rate limited: too many calls from this IP or account in the last minute (sign-in calls also count per email). Retry-After says how many seconds to wait.',
   500: 'Server error; retry.',
   502: 'GitHub or Reddit did not answer as expected; retry later.',
   503: 'Media storage (the R2 binding MEDIA) is not configured.',
@@ -805,7 +822,7 @@ function operationObject(op: Operation): Schema {
       content: { 'application/json': { schema } },
     };
   }
-  for (const code of [...(op.errors ?? []), 405, 500]) {
+  for (const code of [...(op.errors ?? []), 405, 429, 500]) {
     responses[String(code)] = { $ref: `#/components/responses/E${code}` };
   }
   const params = [...pathParams(op.path), ...(op.query ?? []).map((q) => ({ $ref: `#/components/parameters/${q}` }))];
@@ -840,6 +857,7 @@ export function openapiDocument(origin?: string): Schema {
     responses[`E${code}`] = {
       description: text,
       ...(code === '405' ? { headers: { Allow: { schema: { type: 'string' } } } } : {}),
+      ...(code === '429' ? { headers: { 'Retry-After': { schema: { type: 'integer' } } } } : {}),
       content: { 'application/json': { schema: ref('Error') } },
     };
   }

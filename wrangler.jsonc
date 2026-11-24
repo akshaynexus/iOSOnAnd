@@ -27,6 +27,22 @@
       "bucket_name": "iosonand-media"
     }
   ],
+  // Per-caller request limits (src/lib/ratelimit.ts). Each counts per key per
+  // 60 s in one Cloudflare location. Keep `limit` equal to BUCKETS in
+  // src/lib/ratebuckets.ts. namespace_id is any number unique in the account.
+  "ratelimits": [
+    { "name": "RL_AUTH", "namespace_id": "4101", "simple": { "limit": 20, "period": 60 } },
+    { "name": "RL_AUTH_EMAIL", "namespace_id": "4102", "simple": { "limit": 5, "period": 60 } },
+    { "name": "RL_EXPENSIVE", "namespace_id": "4103", "simple": { "limit": 10, "period": 60 } },
+    { "name": "RL_UPLOAD", "namespace_id": "4104", "simple": { "limit": 20, "period": 60 } },
+    { "name": "RL_WRITE", "namespace_id": "4105", "simple": { "limit": 60, "period": 60 } },
+    { "name": "RL_READ", "namespace_id": "4106", "simple": { "limit": 300, "period": 60 } }
+  ],
+  // Password-reset mail (src/lib/mail.ts) through Cloudflare Email Service.
+  // Local dev simulates it: the mail is logged to the dev server console.
+  // Deploy: onboard the sending domain under Email Service, then set
+  // MAIL_FROM (e.g. "noreply@yourdomain") with `wrangler secret put MAIL_FROM`.
+  "send_email": [{ "name": "EMAIL" }],
   "observability": {
     "enabled": true
   }

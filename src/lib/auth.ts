@@ -2,7 +2,10 @@
 //
 // - Password hashing: WebCrypto PBKDF2-SHA256, 100 000 iterations (the most
 //   Cloudflare Workers' WebCrypto accepts; above that deriveBits throws in
-//   production), per-user 16-byte salt. Older hashes are re-hashed on login.
+//   production), per-user 16-byte salt. With PASSWORD_PEPPER set (a Worker
+//   secret, never in the DB) the password is first HMAC-SHA256'd with it, so a
+//   leaked database alone cannot be cracked. Older hashes are re-hashed on
+//   login. Losing PASSWORD_PEPPER invalidates every peppered hash.
 // - Sessions: random 32-byte secret in an HttpOnly, SameSite=Lax cookie
 //   (Secure on https); only sha256(secret) is stored (`sessions`).
 // - API tokens: `ion_<random>`, sent as `Authorization: Bearer`; only
@@ -191,10 +194,9 @@ function b64urlencode(bytes: Uint8Array): string {
   return b64encode(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-async function pbkdf2Key(password: string, salt: Uint8Array, iterations: number): Promise<Uint8Array> {
-  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, [
-    'deriveBits',
-  ]);
+async function pbkdf2Key(password: string | Uint8Array, salt: Uint8Array, iterations: number): Promise<Uint8Array> {
+  const raw = typeof password === 'string' ? new TextEncoder().encode(password) : password;
+  const base = await crypto.subtle.importKey('raw', raw as unknown as BufferSource, 'PBKDF2', false, ['deriveBits']);
   const bits = await crypto.subtle.deriveBits(
     { name: 'PBKDF2', hash: 'SHA-256', salt: salt as unknown as BufferSource, iterations },
     base,
@@ -203,32 +205,82 @@ async function pbkdf2Key(password: string, salt: Uint8Array, iterations: number)
   return new Uint8Array(bits);
 }
 
-/** Stored format: pbkdf2-sha256$<iterations>$<base64 salt>$<base64 hash> */
+const PLAIN = 'pbkdf2-sha256';
+const PEPPERED = 'pbkdf2-sha256-hmac';
+
+function pepper(): string | undefined {
+  return env('PASSWORD_PEPPER');
+}
+
+/** HMAC-SHA256(PASSWORD_PEPPER, password): the PBKDF2 input of peppered hashes. */
+async function peppered(password: string, key: string): Promise<Uint8Array> {
+  const k = await crypto.subtle.importKey('raw', new TextEncoder().encode(key), { name: 'HMAC', hash: 'SHA-256' }, false, [
+    'sign',
+  ]);
+  return new Uint8Array(await crypto.subtle.sign('HMAC', k, new TextEncoder().encode(password)));
+}
+
+/**
+ * Stored format: <scheme>$<iterations>$<base64 salt>$<base64 hash>; scheme is
+ * pbkdf2-sha256-hmac when PASSWORD_PEPPER is set, else pbkdf2-sha256.
+ */
 export async function hashPassword(password: string): Promise<string> {
   const salt = crypto.getRandomValues(new Uint8Array(SALT_BYTES));
-  const key = await pbkdf2Key(password, salt, PBKDF2_ITERATIONS);
-  return `pbkdf2-sha256$${PBKDF2_ITERATIONS}$${b64encode(salt)}$${b64encode(key)}`;
+  const p = pepper();
+  const key = await pbkdf2Key(p ? await peppered(password, p) : password, salt, PBKDF2_ITERATIONS);
+  return `${p ? PEPPERED : PLAIN}$${PBKDF2_ITERATIONS}$${b64encode(salt)}$${b64encode(key)}`;
 }
 
 /** True when a stored hash uses other parameters than hashPassword does now. */
 export function needsRehash(stored: string): boolean {
-  return stored.split('$')[1] !== String(PBKDF2_ITERATIONS);
+  const [scheme, iterations] = stored.split('$');
+  return scheme !== (pepper() ? PEPPERED : PLAIN) || iterations !== String(PBKDF2_ITERATIONS);
 }
 
 export async function verifyPassword(password: string, stored: string): Promise<boolean> {
   try {
     const parts = stored.split('$');
-    if (parts.length !== 4 || parts[0] !== 'pbkdf2-sha256') return false;
+    if (parts.length !== 4 || (parts[0] !== PLAIN && parts[0] !== PEPPERED)) return false;
     const iterations = parseInt(parts[1], 10);
     if (!Number.isFinite(iterations) || iterations < 100_000 || iterations > 2_000_000) return false;
     const salt = b64decodeToBytes(parts[2]);
     const expected = b64decodeToBytes(parts[3]);
     if (salt.length < 8 || expected.length !== 32) return false;
-    const actual = await pbkdf2Key(password, salt, iterations);
+    let input: string | Uint8Array = password;
+    if (parts[0] === PEPPERED) {
+      const p = pepper();
+      if (!p) {
+        console.error('a peppered password hash was found but PASSWORD_PEPPER is not set');
+        return false;
+      }
+      input = await peppered(password, p);
+    }
+    const actual = await pbkdf2Key(input, salt, iterations);
     return timingSafeEqual(actual, expected);
   } catch {
     return false;
   }
+}
+
+const DUMMY_SALT = new Uint8Array(SALT_BYTES);
+
+/**
+ * The same work as verifyPassword, always false. Run it when there is no
+ * account (or no password) for the email, so that login takes as long as a
+ * wrong password and does not reveal which emails are registered.
+ */
+export async function dummyVerifyPassword(password: string): Promise<false> {
+  const p = pepper();
+  await pbkdf2Key(p ? await peppered(password, p) : password, DUMMY_SALT, PBKDF2_ITERATIONS);
+  return false;
+}
+
+/** The new-password rule (signup, change, reset): 10 to 256 characters, else 400. */
+export function checkNewPassword(password: unknown): string {
+  if (typeof password !== 'string' || password.length < 10 || password.length > 256) {
+    throw new HttpError(400, 'bad password', 'use 10 to 256 characters');
+  }
+  return password;
 }
 
 export function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {

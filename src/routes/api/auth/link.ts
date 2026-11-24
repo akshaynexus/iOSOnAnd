@@ -19,8 +19,10 @@ import {
   nowIso,
   readJson,
   toSelfUser,
+  dummyVerifyPassword,
   verifyPassword,
 } from '@/lib/auth';
+import { hitEmail } from '@/lib/ratelimit';
 import { fetchGitHubUserByLogin, verifyGistProof } from '@/lib/github';
 import { appendChangelog } from '@/lib/changelog';
 
@@ -31,8 +33,11 @@ async function handlePost(req: Request): Promise<Response> {
   if (!email || !password) {
     throw new HttpError(400, 'email and password required', 'send {"email","password","gist_url",...}');
   }
+  if (password.length > 256) throw new HttpError(401, 'invalid email or password', 'check both fields and retry');
+  await hitEmail(email);
   const user = await findUserByEmail(email);
-  if (!user || !user.password_hash || !(await verifyPassword(password, user.password_hash))) {
+  const ok = user?.password_hash ? await verifyPassword(password, user.password_hash) : await dummyVerifyPassword(password);
+  if (!user || !ok) {
     throw new HttpError(401, 'invalid email or password', 'check both fields and retry');
   }
 

@@ -13,7 +13,7 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import { cleanupCall } from './helpers';
+import { cleanupCall, testIpHeaders } from './helpers';
 
 const BASE = (process.env.TRACKER_URL || 'http://127.0.0.1:3001').replace(/\/+$/, '');
 const RUN = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
@@ -49,7 +49,7 @@ async function call(
   p: string,
   opts: { who?: Who; body?: unknown; headers?: Record<string, string>; noJsonType?: boolean } = {},
 ): Promise<Res> {
-  const headers: Record<string, string> = { ...(opts.headers || {}) };
+  const headers: Record<string, string> = { ...testIpHeaders(BASE), ...(opts.headers || {}) };
   if (opts.body !== undefined) headers['content-type'] ??= 'application/json';
   else if (!opts.noJsonType && opts.who?.cookie && method !== 'GET') headers['content-type'] ??= 'application/json';
   if (opts.who?.cookie) headers.cookie = opts.who.cookie;

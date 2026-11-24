@@ -9,6 +9,7 @@ import { useAuth } from "@/components/auth";
 import { ClaimBadge } from "@/components/StatusBadge";
 import { toastError, useAction } from "@/components/useAction";
 import {
+  changePassword,
   isOwnClaim,
   ghChallenge,
   ghLink,
@@ -152,6 +153,68 @@ function GithubSection() {
           </div>
         </form>
       )}
+    </section>
+  );
+}
+
+function PasswordSection() {
+  const { user } = useAuth();
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [revokeKeys, setRevokeKeys] = useState(false);
+
+  const [save, saving] = useAction(async () => {
+    const res = await changePassword({ current_password: current, new_password: next, revoke_tokens: revokeKeys });
+    setCurrent("");
+    setNext("");
+    setRevokeKeys(false);
+    const ended = res.sessions_ended ? ` Logged out ${res.sessions_ended} other session${res.sessions_ended === 1 ? "" : "s"}.` : "";
+    const keys = res.tokens_revoked ? ` Revoked ${res.tokens_revoked} key${res.tokens_revoked === 1 ? "" : "s"}.` : "";
+    toast.success("Password changed", { description: (ended + keys).trim() || undefined });
+  });
+
+  if (!user?.email) return null;
+  return (
+    <section className="flex flex-col gap-4">
+      <h2 className="text-base font-semibold">Password</h2>
+      <form
+        className="flex max-w-sm flex-col gap-4"
+        onSubmit={(e: FormEvent) => {
+          e.preventDefault();
+          void save();
+        }}
+      >
+        <Field id="current-password" label="Current password">
+          <Input
+            id="current-password"
+            type="password"
+            value={current}
+            onChange={(e) => setCurrent(e.target.value)}
+            autoComplete="current-password"
+            required
+          />
+        </Field>
+        <Field id="new-password" label="New password" hint="At least 10 characters">
+          <Input
+            id="new-password"
+            type="password"
+            value={next}
+            onChange={(e) => setNext(e.target.value)}
+            autoComplete="new-password"
+            minLength={10}
+            aria-describedby="new-password-hint"
+            required
+          />
+        </Field>
+        <label className="flex min-h-11 items-center gap-2 text-sm">
+          <input type="checkbox" checked={revokeKeys} onChange={(e) => setRevokeKeys(e.target.checked)} className="size-4" />
+          Also revoke my API keys
+        </label>
+        <Button type="submit" size="sm" disabled={saving} className="self-start">
+          {saving ? "Saving" : "Change password"}
+        </Button>
+        <p className="text-sm text-muted-foreground">Other devices are logged out.</p>
+      </form>
     </section>
   );
 }
@@ -476,6 +539,7 @@ function ProfilePage() {
         ) : null}
       </section>
       <GithubSection />
+      <PasswordSection />
       <KeysLink />
       <ClaimsSection />
       <RepoClaimsSection />

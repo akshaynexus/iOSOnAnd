@@ -18,7 +18,7 @@ README.md describes what exists now.
 | `seed/seed.json`, `seed/apply.mjs` | seed data and its loader |
 | `tests/api/` | API tests, `bun run test` (`unit.test.ts`, `docs.test.ts` need no server) |
 | `src/routes/` | pages, and `api/` routes |
-| `src/lib/` | DB, auth (`scopes.ts`: key scopes), repos and repo claims, forks, media (R2, `multipart.ts`, `sniff.ts`), GitHub, Reddit and changelog helpers |
+| `src/lib/` | DB, auth (`scopes.ts`: key scopes; `password.ts`: change and reset; `ratelimit.ts`, `ratebuckets.ts`: rate limits; `mail.ts`: Email Service), repos and repo claims, forks, media (R2, `multipart.ts`, `sniff.ts`), GitHub, Reddit and changelog helpers |
 | `src/components/` | UI, `ui/` is shadcn |
 | `content/docs/*.mdx` | the `/docs` pages (Fumadocs, compiled at build by `fumadocs-mdx`; order in `meta.json`) |
 | `src/lib/openapi.ts` | the API description: `/api/openapi.json`, `/api/docs` and `/api-reference` come from it |

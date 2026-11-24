@@ -549,6 +549,24 @@ export function login(
   return req("/api/auth/login", { method: "POST", body: JSON.stringify(input) }, opts);
 }
 
+export function changePassword(
+  input: { current_password: string; new_password: string; revoke_tokens?: boolean },
+  opts?: CallOptions,
+): Promise<{ ok: true; sessions_ended: number; tokens_revoked: number }> {
+  return req("/api/auth/password", { method: "POST", body: JSON.stringify(input) }, opts);
+}
+
+export function requestPasswordReset(email: string, opts?: CallOptions): Promise<{ ok: true; hint: string }> {
+  return req("/api/auth/password-reset", { method: "POST", body: JSON.stringify({ email }) }, opts);
+}
+
+export function confirmPasswordReset(
+  input: { token: string; password: string },
+  opts?: CallOptions,
+): Promise<{ user: User; tokens_revoked: number }> {
+  return req("/api/auth/password-reset/confirm", { method: "POST", body: JSON.stringify(input) }, opts);
+}
+
 export function logout(opts?: CallOptions): Promise<{ ok: true }> {
   return req("/api/auth/logout", { method: "POST" }, opts);
 }

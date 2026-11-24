@@ -75,12 +75,17 @@ accounts, and its changelog rows in the local D1). Seed data is only read.
 |---|---|
 | `tests/api/api.test.ts` | auth, the trust model, forks, posts, CSRF, routing |
 | `tests/api/v2.test.ts` | the not-applicable rule, pagination, API keys (scopes, expiry, last_used, rotate, revoke), repo claims (owner, proof file, admin approve and reject, stepping down), support rows, lineage and device families, uploads (types, limits, Range, cookie uploads and CSRF, delete), post thumbnails, `/cli.mjs` |
-| `tests/api/unit.test.ts` | no tracker needed: the multipart parser, the file-type check and the proof-file check with a stubbed fetch |
+| `tests/api/password.test.ts` | password change, password reset (a planted reset row, local only) and the per-email sign-in limit |
+| `tests/api/unit.test.ts` | no tracker needed: the multipart parser, the file-type check, the proof-file check with a stubbed fetch, and the rate-limit buckets against `wrangler.jsonc` |
 | `tests/api/openapi.test.ts` | every route under `src/routes/api/` is in the OpenAPI document (`src/lib/openapi.ts`), each operation's `x-scope` is the enforced one, and the served documents match |
 
 A few v2 cases write to the local D1 directly (a test GitHub login for the owner check, a past key
 expiry), so they run only against a local tracker. The proof-file success path needs a real push;
 the unit test covers it with a stubbed fetch.
+
+Locally each test call sends a random `CF-Connecting-IP`, so a run does not use up the per-IP rate
+limits (Cloudflare overwrites that header in production). `RATE_LIMITS=off` in `.dev.vars` turns
+every limit off.
 
 ## Deploy to Cloudflare
 
@@ -97,12 +102,29 @@ bun run db:migrate:remote
 bun run seed:remote
 bunx wrangler secret put ADMIN_EMAIL
 bunx wrangler secret put ADMIN_PASSWORD
+bunx wrangler secret put PASSWORD_PEPPER   # e.g. openssl rand -base64 32; never change or lose it
+bunx wrangler secret put MAIL_FROM         # e.g. noreply@yourdomain (password-reset mail)
+bunx wrangler secret put PUBLIC_URL        # e.g. https://tracker.yourdomain (links in mail)
 bunx wrangler secret put GITHUB_TOKEN      # optional
 bun run deploy                             # vite build, then wrangler deploy
 ```
 
+Before the first deploy:
+
+- Pick the **Workers Paid** plan ($5 a month). Password hashing can go over the Free plan's 10 ms
+  CPU limit, and Email Service only mails any address on Paid (3,000 mails a month included).
+- Serve it on a domain in your Cloudflare account: `"routes": [{ "pattern": "tracker.yourdomain",
+  "custom_domain": true }]` in `wrangler.jsonc`. DDoS protection is automatic either way. The
+  domain adds the dashboard's WAF and rate-limit rules, which stop traffic before the Worker runs
+  (and is billed). A good first rule: `/api/auth/*`, 10 requests per 10 seconds per IP, block.
+- Password-reset mail: in the dashboard, Email Service > Email Sending > Onboard Domain, and pick
+  that domain (it adds the DNS records). `MAIL_FROM` must be an address on it.
+- The rate limits (`ratelimits` in `wrangler.jsonc`) need no setup. Their `namespace_id`s only
+  have to be unique in the account.
+
 The docs at `/docs` are compiled into the Worker at build time; they read no files at runtime.
 `GET /cli.mjs` serves the repo's `cli.mjs`, imported as text at build time (in `vite dev` a small
 dev-only middleware in `vite.config.ts` serves the file, because Vite would otherwise answer that
-URL itself). Locally, uploads use the emulated R2 under `.wrangler/state`.
+URL itself). Locally, uploads use the emulated R2 under `.wrangler/state`, and mail is not sent:
+the dev server console shows each message, and its text is saved under `.wrangler/tmp/email/`.
 The API reference at `/api-reference` loads Scalar from jsDelivr in the browser.

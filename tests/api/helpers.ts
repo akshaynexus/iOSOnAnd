@@ -10,6 +10,19 @@ export const BASE = (process.env.TRACKER_URL || 'http://127.0.0.1:3001').replace
 export const ROOT = path.join(import.meta.dir, '..', '..');
 export const LOCAL = ['127.0.0.1', 'localhost', '[::1]', '::1'].includes(new URL(BASE).hostname);
 
+/**
+ * A random client IP for each call to a local tracker, so a test run does not
+ * use up the per-IP rate limits (src/lib/ratelimit.ts). Locally the Worker
+ * reads CF-Connecting-IP as sent; Cloudflare overwrites it in production, so
+ * this does nothing against a deployed tracker. Per-email limits still apply.
+ */
+export function testIpHeaders(base: string = BASE): Record<string, string> {
+  const local = ['127.0.0.1', 'localhost', '[::1]', '::1'].includes(new URL(base).hostname);
+  if (!local) return {};
+  const b = () => Math.floor(Math.random() * 256);
+  return { 'cf-connecting-ip': `198.18.${b()}.${b()}` };
+}
+
 export function adminCreds(): { email: string; password: string } {
   let email = process.env.ADMIN_EMAIL || '';
   let password = process.env.ADMIN_PASSWORD || '';
@@ -39,7 +52,7 @@ export async function call(
   p: string,
   opts: { who?: Who; body?: unknown; form?: FormData; headers?: Record<string, string>; binary?: boolean } = {},
 ): Promise<Res> {
-  const headers: Record<string, string> = { ...(opts.headers || {}) };
+  const headers: Record<string, string> = { ...testIpHeaders(), ...(opts.headers || {}) };
   if (opts.body !== undefined) headers['content-type'] ??= 'application/json';
   else if (!opts.form && opts.who?.cookie && method !== 'GET') headers['content-type'] ??= 'application/json';
   if (opts.who?.cookie) headers.cookie = opts.who.cookie;

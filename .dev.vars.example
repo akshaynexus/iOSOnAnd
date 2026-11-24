@@ -10,3 +10,19 @@ ADMIN_PASSWORD=
 
 # Optional: server-side GitHub token for API enrichment (fork/reddit lookups).
 GITHUB_TOKEN=
+
+# Password pepper: an HMAC key mixed into every password hash, kept out of the
+# database. `bun run setup` fills a random one into .dev.vars. Production:
+# `wrangler secret put PASSWORD_PEPPER` once (e.g. `openssl rand -base64 32`)
+# and never change or lose it: every peppered password stops working.
+PASSWORD_PEPPER=
+
+# Password-reset mail (Cloudflare Email Service, binding EMAIL). Local dev
+# prints the mail in the dev server console instead of sending it.
+MAIL_FROM=
+# The site URL used in mailed links, e.g. https://tracker.example.com
+# (empty: the URL the request came to).
+PUBLIC_URL=
+
+# off turns every rate limit off (local test runs only; never in production).
+RATE_LIMITS=

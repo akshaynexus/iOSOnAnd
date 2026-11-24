@@ -90,9 +90,14 @@ export function AuthForm({ mode, redirect }: { mode: "login" | "signup"; redirec
               {pending ? "Creating account" : "Sign up"}
             </PrimaryAction>
           ) : (
-            <Button type="submit" disabled={pending}>
-              {pending ? "Logging in" : "Log in"}
-            </Button>
+            <>
+              <Button type="submit" disabled={pending}>
+                {pending ? "Logging in" : "Log in"}
+              </Button>
+              <Link to="/forgot-password" className="self-start py-2 text-sm underline underline-offset-4">
+                Forgot password?
+              </Link>
+            </>
           )}
         </form>
       )}

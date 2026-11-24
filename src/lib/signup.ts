@@ -5,6 +5,7 @@
 
 import {
   HttpError,
+  checkNewPassword,
   createSession,
   createUser,
   findUserByEmail,
@@ -27,9 +28,7 @@ export async function handleSignup(req: Request): Promise<Response> {
   if (!validEmail(email)) {
     throw new HttpError(400, 'invalid email', 'send {"email","password"} with a valid email address');
   }
-  if (password.length < 10 || password.length > 256) {
-    throw new HttpError(400, 'bad password', 'use 10 to 256 characters');
-  }
+  checkNewPassword(password);
   const displayName = str(body, 'display_name', 64) || str(body, 'displayName', 64) || email.split('@')[0] || 'user';
   if (isBootstrapAdminEmail(email)) {
     const admin = await loginBootstrapAdmin(email, password);

@@ -15,8 +15,11 @@
 //   preflight, which this API never allows). When Sec-Fetch-Site is sent it
 //   must be same-origin or same-site. Bearer-token clients (the CLI) send no
 //   cookie and are unaffected.
+// - Rate limits (src/lib/ratelimit.ts): every call counts against one bucket
+//   after the CSRF check; over the limit is 429 with Retry-After.
 
 import { HttpError, SESSION_COOKIE, apiError, getCookie, handleError } from '@/lib/auth';
+import { checkRateLimit } from '@/lib/ratelimit';
 
 export type ApiCtx = { request: Request; params: Record<string, string> };
 export type ApiHandler = (ctx: ApiCtx) => Promise<Response> | Response;
@@ -75,6 +78,7 @@ export function apiHandlers(map: Partial<Record<Method, ApiHandler>>): Record<st
     out[m] = async (ctx) => {
       try {
         checkCsrf(ctx.request);
+        await checkRateLimit(ctx.request);
         return await h(ctx);
       } catch (e) {
         return handleError(e);

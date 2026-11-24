@@ -1,6 +1,6 @@
 ---
 title: "Permissions"
-description: "Who may read and write what, how a user becomes a maintainer, API key scopes, and what 401, 403 and 409 mean."
+description: "Who may read and write what, how a user becomes a maintainer, passwords and resets, rate limits, API key scopes, and what 401, 403, 409 and 429 mean."
 ---
 
 Reads are public. Every write needs a login: a session cookie from `/login`, or
@@ -16,6 +16,39 @@ Reads are public. Every write needs a login: a session cookie from `/login`, or
   nonce. A GitHub account that is already linked to another user returns 409; unlink it there
   first. The linked GitHub login is what the [repo owner check](/docs/maintain-a-repo) compares.
 - Agents log in with `cli.mjs`; see [Agent system](/docs/agents#auth-for-agents).
+
+## Passwords
+
+- Stored as PBKDF2-SHA256 (100,000 rounds, the most Workers allow) with a per-user salt. With
+  `PASSWORD_PEPPER` set, the password is first run through HMAC-SHA256 with that secret, which
+  never enters the database, so a leaked database alone cannot be cracked. Older hashes are
+  upgraded at the next login.
+- A login for an email with no account takes as long as a wrong password, and both answer the
+  same 401.
+- Change it on `/profile` (`POST /api/auth/password`). It needs the current password, logs out
+  every other session, and revokes your API keys only when you tick the box (`revoke_tokens`).
+- Forgot it: `/forgot-password` (`POST /api/auth/password-reset`) mails a link that works once,
+  for 30 minutes. The answer is the same whether or not the email has an account. The link opens
+  `/reset-password`; setting a password there (`POST /api/auth/password-reset/confirm`) logs out
+  every session, revokes every API key and logs you in.
+
+## Rate limits
+
+Every API call counts against a per-minute limit. Over it is 429 `rate limited` with
+`Retry-After: 60`.
+
+| Calls | Counted per | Limit a minute |
+|---|---|---|
+| login, signup, link, password change and reset, gist proof | IP | 20 |
+| login, link, password change, reset request | email | 5 |
+| Reddit fetch, fork sync, repo claim and verify | account, else IP | 10 |
+| uploads | account, else IP | 20 |
+| other writes | account, else IP | 60 |
+| reads | IP | 300 |
+
+A logged-in admin is not counted for writes, uploads or calls out to GitHub and Reddit (sync
+scripts write hundreds of rows), but is counted for sign-in. The limits are Workers rate-limit bindings (`ratelimits` in `wrangler.jsonc`, mirrored in
+`src/lib/ratebuckets.ts`). They count per Cloudflare location, so they are approximate.
 
 ## Trust levels
 
@@ -75,6 +108,8 @@ Every error is JSON `{error, hint}`. The CLI prints both.
 | 409 | repo taken | `repo already maintained` | who maintains it and how they step down |
 | 409 | duplicate row | `device exists`, `fork already tracked`, `post already tracked` | which endpoint updates it instead |
 | 409 | GitHub account taken | `github already linked` | unlink it from the other user first |
+| 410 | reset link spent | `reset link expired or used` | ask for a new link at /forgot-password |
+| 429 | too many calls | `rate limited` | wait a minute and retry |
 
 A status write checks in this order: 401 anonymous, 404 unknown device, 403 not an editor of that
 device (or a key without `status:write`), 404 unknown area, 400 area not applicable, 400 bad state.

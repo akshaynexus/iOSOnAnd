@@ -9,6 +9,7 @@
 //   3. `wrangler d1 migrations apply oneios-tracker --local -y` (picks up any
 //      new migrations/NNNN_*.sql).
 //   4. Seed only when the devices table is empty (seed/apply.mjs --if-empty).
+//   Also: a random local PASSWORD_PEPPER is added to .dev.vars when it has none.
 // Local only. It never touches the remote DB. SKIP_SETUP=1 skips it.
 import { execFileSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
@@ -51,6 +52,19 @@ if (!existsSync(devVars)) {
   log('  stored in .dev.vars (git-ignored). `node cli.mjs login --admin` reads it from there.');
 } else {
   log('.dev.vars exists, left as is');
+}
+// A local password pepper (src/lib/auth.ts), added once to an older .dev.vars
+// too. Older local hashes keep working and are re-hashed on the next login.
+{
+  const text = readFileSync(devVars, 'utf8');
+  if (!/^PASSWORD_PEPPER=\S+/m.test(text)) {
+    const line = `PASSWORD_PEPPER=${randomBytes(32).toString('base64url')}`;
+    const next = /^PASSWORD_PEPPER=.*$/m.test(text)
+      ? text.replace(/^PASSWORD_PEPPER=.*$/m, line)
+      : `${text.replace(/\n*$/, '\n')}\n# Local password pepper (git-ignored file; see .dev.vars.example).\n${line}\n`;
+    writeFileSync(devVars, next, { mode: 0o600 });
+    log('added a local PASSWORD_PEPPER to .dev.vars');
+  }
 }
 
 // 2. Baseline a pre-migrations local DB.

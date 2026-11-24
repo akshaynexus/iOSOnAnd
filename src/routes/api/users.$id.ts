@@ -27,6 +27,7 @@ async function handleDelete({ request, params }: ApiCtx): Promise<Response> {
   const u = await load(params.id);
   if (u.id === admin.id) throw new HttpError(409, 'cannot delete yourself', 'ask another admin');
   await exec('DELETE FROM sessions WHERE user_id = ?', [u.id]);
+  await exec('DELETE FROM password_resets WHERE user_id = ?', [u.id]);
   await exec('DELETE FROM api_tokens WHERE user_id = ?', [u.id]);
   await exec('DELETE FROM claims WHERE user_id = ?', [u.id]);
   await exec('DELETE FROM repo_claims WHERE user_id = ?', [u.id]);
