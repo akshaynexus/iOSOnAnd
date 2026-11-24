@@ -452,7 +452,10 @@ export async function toSelfUserWithTrust(
 
 /** Repos (OWNER/REPO) whose fork row names this user as maintainer, sorted. */
 export async function maintainedRepos(userId: number): Promise<string[]> {
-  const rows = await queryAll<{ repo: string }>('SELECT repo FROM forks WHERE maintainer_user_id = ? ORDER BY repo', [userId]);
+  const rows = await queryAll<{ repo: string }>(
+    'SELECT f.repo FROM repo_maintainers rm JOIN forks f ON f.id = rm.fork_id WHERE rm.user_id = ? ORDER BY f.repo',
+    [userId],
+  );
   return rows.map((r) => r.repo);
 }
 
@@ -793,9 +796,9 @@ const SUPPORT_IN = `(${MAINTAINING_SUPPORT.map((s) => `'${s}'`).join(', ')})`;
  */
 export const MAINTAINERS_SQL = `
   SELECT device_slug, user_id AS uid FROM claims WHERE status = 'approved'
-  UNION SELECT device_slug, maintainer_user_id AS uid FROM forks WHERE maintainer_user_id IS NOT NULL AND device_slug IS NOT NULL
-  UNION SELECT rd.device_slug, f.maintainer_user_id AS uid FROM repo_devices rd JOIN forks f ON f.id = rd.fork_id
-    WHERE f.maintainer_user_id IS NOT NULL AND rd.support IN ${SUPPORT_IN}`;
+  UNION SELECT f.device_slug, rm.user_id AS uid FROM repo_maintainers rm JOIN forks f ON f.id = rm.fork_id WHERE f.device_slug IS NOT NULL
+  UNION SELECT rd.device_slug, rm.user_id AS uid FROM repo_devices rd JOIN repo_maintainers rm ON rm.fork_id = rd.fork_id
+    WHERE rd.support IN ${SUPPORT_IN}`;
 
 /** Device slugs the user maintains (approved claims, and the phones of repos they maintain), sorted. */
 export async function maintainedSlugs(userId: number): Promise<string[]> {
@@ -912,7 +915,7 @@ export const AREA_SCOPES = ['all', 'oneios'] as const;
 export const FORK_KINDS = ['upstream', 'fork', 'standalone'] as const;
 export const SUPPORT_LEVELS = ['primary', 'merged', 'ported', 'claimed'] as const;
 export const REPO_CLAIM_STATUSES = ['pending', 'approved', 'rejected', 'expired'] as const;
-export const REPO_CLAIM_METHODS = ['owner', 'proof-file', 'admin'] as const;
+export const REPO_CLAIM_METHODS = ['owner', 'proof-file', 'review', 'maintainer', 'admin'] as const;
 
 /** ?limit= and ?offset= of a list endpoint. limit 1..max (default `def`), offset >= 0. */
 export function pageParams(sp: URLSearchParams, def = 100, max = 500): { limit: number; offset: number } {

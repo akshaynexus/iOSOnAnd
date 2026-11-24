@@ -37,7 +37,7 @@ async function handleGet({ request }: ApiCtx): Promise<Response> {
   const [phones, repos] = ids.length
     ? await Promise.all([
         queryAll<{ uid: number; device_slug: string }>(`SELECT DISTINCT uid, device_slug FROM (${MAINTAINERS_SQL}) WHERE uid IN (${marks})`, ids),
-        queryAll<{ uid: number; repo: string }>(`SELECT maintainer_user_id AS uid, repo FROM forks WHERE maintainer_user_id IN (${marks})`, ids),
+        queryAll<{ uid: number; repo: string }>(`SELECT rm.user_id AS uid, f.repo FROM repo_maintainers rm JOIN forks f ON f.id = rm.fork_id WHERE rm.user_id IN (${marks})`, ids),
       ])
     : [[], []];
   const users = rows.map((r) => ({

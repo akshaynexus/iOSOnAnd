@@ -14,18 +14,19 @@ import { createFileRoute } from '@tanstack/react-router';
 import { queryFirst, exec } from '@/lib/db';
 import { HttpError, actorName, isAdmin, json, readJson, requireUser, str } from '@/lib/auth';
 import { apiHandlers, type ApiCtx } from '@/lib/api';
-import { findForkByRepo, forkView, loadForkRow, normalizeRepo, setSupport, supportLevel, type ForkRow } from '@/lib/forks';
+import { findForkByRepo, forkView, isRepoMaintainer, loadForkRow, normalizeRepo, setSupport, supportLevel, type ForkRow } from '@/lib/forks';
 import { appendChangelog } from '@/lib/changelog';
 import { grantSupportedPhone, supportedPhoneNote } from '@/lib/repos';
 
 async function editor(request: Request, fork: ForkRow, support: string | null) {
   const user = await requireUser(request);
   if (isAdmin(user)) return user;
-  if (fork.maintainer_user_id === user.id && (support === null || support === 'claimed')) return user;
-  if (fork.maintainer_user_id === user.id) {
+  const maintains = await isRepoMaintainer(user.id, fork.id);
+  if (maintains && (support === null || support === 'claimed')) return user;
+  if (maintains) {
     throw new HttpError(403, 'admin required', `only an admin records "${support}" support; a repo maintainer adds "claimed" rows`);
   }
-  throw new HttpError(403, 'not the repo maintainer', `claim the repo first: POST /api/repos/claim {"repo":"${fork.repo}"}`);
+  throw new HttpError(403, 'not a repo maintainer', `claim the repo first: POST /api/repos/claim {"repo":"${fork.repo}"}`);
 }
 
 async function deviceFrom(request: Request, body: Record<string, any>): Promise<string> {
@@ -54,7 +55,7 @@ async function handlePost({ request, params }: ApiCtx): Promise<Response> {
   }
   await setSupport(fork.id, device, support, viaId, str(body, 'note', 4000));
   await appendChangelog(actorName(user), `repo ${fork.repo} supports ${device} (${support}${viaRaw ? ` via ${viaRaw}` : ''})`);
-  const device_claim = fork.maintainer_user_id === user.id && support === 'claimed' ? await grantSupportedPhone(user, fork, device) : null;
+  const device_claim = support === 'claimed' && (await isRepoMaintainer(user.id, fork.id)) ? await grantSupportedPhone(user, fork, device) : null;
   return json({ fork: await forkView(await loadForkRow(fork.id)), ...(device_claim ? { device_claim } : {}) });
 }
 
@@ -67,9 +68,10 @@ async function handleDelete({ request, params }: ApiCtx): Promise<Response> {
   const user = await editor(request, fork, row.support);
   await exec('DELETE FROM repo_devices WHERE fork_id = ? AND device_slug = ?', [fork.id, device]);
   // The repo maintainer's claim on that phone, made when they added it, goes with it.
-  if (fork.maintainer_user_id != null) {
-    await exec('DELETE FROM claims WHERE user_id = ? AND device_slug = ? AND note = ?', [fork.maintainer_user_id, device, supportedPhoneNote(fork.repo)]);
-  }
+  await exec(
+    'DELETE FROM claims WHERE device_slug = ? AND note = ? AND user_id IN (SELECT user_id FROM repo_maintainers WHERE fork_id = ?)',
+    [device, supportedPhoneNote(fork.repo), fork.id],
+  );
   await appendChangelog(actorName(user), `repo ${fork.repo} no longer lists ${device}`);
   return json({ fork: await forkView(await loadForkRow(fork.id)) });
 }

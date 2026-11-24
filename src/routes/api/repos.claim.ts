@@ -8,7 +8,10 @@
 //   - no GitHub account linked, or a personal repo of another login: 403
 //   - untracked repo: `device` is required (400); a fork row is created
 //     (verified fork-claim, branch/best_result from the body)
-//   - another user maintains it: 409; you maintain it: 200 {already: true};
+//   - a contributor to someone else's personal repo -> 202 pending claim
+//     (method "review", no nonce, 30 days) that a maintainer of the repo or an
+//     admin approves; a repo can have several maintainers
+//   - you maintain it: 200 {already: true};
 //     with `device`, that phone is added to the repo and you maintain it (at
 //     once unless another user does: then an admin decides) -> device_claim
 //   - approving a tracked repo for a phone it does not list adds the phone
@@ -22,7 +25,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { queryFirst } from '@/lib/db';
 import { HttpError, actorName, expiresIso, json, nowIso, readJson, requireUser, str } from '@/lib/auth';
 import { apiHandlers, type ApiCtx } from '@/lib/api';
-import { findForkByRepo, forkText, forkView, linkLineage, loadForkRow, normalizeRepo, setSupport, syncOwnSupport } from '@/lib/forks';
+import { findForkByRepo, forkText, forkView, isRepoMaintainer, linkLineage, loadForkRow, normalizeRepo, setSupport, syncOwnSupport } from '@/lib/forks';
 import {
   CLAIM_TTL_MS,
   REPO_CLAIM_SELECT,
@@ -54,11 +57,11 @@ async function handlePost({ request }: ApiCtx): Promise<Response> {
 
   let fork = await findForkByRepo(repo);
   // A phone the tracker does not list: added here when the repo is the
-  // claimer's own (approved at once), unless someone else maintains the repo.
-  if (body.new_device && !device && !(fork && fork.maintainer_user_id != null && fork.maintainer_user_id !== user.id)) {
+  // claimer's own (approved at once); createPhoneForClaim refuses anyone else.
+  if (body.new_device && !device) {
     device = await createPhoneForClaim(user, repo, body.new_device);
   }
-  if (fork?.maintainer_user_id === user.id) {
+  if (fork && (await isRepoMaintainer(user.id, fork.id))) {
     const last = await queryFirst<RepoClaimRow>(
       `${REPO_CLAIM_SELECT} WHERE rc.fork_id = ? AND rc.user_id = ? AND rc.status = 'approved' ORDER BY rc.id DESC LIMIT 1`,
       [fork.id, user.id],
@@ -79,16 +82,8 @@ async function handlePost({ request }: ApiCtx): Promise<Response> {
     }
     return json({ claim: last ? mapRepoClaim(last, user) : null, fork: await forkView(fork), already: true, ...(device_claim ? { device_claim } : {}) });
   }
-  if (fork && fork.maintainer_user_id != null) {
-    const m = await queryFirst<{ github_login: string | null; display_name: string }>('SELECT github_login, display_name FROM users WHERE id = ?', [
-      fork.maintainer_user_id,
-    ]);
-    throw new HttpError(
-      409,
-      'repo already maintained',
-      `${m?.github_login ? `@${m.github_login}` : m?.display_name || 'another user'} maintains ${fork.repo}; they (or an admin) can step down with DELETE /api/forks/${fork.id}/maintainer`,
-    );
-  }
+  // Others maintaining the repo already is fine: a repo can have several
+  // maintainers, and the claim adds this one (src/lib/repos.ts).
 
   const pending = await queryFirst<RepoClaimRow>(
     `${REPO_CLAIM_SELECT} WHERE rc.user_id = ? AND rc.repo = ? COLLATE NOCASE AND rc.status = 'pending'`,
@@ -130,11 +125,12 @@ async function handlePost({ request }: ApiCtx): Promise<Response> {
         fork.id,
         device ?? fork.device_slug,
         path,
-        path === 'owner' ? '' : newNonce(),
+        path === 'proof-file' ? newNonce() : '',
         note,
         forkCreated,
         nowIso(),
-        expiresIso(CLAIM_TTL_MS),
+        // A review waits on people, not on a push: it lasts 30 days.
+        expiresIso(path === 'review' ? 30 * 24 * 3600 * 1000 : CLAIM_TTL_MS),
       ],
     ));
   if (!claimRow) throw new HttpError(500, 'claim creation failed', 'retry');
@@ -143,8 +139,18 @@ async function handlePost({ request }: ApiCtx): Promise<Response> {
     const done = await approveRepoClaim(await loadRepoClaim(claimRow.id), user, 'owner');
     return json({ claim: mapRepoClaim(done.claim, user), fork: await forkView(done.fork) });
   }
-  await appendChangelog(actorName(user), `repo claim #${claimRow.id} filed for ${fork.repo} (proof file pending)`);
-  return json({ claim: mapRepoClaim(await loadRepoClaim(claimRow.id), user), fork: await forkView(fork) }, 202);
+  await appendChangelog(
+    actorName(user),
+    `repo claim #${claimRow.id} filed for ${fork.repo} (${path === 'review' ? "waiting for a maintainer's yes" : 'proof file pending'})`,
+  );
+  return json(
+    {
+      claim: mapRepoClaim(await loadRepoClaim(claimRow.id), user),
+      fork: await forkView(fork),
+      ...(path === 'review' ? { note: `a maintainer of ${fork.repo} (or an admin) approves it: they see it under Claims on their profile` } : {}),
+    },
+    202,
+  );
 }
 
 export const Route = createFileRoute('/api/repos/claim')({

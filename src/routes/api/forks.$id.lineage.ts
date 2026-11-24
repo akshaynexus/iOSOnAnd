@@ -11,13 +11,13 @@ import { createFileRoute } from '@tanstack/react-router';
 import { queryFirst, exec } from '@/lib/db';
 import { HttpError, actorName, isAdmin, json, oneOf, readJson, requireUser, str } from '@/lib/auth';
 import { apiHandlers, type ApiCtx } from '@/lib/api';
-import { LINEAGE_RELATIONS, forkView, loadForkRow, normalizeRepo, setLineage, type ForkRow } from '@/lib/forks';
+import { LINEAGE_RELATIONS, forkView, isRepoMaintainer, loadForkRow, normalizeRepo, setLineage, type ForkRow } from '@/lib/forks';
 import { appendChangelog } from '@/lib/changelog';
 
 async function editor(request: Request, fork: ForkRow) {
   const user = await requireUser(request);
-  if (isAdmin(user) || fork.maintainer_user_id === user.id) return user;
-  throw new HttpError(403, 'not the repo maintainer', `admin, or the maintainer of ${fork.repo} (POST /api/repos/claim)`);
+  if (isAdmin(user) || (await isRepoMaintainer(user.id, fork.id))) return user;
+  throw new HttpError(403, 'not a repo maintainer', `admin, or a maintainer of ${fork.repo} (POST /api/repos/claim)`);
 }
 
 function baseOf(request: Request, body: Record<string, any>): string {

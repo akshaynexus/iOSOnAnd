@@ -22,7 +22,7 @@ export const AUTH_LEVELS: Record<AuthLevel, string> = {
   public: 'no login',
   login: 'any logged-in user: session cookie, or Authorization: Bearer <tracker-token>',
   maintainer: 'admin, or a maintainer of that device (an approved claim on it); else 403 with a claim hint',
-  repo: 'admin, or the maintainer of that repo (an approved repo claim: POST /api/repos/claim)',
+  repo: 'admin, or a maintainer of that repo (an approved repo claim: POST /api/repos/claim; a repo can have several)',
   uploader: 'admin, or the user who uploaded it',
   poster: 'admin, or a maintainer of any device',
   admin: 'admin only (users.is_admin = 1)',
@@ -48,7 +48,7 @@ export const AREA_SCOPES = ['all', 'oneios'];
 export const FORK_KINDS = ['upstream', 'fork', 'standalone'];
 export const SUPPORT_LEVELS = ['primary', 'merged', 'ported', 'claimed'];
 export const REPO_CLAIM_STATUSES = ['pending', 'approved', 'rejected', 'expired'];
-export const REPO_CLAIM_METHODS = ['owner', 'proof-file', 'admin'];
+export const REPO_CLAIM_METHODS = ['owner', 'proof-file', 'review', 'maintainer', 'admin'];
 export const LINEAGE_RELATIONS = ['fork-of', 'derived-from', 'ported-from', 'uses'];
 
 type Schema = Record<string, unknown>;
@@ -238,7 +238,12 @@ const SCHEMAS: Record<string, Schema> = {
       base_project: str('the family label: OneiOS, ios-sweet, HackiOS, UniXNU, Scion, custom ...; empty when not known'),
       maintainer_user_id: nullable(int()),
       maintainer_since: nullable(str()),
-      maintainer: { ...nullable(ref('UserRef')), description: 'the repo maintainer (an approved repo claim)' },
+      maintainer: { ...nullable(ref('UserRef')), description: 'the first of the repo maintainers (older clients); see maintainers' },
+      maintainers: {
+        type: 'array',
+        items: obj({ id: int(), display_name: str(), github_login: nullable(str()), since: str() }, ['id', 'display_name', 'github_login', 'since']),
+        description: 'everyone who maintains the repo (repo_maintainers), longest-standing first; a repo can have several',
+      },
       supports: { ...arr(ref('SupportRow')), description: 'every device the repo supports (repo_devices)' },
       based_on: { ...arr(ref('BasedOn')), description: 'what the repo is based on (repo_lineage)' },
       device_slug: nullable(str()),
@@ -252,7 +257,7 @@ const SCHEMAS: Record<string, Schema> = {
       notes: str(),
       updated: str(),
     },
-    ['id', 'kind', 'base_project', 'device_slug', 'repo', 'branch', 'url', 'best_result', 'ported', 'fork_only', 'verified', 'notes', 'updated', 'maintainer_user_id', 'maintainer_since', 'maintainer', 'supports', 'based_on'],
+    ['id', 'kind', 'base_project', 'device_slug', 'repo', 'branch', 'url', 'best_result', 'ported', 'fork_only', 'verified', 'notes', 'updated', 'maintainer_user_id', 'maintainer_since', 'maintainer', 'maintainers', 'supports', 'based_on'],
   ),
   RedditPost: obj(
     {
@@ -405,6 +410,8 @@ const QUERY: Record<string, Schema> = {
   catalog_q: { name: 'q', in: 'query', required: true, description: 'at least 2 characters: name, codename or model words', schema: str(undefined, { examples: ['redmi note 7', 'lavender'] }) },
   catalog_limit: { name: 'limit', in: 'query', description: 'default 20, max 50', schema: int() },
   github_redirect: { name: 'redirect', in: 'query', description: 'a same-site path to land on afterwards', schema: str(undefined, { examples: ['/profile'] }) },
+  maintainer_user: { name: 'user', in: 'query', description: 'the user id of the maintainer to remove', schema: int() },
+  maintainer_login: { name: 'github_login', in: 'query', description: 'the GitHub login of the maintainer to remove', schema: str() },
   brief: { name: 'brief', in: 'query', description: '1: only {slug, name} per device (for pickers), not the full rows', schema: { type: 'string', enum: ['1'] } },
   repo_name: { name: 'repo', in: 'query', description: 'only this repo (OWNER/REPO), case-insensitive', schema: str(undefined, { examples: ['akshaynexus/OneiOS'] }) },
   device_forks: { name: 'device', in: 'query', description: 'repos whose own device this is, or that support it (repo_devices)', schema: str(undefined, { examples: ['s25'] }) },
@@ -563,9 +570,17 @@ export const OPERATIONS: Operation[] = [
     ok: { 200: forkWrap }, errors: [400, 401, 403, 404] },
   { method: 'delete', path: '/api/forks/{id}/lineage', auth: 'repo', tag: 'forks', summary: 'remove the "based on" rows for ?base= (&relation=)', query: ['base_param', 'relation_param'],
     body: obj({ base: str() }), bodyOptional: true, ok: { 200: forkWrap }, errors: [400, 401, 403, 404] },
-  { method: 'delete', path: '/api/forks/{id}/maintainer', auth: 'repo', tag: 'repos', summary: 'the repo maintainer steps down (or an admin removes them)',
-    description: 'The device claim their repo claim granted goes too, unless they maintain another repo of that device.',
-    ok: { 200: forkWrap }, errors: [401, 403, 404] },
+  { method: 'delete', path: '/api/forks/{id}/maintainer', auth: 'repo', tag: 'repos', summary: 'step down as one of the repo maintainers (?user=ID: an admin or the repo owner removes that one)',
+    description: 'The others stay. The device claims their repo claim granted go too, unless they maintain another repo of that phone.',
+    query: ['maintainer_user'], ok: { 200: forkWrap }, errors: [401, 403, 404] },
+  { method: 'get', path: '/api/forks/{id}/maintainers', auth: 'public', tag: 'repos', summary: "the repo's maintainers, longest-standing first",
+    description: 'CLI: `repo-maintainers`.', ok: { 200: obj({ maintainers: { type: 'array', items: ref('UserRef') } }, ['maintainers']) }, errors: [404] },
+  { method: 'post', path: '/api/forks/{id}/maintainers', auth: 'repo', tag: 'repos', summary: 'add a collaborator as a maintainer {github_login}',
+    description: 'CLI: `repo-maintainer-add`. They need an account linked to that GitHub login (404 otherwise), and then maintain the repo and its phones too.',
+    body: obj({ github_login: str(undefined, { examples: ['octocat'] }) }, ['github_login']), ok: { 200: forkWrap }, errors: [400, 401, 403, 404] },
+  { method: 'delete', path: '/api/forks/{id}/maintainers', auth: 'login', tag: 'repos', summary: 'remove a maintainer (?github_login= or ?user=; none: yourself)',
+    description: "CLI: `repo-maintainer-remove`. A maintainer steps down themselves; removing someone else takes an admin or the repo's GitHub owner.",
+    query: ['maintainer_login', 'maintainer_user'], ok: { 200: forkWrap }, errors: [401, 403, 404] },
   { method: 'get', path: '/api/lineage', auth: 'public', tag: 'forks', summary: 'the repo family tree: nodes and "based on" edges',
     description: 'Every tracked repo is a node (tracked: true); untracked repos and bases the lineage names are nodes too (tracked: false, kind external; exists: false when GitHub has no such repo). Edge: from the repo to what it is based on. families: label -> tracked repos.',
     ok: { 200: obj({
@@ -582,11 +597,11 @@ export const OPERATIONS: Operation[] = [
   { method: 'post', path: '/api/repos/claim/{id}/verify', auth: 'login', tag: 'repos', summary: 'check .iosonand-verify and approve the claim (the claimant, or an admin)',
     description: 'CLI: `repo-verify`. Reads raw.githubusercontent.com/OWNER/REPO/HEAD/.iosonand-verify (then the GitHub contents API). The GitHub login of the claimant must also be a public member of the owning organization or a contributor to the repo (403 otherwise). 422 when the file is missing or wrong, 410 when expired, 409 when not pending.',
     ok: { 200: claimFork }, errors: [401, 403, 404, 409, 410, 422, 502] },
-  { method: 'get', path: '/api/repos/claims', auth: 'login', tag: 'repos', summary: 'your repo claims (admin: everyone\'s)', description: 'CLI: `repo-claims`. Newest first.',
+  { method: 'get', path: '/api/repos/claims', auth: 'login', tag: 'repos', summary: "your repo claims and those on repos you maintain (admin: everyone's)", description: 'CLI: `repo-claims`. Newest first.',
     query: ['repo_claim_status', 'repo', 'limit_100', 'offset'], ok: { 200: page('claims', ref('RepoClaim')) }, errors: [400, 401] },
-  { method: 'post', path: '/api/repos/claims/{id}/approve', auth: 'admin', tag: 'repos', summary: 'approve a pending repo claim without the proof file (method admin)',
+  { method: 'post', path: '/api/repos/claims/{id}/approve', auth: 'repo', tag: 'repos', summary: "approve a pending repo claim (an admin, or a maintainer of that repo; method admin or maintainer): the claimant joins the repo's maintainers",
     ok: { 200: claimFork }, errors: [401, 403, 404, 409] },
-  { method: 'post', path: '/api/repos/claims/{id}/reject', auth: 'admin', tag: 'repos', summary: 'reject a pending repo claim',
+  { method: 'post', path: '/api/repos/claims/{id}/reject', auth: 'repo', tag: 'repos', summary: 'reject a pending repo claim (an admin, or a maintainer of that repo)',
     ok: { 200: obj({ claim: ref('RepoClaim') }, ['claim']) }, errors: [401, 403, 404, 409] },
 
   { method: 'get', path: '/api/media', auth: 'public', tag: 'media', summary: 'uploads, newest first', query: ['device', 'fork_id', 'area', 'media_kind', 'limit_media', 'offset'],
@@ -755,7 +770,10 @@ export const TITLES: Record<string, string> = {
   'DELETE /api/forks/{id}/devices': 'Remove a supported device',
   'POST /api/forks/{id}/lineage': 'Add a "based on" row',
   'DELETE /api/forks/{id}/lineage': 'Remove a "based on" row',
-  'DELETE /api/forks/{id}/maintainer': 'Remove the repo maintainer',
+  'GET /api/forks/{id}/maintainers': 'List repo maintainers',
+  'POST /api/forks/{id}/maintainers': 'Add a repo maintainer',
+  'DELETE /api/forks/{id}/maintainers': 'Remove a repo maintainer',
+  'DELETE /api/forks/{id}/maintainer': 'Step down as a repo maintainer',
   'GET /api/lineage': 'Repo family tree',
   'POST /api/repos/claim': 'Claim a repo',
   'POST /api/repos/claim/{id}/verify': 'Verify a repo claim',

@@ -7,7 +7,8 @@
 // standalone) is admin-only too. The repo name is unique (migrations/0004).
 //
 // Read shape (ForkView): the forks row plus
-//   maintainer  {id, display_name, github_login} | null  (forks.maintainer_user_id)
+//   maintainer  {id, display_name, github_login} | null  (the first maintainer)
+//   maintainers [{id, display_name, github_login, since}]  (repo_maintainers)
 //   supports    [{device_slug, device_name, support, via, note}]  (repo_devices)
 //   based_on    [{base, base_repo_url, relation, note}]  (repo_lineage, migrations/0006)
 //   base_project  the family label (forks.base_project)
@@ -125,7 +126,10 @@ export type ForkRow = Fork & {
 };
 
 export type ForkView = Omit<ForkRow, 'm_display_name' | 'm_github_login'> & {
+  /** The first maintainer (older clients read this); `maintainers` has them all. */
   maintainer: UserRef | null;
+  /** Everyone who maintains the repo (repo_maintainers), longest-standing first. */
+  maintainers: Array<UserRef & { since: string }>;
   supports: SupportRow[];
   based_on: BasedOn[];
 };
@@ -145,7 +149,17 @@ async function inChunks<T>(sqlBefore: string, sqlAfter: string, keys: Array<stri
   return out;
 }
 
-/** Attach maintainer and supports to fork rows (one extra query per 90 forks). */
+/** True when the user is one of the repo's maintainers. */
+export async function isRepoMaintainer(userId: number, forkId: number): Promise<boolean> {
+  return !!(await queryFirst('SELECT 1 AS ok FROM repo_maintainers WHERE fork_id = ? AND user_id = ?', [forkId, userId]));
+}
+
+/** The repo's maintainers' user ids, longest-standing first. */
+export async function repoMaintainerIds(forkId: number): Promise<number[]> {
+  return (await queryAll<{ user_id: number }>('SELECT user_id FROM repo_maintainers WHERE fork_id = ? ORDER BY since, user_id', [forkId])).map((r) => r.user_id);
+}
+
+/** Attach maintainers and supports to fork rows (one extra query per 90 forks). */
 export async function forkViews(rows: ForkRow[]): Promise<ForkView[]> {
   if (!rows.length) return [];
   const sup = await inChunks<SupportRow & { fork_id: number }>(
@@ -165,6 +179,16 @@ export async function forkViews(rows: ForkRow[]): Promise<ForkView[]> {
     `ORDER BY CASE relation WHEN 'fork-of' THEN 0 WHEN 'derived-from' THEN 1 WHEN 'ported-from' THEN 2 ELSE 3 END, base`,
     rows.map((r) => r.id),
   );
+  const mnt = await inChunks<{ fork_id: number; id: number; display_name: string | null; github_login: string | null; since: string }>(
+    'SELECT rm.fork_id, u.id, u.display_name, u.github_login, rm.since FROM repo_maintainers rm JOIN users u ON u.id = rm.user_id WHERE rm.fork_id',
+    'ORDER BY rm.since, u.id',
+    rows.map((r) => r.id),
+  );
+  const mntByFork = new Map<number, Array<UserRef & { since: string }>>();
+  for (const { fork_id, id, display_name, github_login, since } of mnt) {
+    if (!mntByFork.has(fork_id)) mntByFork.set(fork_id, []);
+    mntByFork.get(fork_id)!.push({ id, display_name: display_name ?? '', github_login: github_login ?? null, since });
+  }
   const linByFork = new Map<number, BasedOn[]>();
   for (const { fork_id, base, relation, note, base_exists } of lin) {
     if (!linByFork.has(fork_id)) linByFork.set(fork_id, []);
@@ -178,6 +202,7 @@ export async function forkViews(rows: ForkRow[]): Promise<ForkView[]> {
       f.maintainer_user_id != null
         ? { id: f.maintainer_user_id, display_name: m_display_name ?? '', github_login: m_github_login ?? null }
         : null,
+    maintainers: mntByFork.get(f.id) ?? [],
     base_project: f.base_project ?? '',
     supports: byFork.get(f.id) ?? [],
     based_on: linByFork.get(f.id) ?? [],
@@ -281,10 +306,10 @@ export async function syncOwnSupport(
   );
 }
 
-/** Admin, the repo's maintainer, or a maintainer of the fork's device. */
+/** Admin, one of the repo's maintainers, or a maintainer of the fork's device. */
 export async function canEditFork(user: UserRow, fork: ForkRow): Promise<boolean> {
   if (isAdmin(user)) return true;
-  if (fork.maintainer_user_id != null && fork.maintainer_user_id === user.id) return true;
+  if (await isRepoMaintainer(user.id, fork.id)) return true;
   return canEditDevice(user, fork.device_slug);
 }
 

@@ -61,6 +61,23 @@ The tracker URL is, in order, `--url URL`, `TRACKER_URL`, or `http://localhost:3
 in order, `--token ion_...`, `TRACKER_TOKEN`, then the file the CLI saved at login
 (`~/.config/iosonand/tokens.json`, one token per tracker URL, mode 0600).
 
+## Starting a new port
+
+The [Repos](/?tab=repos) tab and every phone's page carry a second prompt, "Port iOS to your
+phone". It has the agent look up the phone's specs (chip, GPU, storage, bootloader, a
+Mu-Silicium port), pick the project to start from, and borrow working parts from other ports,
+using `references`, which needs no login:
+
+| Command | What it answers |
+|---|---|
+| `references --chip "SM7325"` | the phones on that chip (by part number or name), their repos with branch links, and what works on each |
+| `references --device <slug>` | a tracked phone, plus the phones on its chip |
+| `references --area gpu` | where an area works (gpu, wifi, audio ...), with the repo, branch and source to read |
+| `catalog "<name or codename>"` | the phone in Google Play's device list: codenames and model numbers |
+
+The agent shows the plan (base repo and branch, then the order of bring-up and the repos to borrow
+from) before it changes anything, and puts the port on the tracker once it boots.
+
 ## Auth for agents
 
 Two ways, both ending in a bearer token the CLI sends:

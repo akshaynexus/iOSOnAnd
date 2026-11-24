@@ -1,6 +1,6 @@
 import { Fragment, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowDown, ArrowUp, ChevronDown, ChevronsUpDown, Copy } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronDown, ChevronsUpDown, Copy, CornerDownRight } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { LinkedText } from "@/components/SourceLink";
@@ -16,16 +16,36 @@ import { cn } from "@/lib/utils";
 
 const MAIN_PAGE = 6;
 
-export function forkHref(fork: Pick<Fork, "repo" | "url">): string {
-  return fork.url && /^https?:\/\//.test(fork.url) ? fork.url : `https://github.com/${fork.repo}`;
+/** The repo's branches: `branch` may list several ("herolte, herolte-ios26"). */
+export function forkBranches(fork: Pick<Fork, "branch">): string[] {
+  return (fork.branch || "").split(/[\s,]+/).filter(Boolean);
+}
+
+/** The repo itself on GitHub (no branch). */
+function repoBase(fork: Pick<Fork, "repo" | "url">): string {
+  const url = fork.url && /^https?:\/\//.test(fork.url) ? fork.url.replace(/\/(tree|blob)\/.*$/, "").replace(/\/+$/, "") : "";
+  return url || `https://github.com/${fork.repo}`;
+}
+
+/** A branch's page on GitHub. */
+export function branchHref(fork: Pick<Fork, "repo" | "url">, branch: string): string {
+  return `${repoBase(fork)}/tree/${branch.split("/").map(encodeURIComponent).join("/")}`;
+}
+
+/** Where the repo link goes: its (first) branch when one is set, so a port on a branch is one click away. */
+export function forkHref(fork: Pick<Fork, "repo" | "url" | "branch">): string {
+  if (fork.url && /\/tree\//.test(fork.url)) return fork.url;
+  const [first] = forkBranches(fork);
+  return first ? branchHref(fork, first) : repoBase(fork);
 }
 
 export function cloneCommand(fork: Pick<Fork, "repo" | "branch" | "url">): string {
-  const url = forkHref(fork);
-  return fork.branch ? `git clone --branch ${fork.branch} ${url}` : `git clone ${url}`;
+  const url = repoBase(fork);
+  const [first] = forkBranches(fork);
+  return first ? `git clone --branch ${first} ${url}` : `git clone ${url}`;
 }
 
-function CopyClone({ fork }: { fork: Fork }) {
+export function CopyClone({ fork }: { fork: Fork }) {
   const cmd = cloneCommand(fork);
   async function copy() {
     try {
@@ -167,7 +187,7 @@ export function SupportLegend() {
 }
 
 /** Actions a viewer can take on a repo: claim it, upload to it. */
-function RepoActions({
+export function RepoActions({
   fork,
   devices,
   areas,
@@ -187,7 +207,8 @@ function RepoActions({
   const device = fork.device_slug;
   return (
     <>
-      {!maintained && !mine ? <ThisIsMine repo={fork.repo} device={device} devices={devices} compact={compact} /> : null}
+      {/* A repo can have several maintainers: anyone working on it can ask to join. */}
+      {!mine ? <ThisIsMine repo={fork.repo} device={device} devices={devices} compact={compact} label={maintained ? "I work on this" : "This is mine"} /> : null}
       {device && (mine || canEdit(device)) ? (
         <UploadButton
           allowed
@@ -241,10 +262,10 @@ function SortHeader({
   );
 }
 
-const TH = "h-9 px-3 text-left text-xs font-medium whitespace-nowrap text-muted-foreground";
+export const TH = "h-9 px-3 text-left text-xs font-medium whitespace-nowrap text-muted-foreground";
 /** A filter: label above its select below md, beside it from md up. */
-const FILTER = "flex min-w-36 flex-1 flex-col gap-1 md:flex-none md:flex-row md:items-center md:gap-2";
-const FILTER_LABEL = "text-xs text-muted-foreground md:text-sm";
+export const FILTER = "flex min-w-36 flex-1 flex-col gap-1 md:flex-none md:flex-row md:items-center md:gap-2";
+export const FILTER_LABEL = "text-xs text-muted-foreground md:text-sm";
 
 /** The family filter value of a repo ("" when unknown). */
 function familyKey(f: Fork): string {
@@ -264,6 +285,8 @@ export function ReposTable({
   canEdit,
   emptyText = "No forks tracked yet.",
   areas = [],
+  familyFilter,
+  onFamilyFilter,
 }: {
   forks: Fork[];
   deviceNames: Record<string, string>;
@@ -273,19 +296,19 @@ export function ReposTable({
   canEdit?: (slug: string) => boolean;
   emptyText?: string;
   areas?: Area[];
+  /** The "Based on" filter, when the page owns it (a family label, "unknown", or "" for any). */
+  familyFilter?: string;
+  onFamilyFilter?: (family: string) => void;
 }) {
   const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 } | null>(null);
-  const [open, setOpen] = useState<Set<number>>(new Set());
-  const [family, setFamily] = useState("");
+  const [ownFamily, setOwnFamily] = useState("");
+  const family = familyFilter ?? ownFamily;
+  const setFamily = onFamilyFilter ?? setOwnFamily;
 
-  const devices = useMemo(
-    () => Object.entries(deviceNames).map(([slug, name]) => ({ slug, name })),
-    [deviceNames],
-  );
   const deviceName = (f: Fork) => (f.device_slug ? (deviceNames[f.device_slug] ?? f.device_slug) : "");
   const filtered = forks.filter((f) => {
     if (deviceFilter && (deviceFilter === "none" ? f.device_slug : f.device_slug !== deviceFilter)) return false;
-    if (family && (family === "unknown" ? familyKey(f) : familyKey(f) !== family)) return false;
+    if (family && (family === "unknown" ? familyKey(f) : familyKey(f).toLowerCase() !== family.toLowerCase())) return false;
     return true;
   });
   function compare(a: Fork, b: Fork, s: { key: SortKey; dir: 1 | -1 }): number {
@@ -302,14 +325,6 @@ export function ReposTable({
   function onSort(k: SortKey) {
     setSort((s) => (s?.key !== k ? { key: k, dir: 1 } : s.dir === 1 ? { key: k, dir: -1 } : null));
   }
-  function toggle(id: number) {
-    setOpen((o) => {
-      const n = new Set(o);
-      if (n.has(id)) n.delete(id);
-      else n.add(id);
-      return n;
-    });
-  }
 
   const deviceOptions = useMemo(() => {
     const slugs = [...new Set(forks.map((f) => f.device_slug).filter((s): s is string => !!s))];
@@ -324,7 +339,6 @@ export function ReposTable({
     return [...m.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
   }, [forks]);
   const hasUnassigned = forks.some((f) => !f.device_slug);
-  const cols = 5 + (showDevice ? 1 : 0);
 
   return (
     <div className="flex flex-col gap-3">
@@ -356,7 +370,7 @@ export function ReposTable({
               </label>
               <NativeSelect
                 id="repo-family"
-                value={family}
+                value={families.find(([k]) => k.toLowerCase() === family.toLowerCase())?.[0] ?? family}
                 onChange={(e) => setFamily(e.target.value)}
                 className="h-8 md:w-auto md:min-w-36"
               >
@@ -399,171 +413,327 @@ export function ReposTable({
       {rows.length === 0 ? (
         <p className="rounded-lg border border-dashed px-4 py-8 text-center text-muted-foreground">{emptyText}</p>
       ) : (
-        // From md up a table; below md each repo is a stacked row (CSS only):
-        // repo and verification, phone, based on, best result, then actions.
-        <div className="overflow-x-auto rounded-lg border">
-          <table className="w-full text-sm max-md:block">
-            <thead className="border-b bg-muted/40 max-md:hidden">
-              <tr>
-                <th scope="col" className={TH}>
-                  Repo
-                </th>
-                {showDevice ? (
-                  <SortHeader label="Phone" k="device" sort={sort} onSort={onSort} />
-                ) : null}
-                <th scope="col" className={`${TH} hidden md:table-cell`}>
-                  Based on
-                </th>
-                <SortHeader label="Verification" k="verified" sort={sort} onSort={onSort} />
-                <th scope="col" className={`${TH} hidden lg:table-cell`}>
-                  Best result
-                </th>
-                <th scope="col" className="w-0 px-2">
-                  <span className="sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y max-md:block">
-              {rows.map((f) => {
-                const expanded = open.has(f.id);
-                const maintainer = forkMaintainer(f);
-                const details = (
-                  [
-                    ["Branch", f.branch],
-                    ["Best result", f.best_result],
-                    ["Ported back", f.ported],
-                    ["Fork only", f.fork_only],
-                    ["Notes", f.notes],
-                  ] as const
-                ).filter(([, v]) => v);
-                return (
-                  <Fragment key={f.id}>
-                    <tr
-                      className={cn(
-                        "transition-colors hover:bg-muted/50 max-md:grid max-md:grid-cols-[minmax(0,1fr)_auto] max-md:gap-x-3 max-md:gap-y-2 max-md:px-4 max-md:pt-3 max-md:pb-2",
-                        expanded && "bg-muted/30",
-                      )}
-                    >
-                      <td className="px-3 py-2 align-middle max-md:col-start-1 max-md:row-start-1 max-md:p-0">
-                        <a
-                          href={forkHref(f)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="font-medium break-all hover:underline md:break-normal md:whitespace-nowrap"
-                        >
-                          {f.repo}
-                        </a>
-                        <div className="text-xs text-muted-foreground">
-                          {maintainer ? `Maintained by ${maintainer}` : "Unclaimed"}
-                        </div>
-                      </td>
-                      {showDevice ? (
-                        <td className="px-3 py-2 align-middle whitespace-nowrap max-md:col-span-2 max-md:flex max-md:items-center max-md:gap-2 max-md:p-0">
-                          {f.device_slug ? (
-                            <Link
-                              to="/device/$slug"
-                              params={{ slug: f.device_slug }}
-                              className="hover:underline max-md:truncate pointer-coarse:inline-flex pointer-coarse:min-h-8 pointer-coarse:items-center max-md:inline-flex max-md:min-h-8 max-md:items-center"
-                            >
-                              {deviceName(f)}
-                            </Link>
-                          ) : (
-                            <span className="text-muted-foreground">No phone</span>
-                          )}
-                          {Array.isArray(f.supports) && f.supports.length > 1 ? (
-                            <div className="text-xs text-muted-foreground tabular-nums">
-                              +{f.supports.length - 1} more
-                            </div>
-                          ) : null}
-                        </td>
-                      ) : null}
-                      <td className="hidden px-3 py-2 align-middle max-md:col-span-2 max-md:block max-md:p-0 md:table-cell">
-                        <BasedOnChips fork={f} max={1} />
-                      </td>
-                      <td className="px-3 py-2 align-middle max-md:col-start-2 max-md:row-start-1 max-md:p-0 max-md:pt-0.5">
-                        <VerifiedBadge verified={f.verified} />
-                      </td>
-                      <td className="hidden max-w-0 px-3 py-2 align-middle max-md:col-span-2 max-md:block max-md:max-w-none max-md:p-0 lg:table-cell lg:w-[34%]">
-                        {f.best_result ? (
-                          <p className="line-clamp-2 md:line-clamp-none md:truncate" title={f.best_result}>
-                            {f.best_result}
-                          </p>
-                        ) : (
-                          <span className="text-muted-foreground">None reported</span>
-                        )}
-                      </td>
-                      <td className="px-2 py-1.5 align-middle max-md:col-span-2 max-md:p-0">
-                        <div className="flex items-center justify-end gap-1 max-md:-mr-2 max-md:justify-start max-md:[&>:last-child]:ml-auto">
-                          <RepoActions fork={f} devices={devices} areas={areas} forks={forks} compact />
-                          {canEdit && f.device_slug && canEdit(f.device_slug) ? (
-                            <ForkDialog deviceSlug={f.device_slug} fork={f} />
-                          ) : null}
-                          <CopyClone fork={f} />
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            className="text-muted-foreground/70 hover:text-foreground"
-                            onClick={() => toggle(f.id)}
-                            aria-expanded={expanded}
-                            aria-label={expanded ? `Hide details of ${f.repo}` : `Show details of ${f.repo}`}
-                            title={expanded ? "Hide details" : "Details"}
-                          >
-                            <ChevronDown className={cn("transition-transform", expanded && "rotate-180")} />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                    {expanded ? (
-                      <tr className="bg-muted/30 max-md:block">
-                        <td colSpan={cols} className="px-3 pt-1 pb-3 max-md:block max-md:px-4">
-                          <dl className="grid max-w-4xl gap-x-6 gap-y-1.5 text-sm sm:grid-cols-[7rem_1fr]">
-                            <dt className="text-muted-foreground">Clone</dt>
-                            <dd className="min-w-0">
-                              <code className="font-mono text-xs break-all">{cloneCommand(f)}</code>
-                            </dd>
-                            <dt className="text-muted-foreground">Based on</dt>
-                            <dd className="min-w-0">
-                              {Array.isArray(f.based_on) && f.based_on.length > 0 ? (
-                                <ul className="flex flex-col gap-0.5">
-                                  {uniqueBases(f.based_on, false).map((b) => (
-                                    <li key={`${b.base}-${b.relation}`}>
-                                      {RELATION_LABELS[b.relation] ?? b.relation} {b.base}
-                                      {b.note ? <span className="text-muted-foreground">: {b.note}</span> : null}
-                                    </li>
-                                  ))}
-                                </ul>
-                              ) : (
-                                <BasedOnChips fork={f} />
-                              )}
-                            </dd>
-                            {Array.isArray(f.supports) && f.supports.length > 0 ? (
-                              <>
-                                <dt className="text-muted-foreground">Phones</dt>
-                                <dd className="min-w-0">
-                                  <SupportChips fork={f} />
-                                </dd>
-                              </>
-                            ) : null}
-                            {details.map(([k, v]) => (
-                              <div key={k} className="contents">
-                                <dt className="text-muted-foreground">{k}</dt>
-                                <dd className="min-w-0 break-words">
-                                  <LinkedText text={v} />
-                                </dd>
-                              </div>
-                            ))}
-                          </dl>
-                        </td>
-                      </tr>
-                    ) : null}
-                  </Fragment>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <ForkTable
+          rows={rows.map((fork) => ({ fork }))}
+          deviceNames={deviceNames}
+          showDevice={showDevice}
+          canEdit={canEdit}
+          areas={areas}
+          forks={forks}
+          sort={sort}
+          onSort={onSort}
+        />
       )}
     </div>
+  );
+}
+
+/** One repo in a ForkTable: `depth` indents a fork of the repo above it; `lineage` reads under the name. */
+export interface ForkRowItem {
+  fork: Fork;
+  depth?: number;
+  lineage?: string;
+}
+
+/**
+ * The repo rows (a table from md up, stacked rows below), each with its
+ * actions and a details row. Shared by the flat list and the by-base groups.
+ */
+export function ForkTable({
+  rows,
+  deviceNames,
+  showDevice = true,
+  showBase = true,
+  head = true,
+  framed = true,
+  canEdit,
+  areas = [],
+  forks,
+  sort = null,
+  onSort,
+}: {
+  rows: ForkRowItem[];
+  deviceNames: Record<string, string>;
+  showDevice?: boolean;
+  /** The "Based on" column (the groups show the base above instead). */
+  showBase?: boolean;
+  /** Visible column headers (screen readers get them either way). */
+  head?: boolean;
+  framed?: boolean;
+  canEdit?: (slug: string) => boolean;
+  areas?: Area[];
+  /** Every repo, for the upload dialog's repo list. */
+  forks: Fork[];
+  sort?: { key: SortKey; dir: 1 | -1 } | null;
+  onSort?: (k: SortKey) => void;
+}) {
+  const [open, setOpen] = useState<Set<number>>(new Set());
+  const devices = useMemo(() => Object.entries(deviceNames).map(([slug, name]) => ({ slug, name })), [deviceNames]);
+  const deviceName = (f: Fork) => (f.device_slug ? (deviceNames[f.device_slug] ?? f.device_slug) : "");
+  function toggle(id: number) {
+    setOpen((o) => {
+      const n = new Set(o);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
+      return n;
+    });
+  }
+  const cols = 4 + (showDevice ? 1 : 0) + (showBase ? 1 : 0);
+  return (
+    // From md up a table; below md each repo is a stacked row (CSS only):
+    // repo and verification, phone, based on, best result, then actions.
+    <div className={cn("overflow-x-auto", framed && "rounded-lg border")}>
+      <table className="w-full text-sm max-md:block">
+        <thead className={head ? "border-b bg-muted/40 max-md:hidden" : "sr-only"}>
+          <tr>
+            <th scope="col" className={TH}>
+              Repo
+            </th>
+            {showDevice ? (
+              onSort ? (
+                <SortHeader label="Phone" k="device" sort={sort} onSort={onSort} />
+              ) : (
+                <th scope="col" className={TH}>
+                  Phone
+                </th>
+              )
+            ) : null}
+            {showBase ? (
+              <th scope="col" className={`${TH} hidden md:table-cell`}>
+                Based on
+              </th>
+            ) : null}
+            {onSort ? (
+              <SortHeader label="Verification" k="verified" sort={sort} onSort={onSort} />
+            ) : (
+              <th scope="col" className={TH}>
+                Verification
+              </th>
+            )}
+            <th scope="col" className={`${TH} hidden lg:table-cell`}>
+              Best result
+            </th>
+            <th scope="col" className="w-0 px-2">
+              <span className="sr-only">Actions</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody className="divide-y max-md:block">
+          {rows.map(({ fork: f, depth = 0, lineage }) => {
+            const expanded = open.has(f.id);
+            const maintainer = forkMaintainer(f);
+            const details = (
+              [
+                ["Branch", f.branch],
+                ["Best result", f.best_result],
+                ["Ported back", f.ported],
+                ["Fork only", f.fork_only],
+                ["Notes", f.notes],
+              ] as const
+            ).filter(([, v]) => v);
+            return (
+              <Fragment key={f.id}>
+                <tr
+                  className={cn(
+                    "transition-colors hover:bg-muted/50 max-md:grid max-md:grid-cols-[minmax(0,1fr)_auto] max-md:gap-x-3 max-md:gap-y-2 max-md:px-4 max-md:pt-3 max-md:pb-2",
+                    expanded && "bg-muted/30",
+                  )}
+                >
+                  <td
+                    className="px-3 py-2 align-middle max-md:col-start-1 max-md:row-start-1 max-md:p-0"
+                    style={depth ? ({ "--depth": depth } as React.CSSProperties) : undefined}
+                  >
+                    <div className={cn(depth > 0 && "flex gap-1.5 pl-[calc(var(--depth)*1rem-1rem)]")}>
+                    {depth > 0 ? <CornerDownRight className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" aria-label="Fork of the repo above" /> : null}
+                    <div className="min-w-0">
+                    <a
+                      href={forkHref(f)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium break-all hover:underline md:break-normal md:whitespace-nowrap"
+                    >
+                      {f.repo}
+                    </a>
+                    <div className="text-xs text-muted-foreground">
+                      {[lineage, maintainer ? `Maintained by ${maintainer}` : "Unclaimed"].filter(Boolean).join(" · ")}
+                    </div>
+                    </div>
+                    </div>
+                  </td>
+                  {showDevice ? (
+                    <td className="px-3 py-2 align-middle whitespace-nowrap max-md:col-span-2 max-md:flex max-md:items-center max-md:gap-2 max-md:p-0">
+                      {f.device_slug ? (
+                        <Link
+                          to="/device/$slug"
+                          params={{ slug: f.device_slug }}
+                          className="hover:underline max-md:truncate pointer-coarse:inline-flex pointer-coarse:min-h-8 pointer-coarse:items-center max-md:inline-flex max-md:min-h-8 max-md:items-center"
+                        >
+                          {deviceName(f)}
+                        </Link>
+                      ) : (
+                        <span className="text-muted-foreground">No phone</span>
+                      )}
+                      {Array.isArray(f.supports) && f.supports.length > 1 ? (
+                        <div className="text-xs text-muted-foreground tabular-nums">
+                          +{f.supports.length - 1} more
+                        </div>
+                      ) : null}
+                    </td>
+                  ) : null}
+                  {showBase ? (
+                    <td className="hidden px-3 py-2 align-middle max-md:col-span-2 max-md:block max-md:p-0 md:table-cell">
+                      <BasedOnChips fork={f} max={1} />
+                    </td>
+                  ) : null}
+                  <td className="px-3 py-2 align-middle max-md:col-start-2 max-md:row-start-1 max-md:p-0 max-md:pt-0.5">
+                    <VerifiedBadge verified={f.verified} />
+                  </td>
+                  <td className="hidden max-w-0 px-3 py-2 align-middle max-md:col-span-2 max-md:block max-md:max-w-none max-md:p-0 lg:table-cell lg:w-[34%]">
+                    {f.best_result ? (
+                      <p className="line-clamp-2 md:line-clamp-none md:truncate" title={f.best_result}>
+                        {f.best_result}
+                      </p>
+                    ) : (
+                      <span className="text-muted-foreground">None reported</span>
+                    )}
+                  </td>
+                  <td className="px-2 py-1.5 align-middle max-md:col-span-2 max-md:p-0">
+                    <div className="flex items-center justify-end gap-1 max-md:-mr-2 max-md:justify-start max-md:[&>:last-child]:ml-auto">
+                      <RepoActions fork={f} devices={devices} areas={areas} forks={forks} compact />
+                      {canEdit && f.device_slug && canEdit(f.device_slug) ? (
+                        <ForkDialog deviceSlug={f.device_slug} fork={f} />
+                      ) : null}
+                      <CopyClone fork={f} />
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        className="text-muted-foreground/70 hover:text-foreground"
+                        onClick={() => toggle(f.id)}
+                        aria-expanded={expanded}
+                        aria-label={expanded ? `Hide details of ${f.repo}` : `Show details of ${f.repo}`}
+                        title={expanded ? "Hide details" : "Details"}
+                      >
+                        <ChevronDown className={cn("transition-transform", expanded && "rotate-180")} />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+                {expanded ? (
+                  <tr className="bg-muted/30 max-md:block">
+                    <td colSpan={cols} className="px-3 pt-1 pb-3 max-md:block max-md:px-4">
+                      <dl className="grid max-w-4xl gap-x-6 gap-y-1.5 text-sm sm:grid-cols-[7rem_1fr]">
+                        <dt className="text-muted-foreground">Clone</dt>
+                        <dd className="min-w-0">
+                          <code className="font-mono text-xs break-all">{cloneCommand(f)}</code>
+                        </dd>
+                        <dt className="text-muted-foreground">Based on</dt>
+                        <dd className="min-w-0">
+                          {Array.isArray(f.based_on) && f.based_on.length > 0 ? (
+                            <ul className="flex flex-col gap-0.5">
+                              {uniqueBases(f.based_on, false).map((b) => (
+                                <li key={`${b.base}-${b.relation}`}>
+                                  {RELATION_LABELS[b.relation] ?? b.relation} {b.base}
+                                  {b.note ? <span className="text-muted-foreground">: {b.note}</span> : null}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <BasedOnChips fork={f} />
+                          )}
+                        </dd>
+                        {Array.isArray(f.supports) && f.supports.length > 0 ? (
+                          <>
+                            <dt className="text-muted-foreground">Phones</dt>
+                            <dd className="min-w-0">
+                              <SupportChips fork={f} />
+                            </dd>
+                          </>
+                        ) : null}
+                        {details.map(([k, v]) => (
+                          <div key={k} className="contents">
+                            <dt className="text-muted-foreground">{k}</dt>
+                            <dd className="min-w-0 break-words">
+                              {k === "Branch" ? (
+                                <span className="flex flex-wrap gap-x-3 gap-y-1">
+                                  {forkBranches(f).map((b) => (
+                                    <a
+                                      key={b}
+                                      href={branchHref(f, b)}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="font-mono text-xs underline-offset-4 hover:underline"
+                                    >
+                                      {b}
+                                    </a>
+                                  ))}
+                                </span>
+                              ) : (
+                                <LinkedText text={v} />
+                              )}
+                            </dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </td>
+                  </tr>
+                ) : null}
+              </Fragment>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/**
+ * A main or standalone repo: name, what it is and who maintains it, actions,
+ * best result, what it is based on and the phones it supports. The cards of
+ * the main repos and the heads of the by-base groups.
+ */
+export function RepoHead({
+  fork: f,
+  forks,
+  devices,
+  areas,
+  extra,
+}: {
+  fork: Fork;
+  forks: Fork[];
+  devices: { slug: string; name: string }[];
+  areas: Area[];
+  /** More on the "Main repo, maintained by ..." line (e.g. the fork count). */
+  extra?: string;
+}) {
+  const maintainer = forkMaintainer(f);
+  const kind = forkKind(f);
+  return (
+    <>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+        <div className="min-w-0 flex-1">
+          <a href={forkHref(f)} target="_blank" rel="noopener noreferrer" className="text-[15px] font-semibold break-all hover:underline">
+            {f.repo}
+          </a>
+          <p className="text-xs text-muted-foreground">
+            {[kind === "upstream" ? "Main repo" : kind === "standalone" ? "Standalone port" : "Fork", maintainer ? `maintained by ${maintainer}` : "unclaimed", extra]
+              .filter(Boolean)
+              .join(", ")}
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-1 max-sm:-my-1">
+          <RepoActions fork={f} devices={devices} areas={areas} forks={forks} />
+          <CopyClone fork={f} />
+        </div>
+      </div>
+      {f.best_result ? <p className="text-sm">{f.best_result}</p> : null}
+      {kind !== "upstream" && (f.based_on?.length || f.base_project) ? (
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <span className="text-muted-foreground">Based on</span>
+          <BasedOnChips fork={f} max={5} />
+        </div>
+      ) : null}
+      <SupportChips fork={f} />
+    </>
   );
 }
 
@@ -572,10 +742,15 @@ export function MainRepos({
   forks,
   deviceNames,
   areas,
+  family,
+  title = "Main repos",
 }: {
   forks: Fork[];
   deviceNames: Record<string, string>;
   areas: Area[];
+  /** Only this project's repos (a family label). */
+  family?: string;
+  title?: string;
 }) {
   const devices = useMemo(
     () => Object.entries(deviceNames).map(([slug, name]) => ({ slug, name })),
@@ -583,7 +758,7 @@ export function MainRepos({
   );
   const [all, setAll] = useState(false);
   const main = forks
-    .filter((f) => forkKind(f) !== "fork")
+    .filter((f) => forkKind(f) !== "fork" && (!family || familyKey(f).toLowerCase() === family.toLowerCase()))
     .sort((a, b) => (forkKind(a) === "upstream" ? 0 : 1) - (forkKind(b) === "upstream" ? 0 : 1));
   if (main.length === 0) return null;
   const cut = !all && main.length > MAIN_PAGE;
@@ -591,47 +766,17 @@ export function MainRepos({
     <section aria-labelledby="main-repos" className="flex flex-col gap-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 id="main-repos" className="text-base font-semibold">
-          Main repos <span className="font-normal text-muted-foreground tabular-nums">{main.length}</span>
+          {title} <span className="font-normal text-muted-foreground tabular-nums">{main.length}</span>
         </h2>
         <SupportLegend />
       </div>
       {/* Below sm the first six cards, then "Show all": the forks table follows. */}
       <ul className={cn("grid gap-3 md:grid-cols-2", cut && "max-sm:[&>li:nth-child(n+7)]:hidden")}>
-        {main.map((f) => {
-          const maintainer = forkMaintainer(f);
-          const kind = forkKind(f);
-          return (
-            <li key={f.id} className="flex min-w-0 flex-col gap-3 rounded-xl border bg-card p-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-                <div className="min-w-0 flex-1">
-                  <a
-                    href={forkHref(f)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[15px] font-semibold break-all hover:underline"
-                  >
-                    {f.repo}
-                  </a>
-                  <p className="text-xs text-muted-foreground">
-                    {kind === "upstream" ? "Main repo" : "Standalone port"}, {maintainer ? `maintained by ${maintainer}` : "unclaimed"}
-                  </p>
-                </div>
-                <div className="flex shrink-0 items-center gap-1 max-sm:-my-1">
-                  <RepoActions fork={f} devices={devices} areas={areas} forks={forks} />
-                  <CopyClone fork={f} />
-                </div>
-              </div>
-              {f.best_result ? <p className="text-sm">{f.best_result}</p> : null}
-              {kind !== "upstream" ? (
-                <div className="flex flex-wrap items-center gap-2 text-xs">
-                  <span className="text-muted-foreground">Based on</span>
-                  <BasedOnChips fork={f} max={5} />
-                </div>
-              ) : null}
-              <SupportChips fork={f} />
-            </li>
-          );
-        })}
+        {main.map((f) => (
+          <li key={f.id} className="flex min-w-0 flex-col gap-3 rounded-xl border bg-card p-4">
+            <RepoHead fork={f} forks={forks} devices={devices} areas={areas} />
+          </li>
+        ))}
       </ul>
       {cut ? (
         <Button variant="outline" className="self-center sm:hidden" onClick={() => setAll(true)}>

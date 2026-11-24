@@ -9,6 +9,7 @@ import { useAuth } from "@/components/auth";
 import { ClaimBadge } from "@/components/StatusBadge";
 import { toastError, useAction } from "@/components/useAction";
 import {
+  addRepoMaintainer,
   addRepoPhone,
   changePassword,
   getForkByRepo,
@@ -27,7 +28,7 @@ import {
   type Fork,
   type RepoClaim,
 } from "@/lib/client";
-import { ClaimNextStep, ClaimRepoDialog } from "@/components/RepoClaim";
+import { ClaimNextStep, ClaimRepoDialog, TrackerSupportBox } from "@/components/RepoClaim";
 import { CopyButton, PrimaryAction } from "@/components/common";
 import { CodeLine, Panel, Steps, siteOrigin } from "@/components/ProfileParts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -395,8 +396,10 @@ function RepoClaimsSection() {
   });
 
   if (!user || missing) return null;
-  const mine = (claims ?? []).filter((c) => c.user_id === user.id || (typeof c.user === "object" && c.user?.id === user.id));
-  const pending = (claims ?? []).filter((c) => c.status === "pending");
+  const isMine = (c: RepoClaim) => c.user_id === user.id || (typeof c.user === "object" && c.user?.id === user.id);
+  const mine = (claims ?? []).filter(isMine);
+  // Others' pending claims: every one for an admin, those on your repos for a maintainer.
+  const pending = (claims ?? []).filter((c) => c.status === "pending" && !isMine(c));
 
   return (
     <>
@@ -428,8 +431,11 @@ function RepoClaimsSection() {
         )}
       </Panel>
 
-      {isAdmin ? (
-        <Panel title="Repo claims to review">
+      {isAdmin || pending.length ? (
+        <Panel
+          title="Repo claims to review"
+          description={isAdmin ? undefined : "People working on your repos who asked to join you as maintainers."}
+        >
           {claims === null ? null : pending.length === 0 ? (
             <p className="text-muted-foreground">No pending repo claims.</p>
           ) : (
@@ -616,6 +622,45 @@ function ClaimsSection() {
   );
 }
 
+/** A repo's maintainers, and adding a collaborator by GitHub login (any maintainer can). */
+function RepoMaintainers({ fork, onChange }: { fork: Fork; onChange: () => void }) {
+  const { user } = useAuth();
+  const [login, setLogin] = useState("");
+  const [add, adding] = useAction(async () => {
+    const clean = login.trim().replace(/^@/, "");
+    if (!clean) return;
+    await addRepoMaintainer(fork.id, clean);
+    toast.success(`@${clean} maintains ${fork.repo} now`);
+    setLogin("");
+    onChange();
+  });
+  const others = (fork.maintainers ?? []).filter((m) => m.id !== user?.id);
+  const inputId = `add-maintainer-${fork.id}`;
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-muted-foreground">
+        {others.length
+          ? `With ${others.map((m) => (m.github_login ? `@${m.github_login}` : m.display_name)).join(", ")}`
+          : "Only you maintain it."}
+      </p>
+      <form
+        className="flex flex-col gap-2 sm:flex-row sm:items-end"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void add();
+        }}
+      >
+        <Field id={inputId} label="Add a maintainer" hint="Their GitHub login; they sign in with GitHub first" className="flex-1">
+          <Input id={inputId} value={login} onChange={(e) => setLogin(e.target.value)} placeholder="octocat" autoCapitalize="none" spellCheck={false} />
+        </Field>
+        <Button type="submit" variant="outline" disabled={adding || !login.trim()}>
+          Add
+        </Button>
+      </form>
+    </div>
+  );
+}
+
 /**
  * The repos you maintain and their phones. Adding a phone to your repo makes
  * you its maintainer too (at once when nobody maintains it, else an admin
@@ -682,6 +727,8 @@ function MyReposSection() {
                       ))
                     : "No phones yet"}
                 </p>
+                <RepoMaintainers fork={f} onChange={() => void reload()} />
+                <TrackerSupportBox repo={f.repo} device={f.device_slug ?? [...listed][0]} />
                 <form
                   className="flex flex-col gap-2 sm:flex-row sm:items-end"
                   onSubmit={(e) => {

@@ -8,7 +8,7 @@ import { StateLabel, StatusBar } from "@/components/StatusBadge";
 import { AreaTable } from "@/components/AreaTable";
 import { ForkDialog } from "@/components/ForkDialog";
 import { ClaimPanel } from "@/components/ClaimPanel";
-import { AddRepoToPhone } from "@/components/RepoClaim";
+import { AddRepoToPhone, PortPromptBox } from "@/components/RepoClaim";
 import { DeviceUpdates } from "@/components/DeviceUpdates";
 import { BasedOnChips, ReposTable, forkHref } from "@/components/ReposTable";
 import { MediaGallery, UploadButton } from "@/components/Media";
@@ -280,6 +280,7 @@ function DevicePage() {
           areas={applicable}
           emptyText="No forks for this phone yet."
         />
+        <PortPromptBox device={device.slug} deviceName={device.name} />
       </section>
 
       <section className="flex flex-col gap-3">

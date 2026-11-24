@@ -124,6 +124,8 @@ export interface Fork {
   verified: Verified;
   /** v2: the user who maintains the repo; older responses send nothing (or a label). */
   maintainer?: UserRef | string | null;
+  /** Everyone who maintains the repo (a repo can have several), longest-standing first. */
+  maintainers?: Array<UserRef & { since: string }>;
   maintainer_since?: string | null;
   maintainer_user_id?: number | null;
   /** v2: 'upstream' (a project's main repo), 'fork' or 'standalone'. Missing = 'fork'. */
@@ -139,11 +141,16 @@ export interface Fork {
 }
 
 /** "@login" or the display name of a fork's maintainer, or null. */
-export function forkMaintainer(f: Pick<Fork, "maintainer">): string | null {
+export function forkMaintainer(f: Pick<Fork, "maintainer" | "maintainers">): string | null {
+  const label = (u: UserRef) => (u.github_login ? `@${u.github_login}` : u.display_name || `user#${u.id}`);
+  if (f.maintainers?.length) {
+    const names = f.maintainers.map(label);
+    return names.length <= 3 ? names.join(", ") : `${names.slice(0, 2).join(", ")} and ${names.length - 2} more`;
+  }
   const m = f.maintainer;
   if (!m) return null;
   if (typeof m === "string") return m;
-  return m.github_login ? `@${m.github_login}` : m.display_name || null;
+  return label(m);
 }
 
 export function forkKind(f: Pick<Fork, "kind">): RepoKind {
@@ -737,6 +744,11 @@ export function deleteDeviceUpdate(slug: string, id: number, opts?: CallOptions)
 export async function listDeviceNames(opts?: CallOptions): Promise<Array<{ slug: string; name: string }>> {
   const res: { devices: Array<{ slug: string; name: string }> } = await req('/api/devices?brief=1&limit=500', undefined, opts);
   return res.devices;
+}
+
+/** Add a collaborator to a repo you maintain, by their GitHub login. */
+export function addRepoMaintainer(forkId: number, githubLogin: string, opts?: CallOptions): Promise<{ fork: Fork; already?: boolean }> {
+  return req(`/api/forks/${forkId}/maintainers`, { method: "POST", body: JSON.stringify({ github_login: githubLogin }) }, opts);
 }
 
 /** A tracked repo by name, with its supported phones; null when it is not tracked. */

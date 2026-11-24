@@ -30,6 +30,40 @@ Repo: {REPO or "<OWNER/REPO>"}{, phone: DEVICE}
 
 [Agent system](/docs/agents) explains what the agent does with it and the rules it follows.
 
+## Keep the tracker updated from your repo
+
+Once you maintain a repo, a second prompt makes your coding agent keep the tracker current by
+itself. It runs once in your repo: the key stays out of git (`TRACKER_TOKEN` in your shell, or the
+CLI's saved login, plus `.gitignore` lines for `.env` and `cli.mjs`), and a short Tracker section
+goes into the repo's agent instructions (`AGENTS.md`, `CLAUDE.md` or `.cursorrules`). Every later
+session reads that section, so when a change makes an area work, or breaks it, the agent records it
+with its source, and posts photo updates. The profile (My repos) and an approved claim show it
+filled in for your repo and phone:
+
+```text
+Add iOSOnAnd tracker support to this repo ({REPO}, phone: {DEVICE}), so the tracker at {SITE} stays up to date as we make progress.
+
+1. Get the tracker CLI outside the repo (Node 18+): mkdir -p ~/.local/share/iosonand && curl -fsSLo ~/.local/share/iosonand/cli.mjs {SITE}/cli.mjs
+2. The key never goes into git. Either sign in once with my GitHub account (gh logged in): TRACKER_URL={SITE} node ~/.local/share/iosonand/cli.mjs login
+   or I make a key at {SITE}/profile/keys (scopes status:write, fork:write, media:write) and put it in my shell profile as TRACKER_TOKEN, or in a .env file that git ignores.
+   Never write the key into a tracked file, a commit, a log, an issue or a PR.
+3. Add these lines to .gitignore (create it if missing): .env, .env.*, cli.mjs, TRACKER_QUEUE.md
+4. Add this section to the repo's agent instructions (AGENTS.md, or CLAUDE.md / .cursorrules if the repo uses those), so every future session follows it:
+
+   ## iOSOnAnd tracker
+   This port is listed at {SITE}/device/{DEVICE}. When a change makes an area of the phone work, or breaks it, update the tracker in the same session:
+   - CLI: TRACKER_URL={SITE} node ~/.local/share/iosonand/cli.mjs (download it again with the curl line above if it is missing)
+   - read first: <CLI> status-get --device {DEVICE}; the area slugs: <CLI> areas
+   - record it: <CLI> status-set {DEVICE} <area> works|in-progress|broken --detail "<what the build, log or test showed>" --source "<commit, log or PR link>"
+   - with screenshots or clips: <CLI> update {DEVICE} <files...> --text "<what changed>"
+   - only record what a build, log, test or capture shows; anything unproven stays unknown
+   - the key comes from TRACKER_TOKEN or the CLI's saved login, never from a file in this repo
+   - tracker unreachable: <CLI> queue status-set ..., then <CLI> flush later
+
+5. Commit only the instructions file and .gitignore. Check git status first: no key, no .env, no cli.mjs.
+6. First sync: read the README, issues and recent commits, compare with status-get, and record what they show (ask me when unsure).
+```
+
 ## The flow
 
 1. **Sign in.** `node cli.mjs login` proves your GitHub account with a secret gist (the `gh` CLI
@@ -47,13 +81,34 @@ Repo: {REPO or "<OWNER/REPO>"}{, phone: DEVICE}
    repo, one of its members).
 4. **Work.** `whoami` lists the repo under `maintains_repos` and its phone under `maintains`.
 
+## Several maintainers
+
+A repo can have any number of maintainers: people working on one port together (OneiOS has
+several). Each of them maintains the repo and all its phones, and none of them takes it from the
+others. Ways in:
+
+- **The repo's GitHub owner** claims it and is approved at once, also when others maintain it
+  already.
+- **A contributor** (GitHub lists commits by your login in the repo) claims it: the claim waits for
+  a yes from one of the repo's maintainers, or an admin. They see it on their profile (Claims, Repo
+  claims to review) or with `node cli.mjs repo-claims`, and answer with `repo-claim-approve <id>` or
+  `repo-claim-reject <id>`. The claim lasts 30 days.
+- **A maintainer adds you** by your GitHub login: profile, My repos, Add a maintainer, or
+  `node cli.mjs repo-maintainer-add OWNER/REPO --github LOGIN`. You need an account linked to that
+  login (sign in with GitHub) first.
+
+`node cli.mjs repo-maintainers OWNER/REPO` lists them. Anyone steps down with `repo-unmaintain
+OWNER/REPO`; removing someone else (`repo-maintainer-remove OWNER/REPO --github LOGIN`) takes the
+repo's GitHub owner or an admin.
+
 ## The two checks
 
 | Check | When | What the tracker does |
 |---|---|---|
 | owner | your GitHub login (proven at sign-in) equals the repo's `OWNER`, case-insensitive | approves at once: 200, method `owner` |
 | proof file | `OWNER` is a GitHub organization, and your GitHub login is a public member of it or a contributor to the repo | 202 with a pending claim and a code; you prove push access with a file |
-| refused | no GitHub account linked, or `OWNER` is another person's login (even if you can push to it as a collaborator) | 403; the hint says why. Log in with the owner's account, or ask an admin |
+| review | `OWNER` is another person's login and yours has commits in the repo | 202 with a pending claim (no code); a maintainer of the repo or an admin approves it |
+| refused | no GitHub account linked, or another person's repo you have no commits in | 403; the hint says why. A maintainer can add you by your GitHub login |
 
 The proof file:
 

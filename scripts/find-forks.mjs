@@ -277,6 +277,9 @@ ready.sort((a, b) => a.phones[0].localeCompare(b.phones[0]) || b.commits_ahead -
 // ---------------------------------------------------------------- apply
 
 const applied = { devices: [], forks: [], skipped: [], errors: [] };
+/** A new phone's photo fields from the map (image_url, credit, license, source), when it has them. */
+const imageFields = (d) => Object.fromEntries(['image_url', 'image_credit', 'image_license', 'image_source_url'].filter((k) => d[k]).map((k) => [k, d[k]]));
+
 if (APPLY) {
   if (!TOKEN) throw new Error(`no token for ${TRACKER}: set TRACKER_TOKEN or run node ./cli.mjs login --admin`);
   const me = await api('GET', '/api/auth/me');
@@ -286,7 +289,7 @@ if (APPLY) {
     const d = newDevices.get(slug);
     if (!d) continue;
     try {
-      await api('POST', '/api/devices', { slug, name: d.name, model: d.model, soc: d.soc, repo_kind: 'fork', base: 'other', status: 'unknown', notes: `Codename ${d.model}. Added from the fork trees of the main projects (scripts/find-forks.mjs).` });
+      await api('POST', '/api/devices', { slug, name: d.name, model: d.model, soc: d.soc, repo_kind: 'fork', base: 'other', status: 'unknown', notes: `Codename ${d.model}. Added from the fork trees of the main projects (scripts/find-forks.mjs).`, ...imageFields(d) });
       deviceSlugs.add(slug);
       applied.devices.push(slug);
     } catch (e) {

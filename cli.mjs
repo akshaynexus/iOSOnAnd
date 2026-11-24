@@ -34,7 +34,7 @@ const RELATIONS = ["fork-of", "derived-from", "ported-from", "uses"];
 const WRITE_COMMANDS = new Set([
   "status-set", "device-add", "device-set", "fork-add", "fork-sync", "post-add",
   "claim-add", "claim-approve", "claim-reject", "reddit-fetch", "post-set",
-  "repo-claim", "repo-add", "repo-support", "repo-lineage", "media-upload", "update",
+  "repo-claim", "repo-add", "repo-support", "repo-lineage", "media-upload", "update", "repo-maintainer-add", "repo-maintainer-remove",
 ]);
 let TOKEN_FLAG = null;
 
@@ -345,15 +345,27 @@ Repos (a repo you own on GitHub is yours at once; else a proof file):
                             .iosonand-verify on the default branch, push, then
   repo-verify <claim id>    check the file and approve the claim
   repo-add OWNER/REPO --device SLUG [--branch B] [--best-result T] [--note T]
+                            add an untracked repo and claim it in one step
   repo-add OWNER/REPO --new-device "Phone name" [--model CODENAME] [--soc CHIP]
                             a phone the tracker does not list yet (your own repo only)
+  references [--chip TEXT] [--device SLUG] [--area AREA] [--limit N]
+                            ports to start from and borrow parts from: phones on a
+                            chip, or where an area (gpu, wifi, audio...) works, with
+                            their repos, branch links and sources (no login needed)
   catalog <name, codename or model>
                             search every Android phone and tablet (Google Play's
                             list); prints the repo-add line to use for each
-                            add an untracked repo and claim it in one step
   repo-claims [--status pending|approved|rejected|expired]
-  repo-claim-approve <id>, repo-claim-reject <id>    admin only
-  repo-unmaintain OWNER/REPO                         step down (or admin)
+                            your claims, and the claims on repos you maintain
+  repo-claim-approve <id>, repo-claim-reject <id>
+                            an admin, or a maintainer of that repo (a collaborator
+                            who claimed it joins the repo's maintainers)
+  repo-maintainers OWNER/REPO                        everyone who maintains it
+  repo-maintainer-add OWNER/REPO --github LOGIN      add a collaborator (a maintainer
+                                                     or admin; they need an account
+                                                     linked to that GitHub login)
+  repo-maintainer-remove OWNER/REPO --github LOGIN   the repo's GitHub owner or an admin
+  repo-unmaintain OWNER/REPO                         step down yourself
   repo-support OWNER/REPO <device> --support merged|ported|claimed|primary
                [--via OWNER/REPO] [--note T]          admin; maintainer: claimed
   repo-lineage OWNER/REPO --base X --relation fork-of|derived-from|ported-from|uses
@@ -619,6 +631,99 @@ async function cmdStatusSet(positionals, flags) {
   out({ ok: true, device, area, state, detail, source, server: res });
 }
 
+/* ------------------------------------------------------------------ */
+/* references: which ports to start from and borrow parts from         */
+/* ------------------------------------------------------------------ */
+
+/** One phone as a reference: its chip, family, what works, and its repos with branch links. */
+function referenceOf(d, extra = {}) {
+  const repos = new Map();
+  for (const f of d.forks || []) repos.set(f.repo, f);
+  for (const s of d.supported_by || []) if (!repos.has(s.repo)) repos.set(s.repo, s);
+  return {
+    slug: d.slug,
+    name: d.name,
+    chip: d.soc || "",
+    model: d.model || "",
+    family: d.family || "",
+    ios: d.ios_version || "",
+    works: (d.statuses || []).filter((s) => s.state === "works").map((s) => s.area_slug),
+    in_progress: (d.statuses || []).filter((s) => s.state === "in-progress").map((s) => s.area_slug),
+    repos: [...repos.values()].map((f) => {
+      const branch = String(f.branch || "").split(/[\s,]+/).filter(Boolean)[0] || "";
+      return {
+        repo: f.repo,
+        branch,
+        url: `https://github.com/${f.repo}${branch ? `/tree/${branch}` : ""}`,
+        project: f.base_project || "",
+        ...(f.support ? { support: f.support } : {}),
+      };
+    }),
+    page: `${TRACKER_URL}/device/${d.slug}`,
+    ...extra,
+  };
+}
+
+/** Chip search words: "Snapdragon 778G (SM7325)" -> ["SM7325", "Snapdragon 778G"]. */
+function chipTerms(chip) {
+  const out = [];
+  const paren = /\(([^)]+)\)/.exec(chip);
+  if (paren) out.push(paren[1].trim());
+  const bare = chip.replace(/\([^)]*\)/g, "").trim();
+  if (bare) out.push(bare);
+  return [...new Set(out)];
+}
+
+/**
+ * references [--chip TEXT] [--device SLUG] [--area AREA] [--limit N]:
+ * the tracker as a map for porting. --chip: phones on that chip (search by
+ * name or part number), with their repos, branches and what works. --device:
+ * that phone plus the phones on its chip. --area: where that area works
+ * (gpu, wifi, audio ...), with the repo and branch to read and the source.
+ */
+async function cmdReferences(flags) {
+  const limit = Number(str(flags, "limit")) || 25;
+  const result = { tracker: TRACKER_URL };
+  let chip = str(flags, "chip");
+  if (str(flags, "device")) {
+    const d = (await api(`/api/devices/${encodeURIComponent(flags.device)}`)).device;
+    result.device = referenceOf(d);
+    chip = chip || d.soc || "";
+  }
+  if (chip) {
+    const seen = new Map();
+    for (const term of chipTerms(chip)) {
+      const r = await api(`/api/devices?q=${encodeURIComponent(term)}&limit=50`);
+      for (const d of r.devices || []) if (!seen.has(d.slug) && d.slug !== result.device?.slug) seen.set(d.slug, d);
+    }
+    result.chip = chip;
+    result.same_chip = [...seen.values()]
+      .map((d) => referenceOf(d))
+      .sort((a, b) => b.works.length - a.works.length)
+      .slice(0, limit);
+  }
+  if (str(flags, "area")) {
+    const area = flags.area;
+    await checkArea(area);
+    const st = await api(`/api/status?area=${encodeURIComponent(area)}&state=works`);
+    const slugs = new Set((st.statuses || []).map((s) => s.device_slug));
+    const all = (await api("/api/devices?limit=500")).devices || [];
+    result.area = area;
+    result.works_on = all
+      .filter((d) => slugs.has(d.slug))
+      .map((d) => {
+        const row = (st.statuses || []).find((s) => s.device_slug === d.slug) || {};
+        return referenceOf(d, { detail: row.detail || "", source: row.source || "" });
+      })
+      .sort((a, b) => b.works.length - a.works.length)
+      .slice(0, limit);
+  }
+  if (!result.device && !result.same_chip && !result.works_on) {
+    throw usage('usage: references [--chip "Snapdragon 778G"] [--device SLUG] [--area gpu] [--limit N]');
+  }
+  out(result);
+}
+
 async function cmdCheck() {
   const results = {};
   let unreachable = null;
@@ -699,6 +804,8 @@ async function cmdRepoClaim(cmd, positionals, flags) {
         `  node ./cli.mjs repo-verify ${c.id}\n` +
         `then delete .iosonand-verify again.`,
     );
+  } else if (res.status === 202 && c.method === "review") {
+    info(`Claim #${c.id} is pending: a maintainer of ${c.repo} (or an admin) approves it with repo-claim-approve ${c.id}; then you join its maintainers.`);
   } else if (data.already) {
     info(`You already maintain ${data.fork?.repo}.`);
   } else if (c.status === "approved") {
@@ -1016,6 +1123,23 @@ async function main() {
       out(await api(`/api/forks/${fork.id}/maintainer`, { method: "DELETE", auth: true }));
       return;
     }
+    case "repo-maintainers": {
+      const fork = await forkOf(positionals[0]);
+      out({ repo: fork.repo, ...(await api(`/api/forks/${fork.id}/maintainers`)) });
+      return;
+    }
+    case "repo-maintainer-add":
+    case "repo-maintainer-remove": {
+      const login = (str(flags, "github") || positionals[1] || "").replace(/^@/, "");
+      if (!positionals[0] || !login) throw usage(`usage: ${cmd} OWNER/REPO --github LOGIN`);
+      const fork = await forkOf(positionals[0]);
+      out(
+        cmd === "repo-maintainer-add"
+          ? await api(`/api/forks/${fork.id}/maintainers`, { method: "POST", auth: true, body: { github_login: login } })
+          : await api(`/api/forks/${fork.id}/maintainers?github_login=${encodeURIComponent(login)}`, { method: "DELETE", auth: true }),
+      );
+      return;
+    }
     case "repo-support": {
       const [repo, device] = positionals;
       const support = str(flags, "support");
@@ -1082,6 +1206,8 @@ async function main() {
     }
     case "catalog":
       return cmdCatalog(positionals, flags);
+    case "references":
+      return cmdReferences(flags);
     case "media-list": {
       const q = new URLSearchParams();
       for (const [k, fl] of [["device", "device"], ["area", "area"], ["fork_id", "fork-id"], ["limit", "limit"], ["offset", "offset"]]) {

@@ -1,4 +1,5 @@
-// GET /api/repos/claims (login): your repo claims; an admin sees everyone's.
+// GET /api/repos/claims (login): your repo claims and the claims on repos you
+// maintain (to approve or reject); an admin sees everyone's.
 // ?status=pending|approved|rejected|expired, ?repo=OWNER/REPO, ?limit=
 // (default 100, max 500), ?offset=. Newest first.
 // -> {claims, total, limit, offset, next}. CLI: repo-claims.
@@ -19,8 +20,8 @@ async function handleGet({ request }: ApiCtx): Promise<Response> {
   const where: string[] = [];
   const vals: unknown[] = [];
   if (!isAdmin(user)) {
-    where.push('rc.user_id = ?');
-    vals.push(user.id);
+    where.push('(rc.user_id = ? OR rc.fork_id IN (SELECT fork_id FROM repo_maintainers WHERE user_id = ?))');
+    vals.push(user.id, user.id);
   }
   if (status) {
     where.push('rc.status = ?');

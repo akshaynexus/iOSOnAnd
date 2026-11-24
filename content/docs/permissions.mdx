@@ -87,7 +87,8 @@ You maintain a device when you hold an approved claim on it. There are two ways 
 1. **Claim the repo** ([Maintain a repo](/docs/maintain-a-repo)): approved at once when your GitHub
    login owns the repo. An organization's repo takes a proof file and a login that is a member of
    the organization or a contributor; an admin can approve any claim. Anyone else gets 403.
-   A repo's maintainer maintains all its phones: the ones an admin lists on it (`primary`,
+   A repo can have several maintainers (collaborators; a contributor's claim waits for a
+   maintainer's yes, and a maintainer can add someone by GitHub login). Each repo maintainer maintains all its phones: the ones an admin lists on it (`primary`,
    `merged`, `ported`) as long as they maintain the repo, and the ones they add themselves
    (`claimed`) when nobody else maintains them (otherwise an admin approves a device claim). The approval also makes you
    a maintainer of the repo's phone.

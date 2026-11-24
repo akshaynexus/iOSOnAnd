@@ -1,5 +1,6 @@
 // src/lib/repos.ts — repo ownership: claims on a repo, their approval, and
-// the maintainer of a fork row (forks.maintainer_user_id).
+// the repo's maintainers (repo_maintainers; a repo can have several: people
+// collaborating on one port). forks.maintainer_user_id mirrors the first one.
 //
 // Who may claim (claimPath): the claimer's GitHub login, proven with a gist
 // when it was linked, must be the repo's owner.
@@ -11,14 +12,16 @@
 //     POST /api/repos/claim/{id}/verify; src/lib/repoproof.ts reads it) and
 //     the claimer's login being a public member of the organization or a
 //     contributor to the repo.
-//   - anyone else: 403 (no GitHub account linked, or a personal repo of
-//     another login). Before this rule a proof file alone was enough, so a
-//     collaborator could claim someone else's personal repo.
+//   - a contributor to someone else's personal repo (GitHub lists their
+//     commits): a pending 'review' claim that a maintainer of the repo, or an
+//     admin, approves (collaborators join; nobody takes a repo over).
+//   - anyone else: 403 (no GitHub account linked, or a personal repo they
+//     have no commits in).
 //   - an admin may approve (method becomes 'admin') or reject a pending claim.
 //   - an untracked repo needs `device`; the claim creates its fork row
 //     (fork_created = 1), which is removed again when the claim is rejected
 //     or expires before anyone maintains the repo.
-// On approval: forks.maintainer_user_id/maintainer_since, an approved device
+// On approval: a repo_maintainers row (more maintainers can join), an approved device
 // claim for the fork's device (the user becomes its maintainer; its id is
 // kept in repo_claims.device_claim_id), and a changelog line.
 
@@ -26,7 +29,7 @@ import { queryAll, queryFirst, exec } from '@/lib/db';
 import { HttpError, MAINTAINERS_SQL, actorName, env, isAdmin, isMaintainer, nowIso, randomTokenString } from '@/lib/auth';
 import type { UserRow } from '@/lib/auth';
 import { appendChangelog } from '@/lib/changelog';
-import { findForkByRepo, loadForkRow, setSupport, syncOwnSupport, type ForkRow } from '@/lib/forks';
+import { findForkByRepo, isRepoMaintainer, loadForkRow, setSupport, syncOwnSupport, type ForkRow } from '@/lib/forks';
 import { PROOF_PATH } from '@/lib/repoproof';
 
 export const CLAIM_TTL_MS = 24 * 3600 * 1000;
@@ -84,8 +87,8 @@ export async function loadRepoClaim(id: string | number): Promise<RepoClaimRow> 
 /** Remove a fork row a claim created, when nobody maintains it and no other claim waits on it. */
 async function dropCreatedFork(forkId: number | null, exceptClaim: number): Promise<void> {
   if (!forkId) return;
-  const f = await queryFirst<{ maintainer_user_id: number | null }>('SELECT maintainer_user_id FROM forks WHERE id = ?', [forkId]);
-  if (!f || f.maintainer_user_id != null) return;
+  const f = await queryFirst<{ id: number }>('SELECT id FROM forks WHERE id = ?', [forkId]);
+  if (!f || (await queryFirst('SELECT 1 AS ok FROM repo_maintainers WHERE fork_id = ? LIMIT 1', [forkId]))) return;
   const other = await queryFirst(
     "SELECT 1 AS ok FROM repo_claims WHERE fork_id = ? AND id != ? AND status IN ('pending', 'approved') LIMIT 1",
     [forkId, exceptClaim],
@@ -163,7 +166,7 @@ export async function isOrgMemberOrContributor(org: string, repo: string, login:
  * How `user` may claim `repo`: 'owner' (approved at once) or 'proof-file' (an
  * organization's repo). 403 for anyone else; see the header.
  */
-export async function claimPath(user: UserRow, repo: string): Promise<'owner' | 'proof-file'> {
+export async function claimPath(user: UserRow, repo: string): Promise<'owner' | 'proof-file' | 'review'> {
   if (ownsRepo(user, repo)) return 'owner';
   const owner = repo.split('/')[0];
   if (!user.github_login) {
@@ -176,40 +179,59 @@ export async function claimPath(user: UserRow, repo: string): Promise<'owner' | 
   const type = await githubOwnerType(owner);
   if (type === 'Organization') return 'proof-file';
   if (type === null) throw new HttpError(404, 'no such GitHub owner', `GitHub has no user or organization @${owner}; check the repo name`);
+  // Someone else's personal repo: a contributor joins its maintainers once a maintainer (or an admin) says yes.
+  if (await isOrgMemberOrContributor(owner, repo, user.github_login)) return 'review';
   throw new HttpError(
     403,
     'not the repo owner',
-    `${repo} belongs to @${owner} and you are linked as @${user.github_login}: only @${owner} can claim it. If it is your repo under another account, link that account; otherwise ask an admin`,
+    `${repo} belongs to @${owner} and @${user.github_login} has no commits in it: its owner, or a contributor (with a maintainer's yes), can claim it. If it is your repo under another account, link that account; a maintainer can also add you by your GitHub login`,
   );
 }
 
 /**
- * Approve a pending claim (atomically: a claim is approved once). Sets the
- * fork's maintainer, grants the device claim, writes the changelog. 409 when
- * the repo got another maintainer meanwhile.
+ * Add a maintainer to a repo (idempotent). forks.maintainer_user_id keeps the
+ * first one, for older clients.
+ */
+export async function addRepoMaintainer(forkId: number, userId: number, addedBy: number | null): Promise<void> {
+  const now = nowIso();
+  await exec('INSERT OR IGNORE INTO repo_maintainers (fork_id, user_id, since, added_by) VALUES (?, ?, ?, ?)', [forkId, userId, now, addedBy]);
+  await exec(
+    'UPDATE forks SET maintainer_user_id = COALESCE(maintainer_user_id, ?), maintainer_since = COALESCE(maintainer_since, ?), updated = ? WHERE id = ?',
+    [userId, now, now, forkId],
+  );
+}
+
+/** forks.maintainer_user_id after a maintainer left: the longest-standing one still there, or none. */
+async function resetFirstMaintainer(forkId: number): Promise<void> {
+  const first = await queryFirst<{ user_id: number; since: string }>(
+    'SELECT user_id, since FROM repo_maintainers WHERE fork_id = ? ORDER BY since, user_id LIMIT 1',
+    [forkId],
+  );
+  await exec('UPDATE forks SET maintainer_user_id = ?, maintainer_since = ?, updated = ? WHERE id = ?', [first?.user_id ?? null, first?.since ?? null, nowIso(), forkId]);
+}
+
+/** Who may approve or reject a repo claim: an admin, or a maintainer of that repo. */
+export async function canReviewRepoClaim(user: UserRow, claim: RepoClaimRow): Promise<boolean> {
+  if (isAdmin(user)) return true;
+  return !!claim.fork_id && (await isRepoMaintainer(user.id, claim.fork_id));
+}
+
+/**
+ * Approve a pending claim (atomically: a claim is approved once). Adds the
+ * claimant to the repo's maintainers (others stay), grants the device claim,
+ * writes the changelog.
  */
 export async function approveRepoClaim(claim: RepoClaimRow, actor: UserRow, method: string): Promise<{ claim: RepoClaimRow; fork: ForkRow }> {
   const fork = claim.fork_id ? await loadForkRow(claim.fork_id) : await findForkByRepo(claim.repo);
   if (!fork) throw new HttpError(409, 'repo no longer tracked', 'claim it again; an untracked repo needs a device');
-  if (fork.maintainer_user_id != null && fork.maintainer_user_id !== claim.user_id) {
-    throw new HttpError(409, 'repo already maintained', 'another user maintains it now; an admin can remove them: DELETE /api/forks/<id>/maintainer');
-  }
   const now = nowIso();
   const gate = await queryFirst<{ id: number }>(
     "UPDATE repo_claims SET status = 'approved', method = ?, decided = ?, fork_id = ? WHERE id = ? AND status = 'pending' RETURNING id",
     [method, now, fork.id, claim.id],
   );
   if (!gate) throw new HttpError(409, 'claim not pending', 'it was approved, rejected or expired by another request');
-  const set = await queryFirst<{ id: number }>(
-    `UPDATE forks SET maintainer_user_id = ?, maintainer_since = COALESCE(CASE WHEN maintainer_user_id = ? THEN maintainer_since END, ?),
-       device_slug = COALESCE(device_slug, ?), updated = ?
-     WHERE id = ? AND (maintainer_user_id IS NULL OR maintainer_user_id = ?) RETURNING id`,
-    [claim.user_id, claim.user_id, now, claim.device_slug, now, fork.id, claim.user_id],
-  );
-  if (!set) {
-    await exec("UPDATE repo_claims SET status = 'pending', decided = NULL WHERE id = ?", [claim.id]);
-    throw new HttpError(409, 'repo already maintained', 'another user became its maintainer first');
-  }
+  await exec('UPDATE forks SET device_slug = COALESCE(device_slug, ?), updated = ? WHERE id = ?', [claim.device_slug, now, fork.id]);
+  await addRepoMaintainer(fork.id, claim.user_id, actor.id);
   const updated = await loadForkRow(fork.id);
   if (updated.device_slug !== fork.device_slug) await syncOwnSupport(updated);
   // The device claim: the repo maintainer maintains the fork's device too.
@@ -260,15 +282,23 @@ export async function rejectRepoClaim(claim: RepoClaimRow, actor: UserRow): Prom
 }
 
 /**
- * Remove a repo's maintainer (admin, or the maintainer). The device claim the
- * repo claim granted goes too, unless the user maintains another repo of
- * that device.
+ * Remove one maintainer from a repo; the others stay. Allowed: an admin, the
+ * maintainer themselves (stepping down), or a maintainer whose GitHub login
+ * owns the repo. The device claims their repo claim granted, and the phones
+ * they added to the repo, go too, unless they maintain another repo of that
+ * phone.
  */
-export async function removeMaintainer(fork: ForkRow, actor: UserRow): Promise<ForkRow> {
-  const uid = fork.maintainer_user_id;
-  if (uid == null) throw new HttpError(404, 'no maintainer', `${fork.repo} has no maintainer`);
-  if (!isAdmin(actor) && actor.id !== uid) throw new HttpError(403, 'not the maintainer', 'only an admin or the maintainer can remove the maintainer');
-  await exec('UPDATE forks SET maintainer_user_id = NULL, maintainer_since = NULL, updated = ? WHERE id = ?', [nowIso(), fork.id]);
+export async function removeMaintainer(fork: ForkRow, actor: UserRow, targetUserId?: number): Promise<ForkRow> {
+  const uid = targetUserId ?? (isAdmin(actor) && !(await isRepoMaintainer(actor.id, fork.id)) ? fork.maintainer_user_id : actor.id);
+  if (uid == null || !(await isRepoMaintainer(uid, fork.id))) {
+    throw new HttpError(404, 'not a maintainer', `that user does not maintain ${fork.repo}; GET /api/forks/${fork.id}/maintainers lists them`);
+  }
+  const owner = !!actor.github_login && actor.github_login.toLowerCase() === fork.repo.split('/')[0].toLowerCase() && (await isRepoMaintainer(actor.id, fork.id));
+  if (!isAdmin(actor) && actor.id !== uid && !owner) {
+    throw new HttpError(403, 'not allowed', "a maintainer steps down themselves; removing someone else takes an admin or the repo's GitHub owner");
+  }
+  await exec('DELETE FROM repo_maintainers WHERE fork_id = ? AND user_id = ?', [fork.id, uid]);
+  await resetFirstMaintainer(fork.id);
   const granted = await queryAll<{ device_claim_id: number }>(
     "SELECT device_claim_id FROM repo_claims WHERE fork_id = ? AND user_id = ? AND status = 'approved' AND device_claim_id IS NOT NULL",
     [fork.id, uid],
@@ -276,14 +306,18 @@ export async function removeMaintainer(fork: ForkRow, actor: UserRow): Promise<F
   for (const g of granted) {
     const dc = await queryFirst<{ device_slug: string }>('SELECT device_slug FROM claims WHERE id = ?', [g.device_claim_id]);
     if (!dc) continue;
-    const other = await queryFirst('SELECT 1 AS ok FROM forks WHERE maintainer_user_id = ? AND device_slug = ? LIMIT 1', [uid, dc.device_slug]);
+    const other = await queryFirst(
+      'SELECT 1 AS ok FROM repo_maintainers rm JOIN forks f ON f.id = rm.fork_id WHERE rm.user_id = ? AND f.device_slug = ? LIMIT 1',
+      [uid, dc.device_slug],
+    );
     if (!other) await exec('DELETE FROM claims WHERE id = ?', [g.device_claim_id]);
   }
   await exec("UPDATE repo_claims SET device_claim_id = NULL WHERE fork_id = ? AND user_id = ? AND status = 'approved'", [fork.id, uid]);
   // Phones they added to this repo themselves go too (the ones an admin
-  // recorded follow the repo's maintainer anyway: MAINTAINERS_SQL).
+  // recorded follow the repo's maintainers anyway: MAINTAINERS_SQL).
   await exec('DELETE FROM claims WHERE user_id = ? AND note = ?', [uid, supportedPhoneNote(fork.repo)]);
-  await appendChangelog(actorName(actor), `repo ${fork.repo} maintainer removed`);
+  const who = await queryFirst<{ display_name: string; github_login: string | null }>('SELECT display_name, github_login FROM users WHERE id = ?', [uid]);
+  await appendChangelog(actorName(actor), `repo ${fork.repo}: ${who?.github_login ? `@${who.github_login}` : who?.display_name ?? `user#${uid}`} no longer maintains it`);
   return loadForkRow(fork.id);
 }
 

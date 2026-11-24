@@ -28,16 +28,114 @@
     "jackpotlte": "galaxy-a8-2018"
   },
   "new_devices": [
-    { "slug": "mi-mix-2s", "name": "Xiaomi Mi Mix 2S", "model": "polaris", "soc": "Snapdragon 845 (SDM845)" },
-    { "slug": "redmi-note-7", "name": "Redmi Note 7", "model": "lavender", "soc": "Snapdragon 660 (SDM660)" },
-    { "slug": "redmi-note-8", "name": "Redmi Note 8", "model": "ginkgo", "soc": "Snapdragon 665 (SM6125)" },
-    { "slug": "pixel-2-xl", "name": "Pixel 2 XL", "model": "taimen", "soc": "Snapdragon 835 (MSM8998)" },
-    { "slug": "moto-g7", "name": "Moto G7", "model": "river", "soc": "Snapdragon 632 (SDM632)" },
-    { "slug": "moto-g9-plus", "name": "Moto G9 Plus", "model": "odessa", "soc": "Snapdragon 730G (SM7150)" },
-    { "slug": "galaxy-a9-2018", "name": "Galaxy A9 (2018)", "model": "a9y18qlte", "soc": "Snapdragon 660 (SDM660)" },
-    { "slug": "pixel-4a-5g", "name": "Pixel 4a 5G", "model": "bramble", "soc": "Snapdragon 765G (SM7250)" },
-    { "slug": "mi-10t-lite", "name": "Xiaomi Mi 10T Lite", "model": "gauguin", "soc": "Snapdragon 750G (SM7225)" },
-    { "slug": "galaxy-a8-2018", "name": "Galaxy A8 (2018)", "model": "jackpotlte", "soc": "Exynos 7885" }
+    {
+      "slug": "mi-mix-2s",
+      "name": "Xiaomi Mi Mix 2S",
+      "model": "polaris",
+      "soc": "Snapdragon 845 (SDM845)",
+      "image_url": "https://i01.appmifile.com/webfile/globalimg/33/028C3B03-56B4-ADC4-F7B6-4E46C1E7DE53.png",
+      "image_credit": "© Xiaomi, official product image, used for device identification",
+      "image_license": "© Xiaomi",
+      "image_source_url": "https://www.mi.com/uk/mix2s/specs/"
+    },
+    {
+      "slug": "redmi-note-7",
+      "name": "Redmi Note 7",
+      "model": "lavender",
+      "soc": "Snapdragon 660 (SDM660)",
+      "image_url": "https://download.appmifile.com/933_updatepdf_in/28/02/2019/8b118dd0-dd89-4b5d-9edc-032157e3dcd9.png",
+      "image_credit": "© Xiaomi, official product image, used for device identification",
+      "image_license": "© Xiaomi",
+      "image_source_url": "https://www.mi.com/in/redmi-note-7/"
+    },
+    {
+      "slug": "redmi-note-8",
+      "name": "Redmi Note 8",
+      "model": "ginkgo",
+      "soc": "Snapdragon 665 (SM6125)",
+      "image_url": "https://i01.appmifile.com/webfile/globalimg/7/C6FF1004-B5D9-7E9A-4037-510A80E945E4.png",
+      "image_credit": "© Xiaomi, official product image, used for device identification",
+      "image_license": "© Xiaomi",
+      "image_source_url": "https://www.mi.com/in/redmi-note-8/specs/"
+    },
+    {
+      "slug": "pixel-2-xl",
+      "name": "Pixel 2 XL",
+      "model": "taimen",
+      "soc": "Snapdragon 835 (MSM8998)",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Pixel_2_XL_front.svg/500px-Pixel_2_XL_front.svg.png",
+      "image_credit": "Hstoops",
+      "image_license": "CC0",
+      "image_source_url": "https://commons.wikimedia.org/wiki/File:Pixel_2_XL_front.svg"
+    },
+    {
+      "slug": "moto-g7",
+      "name": "Moto G7",
+      "model": "river",
+      "soc": "Snapdragon 632 (SDM632)",
+      "image_url": "https://brmotorola.vteximg.com.br/arquivos/ids/160753-1000-1000/01-moto-g7-64gb-onix.png?v=636854936675400000",
+      "image_credit": "© Motorola, official product image, used for device identification",
+      "image_license": "© Motorola",
+      "image_source_url": "https://web.archive.org/web/20201205001117/https://www.motorola.com.br/moto-g7/p"
+    },
+    {
+      "slug": "moto-g9-plus",
+      "name": "Moto G9 Plus",
+      "model": "odessa",
+      "soc": "Snapdragon 730G (SM7150)",
+      "image_url": "https://brmotorolanew.vtexassets.com/arquivos/ids/156190/2020_Odessa_BasicPack_DeepDive_PDP_HERO-foto-1.png?v=637455489905700000",
+      "image_credit": "© Motorola, official product image, used for device identification",
+      "image_license": "© Motorola",
+      "image_source_url": "https://www.motorola.com.br/smartphone-moto-g9-plus/p"
+    },
+    {
+      "slug": "galaxy-a9-2018",
+      "name": "Galaxy A9 (2018)",
+      "model": "a9y18qlte",
+      "soc": "Snapdragon 660 (SDM660)",
+      "image_url": "https://images.samsung.com/is/image/samsung/ae-galaxy-a9-a920-sm-a920fzkdxsg-frontblack-126327481?$650_519_PNG$",
+      "image_credit": "© Samsung, official product image, used for device identification",
+      "image_license": "© Samsung",
+      "image_source_url": "https://www.samsung.com/ae/support/model/SM-A920FZKDXSG/"
+    },
+    {
+      "slug": "pixel-4a-5g",
+      "name": "Pixel 4a 5G",
+      "model": "bramble",
+      "soc": "Snapdragon 765G (SM7250)",
+      "image_url": "https://lh3.googleusercontent.com/tbz4qVjiKUQ3RgC2uohonWzFNHbYaiqSTaQh3mQGt5pKUFq5VfaYflCMkp_fj2JJ7RZTAjqIr09KSvu2SsmZ=w1000",
+      "image_credit": "© Google, official product image, used for device identification",
+      "image_license": "© Google",
+      "image_source_url": "https://web.archive.org/web/20201210205556/https://store.google.com/US/product/pixel_4a_5g"
+    },
+    {
+      "slug": "mi-10t-lite",
+      "name": "Xiaomi Mi 10T Lite",
+      "model": "gauguin",
+      "soc": "Snapdragon 750G (SM7225)",
+      "image_url": "https://i01.appmifile.com/webfile/globalimg/products/pc/mi-10t-lite/specs-01.png",
+      "image_credit": "© Xiaomi, official product image, used for device identification",
+      "image_license": "© Xiaomi",
+      "image_source_url": "https://www.mi.com/uk/mi-10t-lite/specs/"
+    },
+    {
+      "slug": "galaxy-a8-2018",
+      "name": "Galaxy A8 (2018)",
+      "model": "jackpotlte",
+      "soc": "Exynos 7885",
+      "image_url": "https://images.samsung.com/is/image/samsung/uk-galaxy-a8-a530-sm-a530fzkabtu-133018099?$650_519_PNG$",
+      "image_credit": "© Samsung, official product image, used for device identification",
+      "image_license": "© Samsung",
+      "image_source_url": "https://www.samsung.com/uk/support/model/SM-A530FZKABTU/"
+    }
   ],
-  "skip_tokens": ["bergamota", "bringup", "probe", "qemu", "payload", "entry", "polaris-mix2s"]
+  "skip_tokens": [
+    "bergamota",
+    "bringup",
+    "probe",
+    "qemu",
+    "payload",
+    "entry",
+    "polaris-mix2s"
+  ]
 }

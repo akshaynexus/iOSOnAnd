@@ -236,6 +236,8 @@ for (const d of MAP.new_devices) {
     slug: d.slug, name: d.name, model: d.model, soc: d.soc, repo_kind: 'fork', base: 'other',
     status: boot, best_result: s.state ? `${TAG}: ${s.state}` : '', ios_version: d.ios_version ?? '',
     notes: [d.notes, `Listed on ${pageUrl}`].filter(Boolean).join(' '),
+    // the phone's photo, when the map gives one
+    ...Object.fromEntries(['image_url', 'image_credit', 'image_license', 'image_source_url'].filter((k) => d[k]).map((k) => [k, d[k]])),
   };
   report.devices.push({ action: 'add', slug: d.slug, name: d.name });
   try {

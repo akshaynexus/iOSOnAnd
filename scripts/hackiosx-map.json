@@ -12,7 +12,11 @@
       "model": "topaz",
       "soc": "Snapdragon 685 (SM6225)",
       "ios_version": "iOS 16.7.16",
-      "notes": "Codename topaz (also tapas). The ios-topaz port runs the iPhone X iOS 16.7.16 (20H392) userland on a 4 KB-page kernel."
+      "notes": "Codename topaz (also tapas). The ios-topaz port runs the iPhone X iOS 16.7.16 (20H392) userland on a 4 KB-page kernel.",
+      "image_url": "https://i01.appmifile.com/v1/MI_18455B3E4DA706226CF7535A58E875F0267/pms_1679574037.40791067.png",
+      "image_credit": "© Xiaomi, official product image, used for device identification",
+      "image_license": "© Xiaomi",
+      "image_source_url": "https://www.mi.com/global/product/redmi-note-12/"
     }
   ],
   "repos": {

@@ -70,6 +70,7 @@ async function handleDelete({ request, params }: ApiCtx): Promise<Response> {
   await exec('INSERT OR IGNORE INTO lineage_repos (repo, base_project) VALUES (?, ?)', [fork.repo, fork.base_project ?? '']);
   await exec('UPDATE repo_claims SET fork_id = NULL WHERE fork_id = ?', [fork.id]);
   await exec('UPDATE media SET fork_id = NULL WHERE fork_id = ?', [fork.id]);
+  await exec('DELETE FROM repo_maintainers WHERE fork_id = ?', [fork.id]);
   await exec('DELETE FROM forks WHERE id = ?', [fork.id]);
   await appendChangelog(actorName(user), `fork ${fork.repo} removed`);
   return json({ deleted: fork.id });

@@ -284,9 +284,12 @@ describe('repo claims', () => {
     const again = await call('POST', '/api/repos/claim', { who: alice.who, body: { repo: ownRepo } });
     expect(again.status).toBe(200);
     expect(again.body.already).toBe(true);
+    // Someone with no commits in it cannot claim it (a repo can have several
+    // maintainers, but they join as owner, contributor or by a maintainer's add).
     const taken = await call('POST', '/api/repos/claim', { who: bob.who, body: { repo: ownRepo } });
-    expect(taken.status).toBe(409);
-    expect(taken.body.hint).toContain(`@${GH}`);
+    expect([403, 404, 502, 503]).toContain(taken.status);
+    const f = await call('GET', `/api/forks/${ownFork}/maintainers`);
+    expect(f.body.maintainers.map((m: any) => m.id)).toEqual([alice.id]);
   });
 
   test("an organization's repo gets a pending proof-file claim; a missing file is 422; an admin rejects it and the created fork goes", async () => {
@@ -322,6 +325,54 @@ describe('repo claims', () => {
     expect((await call('POST', `/api/repos/claims/${c.id}/reject`, { who: admin })).status).toBe(409);
   });
 
+  test('a repo has several maintainers: a maintainer adds one, who maintains its phones; only the owner or an admin removes others', async () => {
+    if (!LOCAL) return; // ownFork and the test GitHub logins live in the local D1
+    // bob has no account linked to this login yet: 404.
+    expect((await call('POST', `/api/forks/${ownFork}/maintainers`, { who: alice.who, body: { github_login: 'nobody-' + RUN } })).status).toBe(404);
+    // Not a maintainer: cannot add anyone.
+    expect((await call('POST', `/api/forks/${ownFork}/maintainers`, { who: bob.who, body: { github_login: GHB } })).status).toBe(403);
+    const add = await call('POST', `/api/forks/${ownFork}/maintainers`, { who: alice.who, body: { github_login: GHB } });
+    expect(add.status).toBe(200);
+    expect(add.body.fork.maintainers.map((m: any) => m.id)).toEqual([alice.id, bob.id]);
+    expect(add.body.fork.maintainer.id).toBe(alice.id); // the first one, for older clients
+    const me = await call('GET', '/api/auth/me', { who: bob.who });
+    expect(me.body.maintains_repos).toContain(ownRepo);
+    expect(me.body.maintains).toContain(DEV);
+    expect((await call('PUT', `/api/status/${DEV}/touch`, { who: bob.who, body: { state: 'works', detail: 'test', source: 'test' } })).status).toBe(200);
+    // bob is not the repo's GitHub owner: he cannot remove alice. alice (the owner) can remove bob.
+    expect((await call('DELETE', `/api/forks/${ownFork}/maintainers?user=${alice.id}`, { who: bob.who })).status).toBe(403);
+    const rm = await call('DELETE', `/api/forks/${ownFork}/maintainers?github_login=${GHB}`, { who: alice.who });
+    expect(rm.status).toBe(200);
+    expect(rm.body.fork.maintainers.map((m: any) => m.id)).toEqual([alice.id]);
+    expect((await call('GET', '/api/auth/me', { who: bob.who })).body.maintains).not.toContain(DEV);
+    // Added again, bob steps down himself; alice stays.
+    expect((await call('POST', `/api/forks/${ownFork}/maintainers`, { who: alice.who, body: { github_login: GHB } })).status).toBe(200);
+    const down = await call('DELETE', `/api/forks/${ownFork}/maintainer`, { who: bob.who });
+    expect(down.status).toBe(200);
+    expect(down.body.fork.maintainers.map((m: any) => m.id)).toEqual([alice.id]);
+  });
+
+  test("a maintainer of the repo approves another person's pending claim on it; they join the maintainers", async () => {
+    if (!LOCAL) return;
+    const r = await call('POST', '/api/repos/claim', { who: bob.who, body: { repo: `${otherRepo}-3`, device: DEVO } });
+    if (githubDown(r)) return;
+    expect(r.status).toBe(202);
+    made.forks.push(r.body.fork.id);
+    const forkId = r.body.fork.id;
+    // Nobody maintains it yet: alice cannot approve; an admin adds alice; now she can.
+    expect((await call('POST', `/api/repos/claims/${r.body.claim.id}/approve`, { who: alice.who })).status).toBe(403);
+    expect((await call('POST', `/api/forks/${forkId}/maintainers`, { who: admin, body: { github_login: GH } })).status).toBe(200);
+    const queue = await call('GET', '/api/repos/claims?status=pending', { who: alice.who });
+    expect(queue.body.claims.map((c: any) => c.id)).toContain(r.body.claim.id);
+    const ok = await call('POST', `/api/repos/claims/${r.body.claim.id}/approve`, { who: alice.who });
+    expect(ok.status).toBe(200);
+    expect(ok.body.claim.method).toBe('maintainer');
+    expect(ok.body.fork.maintainers.map((m: any) => m.id).sort()).toEqual([alice.id, bob.id].sort());
+    // Clean up: both step down (bob first, then alice), so later tests see the old state.
+    expect((await call('DELETE', `/api/forks/${forkId}/maintainer`, { who: bob.who })).status).toBe(200);
+    expect((await call('DELETE', `/api/forks/${forkId}/maintainer`, { who: alice.who })).status).toBe(200);
+  });
+
   test('an admin approves a pending claim (method admin); the maintainer steps down and loses the granted device', async () => {
     if (!LOCAL) return;
     const r = await call('POST', '/api/repos/claim', { who: bob.who, body: { repo: `${otherRepo}-2`, device: DEVO } });
@@ -335,7 +386,8 @@ describe('repo claims', () => {
     let me = await call('GET', '/api/auth/me', { who: bob.who });
     expect(me.body.maintains).toEqual([DEVO]);
     expect(me.body.maintains_repos).toEqual([`${otherRepo}-2`]);
-    expect((await call('DELETE', `/api/forks/${ok.body.fork.id}/maintainer`, { who: alice.who })).status).toBe(403);
+    // alice does not maintain it: nothing to step down from.
+    expect((await call('DELETE', `/api/forks/${ok.body.fork.id}/maintainer`, { who: alice.who })).status).toBe(404);
     const down = await call('DELETE', `/api/forks/${ok.body.fork.id}/maintainer`, { who: bob.who });
     expect(down.status).toBe(200);
     expect(down.body.fork.maintainer).toBeNull();

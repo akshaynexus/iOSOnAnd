@@ -9,7 +9,7 @@ import { Field } from "@/components/Field";
 import { useAuth } from "@/components/auth";
 import { useAction } from "@/components/useAction";
 import { CopyButton, PrimaryAction } from "@/components/common";
-import { agentPrompt } from "@/lib/agentPrompt";
+import { agentPrompt, portPrompt, trackerSupportPrompt } from "@/lib/agentPrompt";
 import { claimRepo, getForkByRepo, listDeviceNames, searchCatalog, verifyRepoClaim, type CatalogEntry, type Fork, type RepoClaim } from "@/lib/client";
 import { formatDate, relativeTime } from "@/lib/utils";
 
@@ -48,6 +48,71 @@ export function PromptBox({ repo, device, className }: { repo?: string; device?:
   );
 }
 
+/** A copyable agent prompt, folded under a summary line. */
+export function PromptDetails({ summary, intro, text, open = false }: { summary: string; intro: string; text: string; open?: boolean }) {
+  return (
+    <details className="rounded-lg border" open={open}>
+      <summary className="cursor-pointer px-3 py-2 text-sm font-medium select-none">{summary}</summary>
+      <div className="flex flex-col gap-2 border-t p-3">
+        <p className="text-sm text-muted-foreground">{intro}</p>
+        <div className="overflow-hidden rounded-lg border bg-muted/40">
+          <div className="flex items-center justify-end border-b bg-background/60 p-1.5">
+            <CopyButton text={text} label="Copy prompt" toastText="Prompt copied" size="sm" variant="ghost" />
+          </div>
+          <pre suppressHydrationWarning className="max-h-72 overflow-auto p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap [overflow-wrap:anywhere]">
+            {text}
+          </pre>
+        </div>
+      </div>
+    </details>
+  );
+}
+
+/**
+ * "Add tracker support to your repo": the prompt that has the maintainer's
+ * coding agent keep the key out of git and add a Tracker section to the
+ * repo's agent instructions, so later sessions record progress as they go.
+ */
+export function TrackerSupportBox({ repo, device, open = false }: { repo?: string; device?: string | null; open?: boolean }) {
+  const site = useSite();
+  return (
+    <PromptDetails
+      summary="Add tracker support to your repo"
+      intro="Paste this into your coding agent in the repo. It keeps your key out of git and adds a short Tracker section to the repo's agent instructions, so every later session updates the tracker as you make progress."
+      text={trackerSupportPrompt({ site: site || "https://<this site>", repo, device: device ?? undefined })}
+      open={open}
+    />
+  );
+}
+
+/**
+ * "Port iOS to your phone": the prompt that has a coding agent research the
+ * phone, match it to a base project and the closest ports with the CLI's
+ * `references`, and plan the port. Filled in on a phone's page.
+ */
+export function PortPromptBox({
+  device,
+  deviceName,
+  open = false,
+  summary,
+}: {
+  device?: string;
+  deviceName?: string;
+  open?: boolean;
+  /** The expander's label, when a heading above already names the prompt. */
+  summary?: string;
+}) {
+  const site = useSite();
+  return (
+    <PromptDetails
+      summary={summary ?? (deviceName ? `Port iOS to the ${deviceName}` : "Port iOS to your phone")}
+      intro="Paste this into your coding agent. It looks up your phone's specs, uses the tracker to pick the project to start from and the ports on the closest chip, finds working parts (GPU, Wi-Fi, audio) in other repos, and shows you a plan before touching anything."
+      text={portPrompt({ site: site || "https://<this site>", device, deviceName })}
+      open={open}
+    />
+  );
+}
+
 /** What to do after a claim: done, or the proof file to push and verify. */
 export function ClaimNextStep({ claim, onDone }: { claim: RepoClaim; onDone?: () => void }) {
   const router = useRouter();
@@ -63,15 +128,25 @@ export function ClaimNextStep({ claim, onDone }: { claim: RepoClaim; onDone?: ()
 
   if (current.status === "approved") {
     return (
-      <p className="rounded-lg border bg-works-soft px-3 py-2 text-works-fg" role="status">
-        Claim approved. You maintain {current.repo}.
-      </p>
+      <div className="flex flex-col gap-3">
+        <p className="rounded-lg border bg-works-soft px-3 py-2 text-works-fg" role="status">
+          Claim approved. You maintain {current.repo}.
+        </p>
+        <TrackerSupportBox repo={current.repo} device={current.device_slug} open />
+      </div>
     );
   }
   if (current.status === "rejected" || current.status === "expired") {
     return (
       <p className="rounded-lg border px-3 py-2 text-muted-foreground" role="status">
         This claim was {current.status}. Start a new one to try again.
+      </p>
+    );
+  }
+  if (current.status === "pending" && current.method === "review") {
+    return (
+      <p className="rounded-lg border px-3 py-2" role="status">
+        Claim sent. A maintainer of {current.repo} (or an admin) approves it from their profile; then you join its maintainers and maintain its phones too.
       </p>
     );
   }
@@ -397,7 +472,11 @@ export function ClaimRepoDialog({
                       ? `Listed for ${listedOn.map(phoneName).join(", ")}. Claiming it makes you their maintainer.`
                       : "Listed, with no phone yet."
                     : "Not listed yet: pick the phone it is for."}{" "}
-                {yours ? "It's under your GitHub account, so it's approved at once." : user.github_login ? `Owned by @${owner}: only that account (or a member, for an organization) can claim it.` : null}
+                {yours
+                  ? "It's under your GitHub account, so it's approved at once."
+                  : user.github_login
+                    ? `Owned by @${owner}: if you have commits in it, a maintainer approves your claim; organization members prove it with a file.`
+                    : null}
               </p>
             ) : null}
             {device ? null : (
@@ -430,10 +509,13 @@ export function ThisIsMine({
   device,
   devices,
   compact = false,
+  label = "This is mine",
 }: {
   repo: string;
   device: string | null;
   devices: { slug: string; name: string }[];
+  /** "I work on this" when others maintain it already (the claim joins them). */
+  label?: string;
   /** A plain outline button for table rows (the SpecularButton stays for panels and cards). */
   compact?: boolean;
 }) {
@@ -441,12 +523,12 @@ export function ThisIsMine({
   return (
     <>
       {compact ? (
-        <Button variant="outline" size="xs" className="pointer-coarse:h-11 pointer-coarse:px-3" onClick={() => setOpen(true)} aria-label={`This is mine: ${repo}`}>
-          This is mine
+        <Button variant="outline" size="xs" className="pointer-coarse:h-11 pointer-coarse:px-3" onClick={() => setOpen(true)} aria-label={`${label}: ${repo}`}>
+          {label}
         </Button>
       ) : (
-        <PrimaryAction onClick={() => setOpen(true)} aria-label={`This is mine: ${repo}`}>
-          This is mine
+        <PrimaryAction onClick={() => setOpen(true)} aria-label={`${label}: ${repo}`}>
+          {label}
         </PrimaryAction>
       )}
       {open ? (

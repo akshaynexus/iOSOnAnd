@@ -31,7 +31,15 @@ async function handleDelete({ request, params }: ApiCtx): Promise<Response> {
   await exec('DELETE FROM api_tokens WHERE user_id = ?', [u.id]);
   await exec('DELETE FROM claims WHERE user_id = ?', [u.id]);
   await exec('DELETE FROM repo_claims WHERE user_id = ?', [u.id]);
-  await exec('UPDATE forks SET maintainer_user_id = NULL, maintainer_since = NULL WHERE maintainer_user_id = ?', [u.id]);
+  await exec('DELETE FROM repo_maintainers WHERE user_id = ?', [u.id]);
+  // forks.maintainer_user_id mirrors the first maintainer: the next one, or none.
+  await exec(
+    `UPDATE forks SET
+       maintainer_user_id = (SELECT user_id FROM repo_maintainers rm WHERE rm.fork_id = forks.id ORDER BY since, user_id LIMIT 1),
+       maintainer_since = (SELECT since FROM repo_maintainers rm WHERE rm.fork_id = forks.id ORDER BY since, user_id LIMIT 1)
+     WHERE maintainer_user_id = ?`,
+    [u.id],
+  );
   // Their uploads go too (media.user_id is required): the R2 objects and the rows.
   const media = await queryAll<{ r2_key: string }>('SELECT r2_key FROM media WHERE user_id = ? AND deleted = 0', [u.id]);
   if (media.length) {

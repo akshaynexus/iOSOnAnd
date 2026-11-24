@@ -42,6 +42,9 @@ node cli.mjs repo-claim OWNER/REPO --device <device>
   it prints a code: write it alone to `.iosonand-verify` on the default branch, push,
   run `node cli.mjs repo-verify <claim id>`, then delete the file again. 422 = file missing or
   wrong; the claim lasts 24 h.
+- Someone else's repo you have commits in: a pending claim a maintainer of it approves (a repo
+  can have several maintainers). A maintainer can also add you:
+  `node cli.mjs repo-maintainer-add OWNER/REPO --github LOGIN`.
 - Anyone else's personal repo, or no GitHub account linked (`node cli.mjs login`): 403.
 - One repo claim covers all its phones: the ones an admin lists on it, and any you add with
   `node cli.mjs repo-claim OWNER/REPO --device <device>` (yours at once unless someone else
@@ -55,6 +58,10 @@ node cli.mjs repo-claim OWNER/REPO --device <device>
 
 `node cli.mjs whoami` prints `maintains` (devices), `maintains_repos` and `token_scopes`.
 
+To keep a repo's tracker entry current across sessions, add a "Tracker" section to the repo's
+agent instructions with these commands (the prompt on /docs/maintain-a-repo writes it), and keep
+the key in `TRACKER_TOKEN` or the CLI login, never in a file in the repo.
+
 ## Update status
 
 ```sh
@@ -67,6 +74,19 @@ node cli.mjs status-get --device <device> --area <area>   # read back
 States: `works | broken | in-progress | unknown`. The CLI rejects other states and unknown area
 slugs before it sends. `return-to-oneui`, `ipc` and `kernel-mem` apply only to OneiOS-based ports:
 for any other phone the server answers 400 `area not applicable`.
+
+## Find references for a port
+
+```sh
+node cli.mjs references --chip "SM7325"          # phones on that chip: repos, branch links, what works
+node cli.mjs references --device <device>        # a tracked phone plus the phones on its chip
+node cli.mjs references --area gpu               # where an area works, with the repo, branch and source to read
+node cli.mjs catalog "<phone name or codename>"  # every Android phone and tablet (Google Play's list)
+```
+
+No login needed. The projects ports start from (OneiOS, HackiOS, ios-sweet, UniXNU, Open Mapple,
+Scion): how each boots or installs and what works, on the Repos tab (`/?tab=repos&family=HackiOS`
+opens one). The "Port iOS to your phone" prompt there and on each phone's page walks an agent through choosing a base and borrowing parts.
 
 ## Proof, repo facts, posts
 

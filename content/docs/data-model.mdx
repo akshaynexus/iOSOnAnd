@@ -70,13 +70,13 @@ Every tracked GitHub repo. The repo name is unique (case-insensitive).
 
 | Column | What |
 |---|---|
-| `repo`, `branch`, `url` | `OWNER/NAME` on GitHub; the URL defaults to `https://github.com/<repo>` |
+| `repo`, `branch`, `url` | `OWNER/NAME` on GitHub; `branch` may list several, comma-separated (the first is where the repo link goes); the URL defaults to `https://github.com/<repo>` |
 | `kind` | `upstream` (a project's main repo: akshaynexus/OneiOS), `standalone` (an own port that is no fork, e.g. akshaynexus/iOSPlus10, xaxaapple/s25ver) or `fork` |
 | `device_slug` | the repo's primary device (may be null) |
 | `best_result` | the repo's own claim |
 | `ported`, `fork_only` | what already flowed back to OneiOS `main`; what is still only in the repo |
 | `verified` | `fork-claim`, `reproduced` or `merged` |
-| `maintainer_user_id`, `maintainer_since` | the user who maintains the repo on the tracker (an approved repo claim) |
+| `maintainer_user_id`, `maintainer_since` | the first of its maintainers, kept for older clients; `repo_maintainers` has them all |
 | `base_project` | the family label: `OneiOS`, `ios-sweet`, `HackiOS`, `UniXNU`, `Scion`, `iOSPlus10`, `Jesvi-iOS`, `Open Mapple`, `xnu-hd2`, `custom`, `emulator`, `tooling`, `unknown` |
 
 `verified` is a trust statement: `fork-claim` (the repo says so; every repo starts here, and a
@@ -116,6 +116,17 @@ Fork responses carry `based_on: [{base, base_repo_url, relation, note}]` (no URL
 no such repo). `GET /api/lineage` returns the whole graph: nodes (tracked and untracked repos)
 and edges from a repo to its bases. The data comes from the GitHub API (fork parents and READMEs);
 maintainers add rows with `repo-lineage`.
+
+The Repos tab's "By base" view groups repos with this data. Each fork goes under the main or
+standalone repo at the root of its `fork-of`, `derived-from` or `ported-from` chain (`uses` is
+not a parent), with forks of forks indented under their parent. A fork whose base is not tracked
+goes under that base's name, and a repo that records no base goes under "Base not recorded".
+
+## repo_maintainers
+
+Everyone who maintains a repo: `fork_id`, `user_id`, `since`, `added_by`. A repo can have several
+(collaborators on one port); each maintains the repo and its phones. The API shows them as
+`maintainers` on every repo. See [Maintain a repo](/docs/maintain-a-repo#several-maintainers).
 
 ## claims and repo_claims
 

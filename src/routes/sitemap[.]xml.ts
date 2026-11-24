@@ -1,4 +1,4 @@
-// GET /sitemap.xml — every public page: the home page, each device page (with
+// GET /sitemap.xml — every public page: the home page, the projects and repos tab, each device page (with
 // its last update as lastmod), the docs pages and the API reference. URLs are
 // on SITE_URL (src/lib/seo.ts), the same origin as each page's canonical link.
 
@@ -41,6 +41,7 @@ async function build(): Promise<string> {
       priority: '0.8',
     })),
     ...source.getPages().map((p) => ({ path: p.url, priority: '0.5' })),
+    { path: '/?tab=repos', priority: '0.7' },
     { path: '/api-reference', priority: '0.3' },
   ];
 
