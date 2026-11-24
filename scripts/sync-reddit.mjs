@@ -1,39 +1,37 @@
 #!/usr/bin/env node
 // Bring r/hackios threads into the tracker: new port posts for the Updates
-// tab, and the repos porters link in their own threads.
+// tab, the phones and repos they are about, and (--claims) the porters' own
+// status claims.
 //
 //   node scripts/sync-reddit.mjs                     # dry run: print the plan
 //   node scripts/sync-reddit.mjs --apply             # write it through the tracker API
-//   [--url http://127.0.0.1:3001] [--since 2026-10-01] [--subreddit hackios]
-//   [--input DIR] [--report FILE]
-//   node scripts/sync-reddit.mjs --archive [--save DIR] [--concurrency 4]
-//                                                    # read the whole history from
-//                                                    # the Arctic Shift archive
+//   [--url http://127.0.0.1:3001] [--since 2026-10-01 | --all] [--subreddit hackios]
+//   [--claims] [--save DIR] [--input DIR] [--concurrency 4] [--source archive|reddit]
+//   [--report FILE]
 //
-// What it reads, from Reddit's public JSON (no login):
-//   GET /r/<sub>/new.json         posts, newest first, paged back to --since
-//                                  (default: 3 days before the newest post the
-//                                  tracker has)
-//   GET /comments/<id>.json        each post's comment tree (only posts with
-//                                  comments)
-// Reddit refuses some networks (403 "blocked by network security"); then run
-// it from another network, or save those responses and pass --input DIR:
-// DIR/posts.json is an array of post objects (Reddit's `data` of each child),
-// DIR/comments.json an array of comment objects (with link_id), both the
-// shape Reddit's own JSON uses.
-//
-// --archive reads the Arctic Shift archive (arctic-shift.photon-reddit.com)
-// instead of Reddit: every post since --since (default: the subreddit's whole
-// history), then each post's comments. The time range is split into windows
-// read in parallel, and the comments of several posts at once, with at most
-// --concurrency requests in flight (default 4). It follows the archive's
-// x-ratelimit-* headers: when few requests remain it waits for the reset, and
-// on 429, 5xx or its "slow down" timeout it backs off (exponential, with jitter). --save DIR writes
-// posts.json and comments.json there, so a rerun can use --input DIR.
+// Where it reads (no login):
+//   - the Arctic Shift archive of Reddit (arctic-shift.photon-reddit.com), the
+//     default: posts since --since (default: 3 days before the newest post the
+//     tracker has; --all: the whole history) and every comment in the
+//     subreddit since then. A comment on an older post brings that post in
+//     too, so a porter's update in an old thread is read. Posts are read by
+//     week and comments by day (the archive times out on wide comment
+//     queries), the windows in parallel with at most --concurrency requests in
+//     flight (default 4, at most 8). It follows the archive's x-ratelimit-*
+//     headers, waiting for the reset when few requests remain, and backs off
+//     (exponential, with jitter) on 429, 5xx and the archive's "slow down"
+//     timeout.
+//   - --source reddit: Reddit's public JSON, GET /r/<sub>/new.json back to
+//     --since and GET /comments/<id>.json for each post with comments. Reddit
+//     refuses some networks (403 "blocked by network security").
+//   - --input DIR: saved responses, DIR/posts.json (an array of posts) and
+//     DIR/comments.json (an array of comments with link_id), Reddit's own
+//     shape. --save DIR writes the ones a run fetched there.
 //
 // Whose words count: the thread's author, in the post and in their own
 // comments in it, and anyone linking a repo whose GitHub owner has their
-// Reddit name. Repos other people link are only reported.
+// Reddit name. A repo someone else links counts when its own name points to
+// one phone (hakios-apollo, oneios-s25-ultra). Other repos are only reported.
 //
 // What it writes (admin token: TRACKER_TOKEN, or the CLI's
 // ~/.config/iosonand/tokens.json entry for the tracker URL):
@@ -46,9 +44,13 @@
 //     the GitHub fork root). A tracked repo gains that phone in its supported
 //     list (claimed) when the thread names it. The tracker links lineage from
 //     the GitHub parent and README itself.
-//   - states: never. A porter's prose needs a person to read it; the report
-//     lists, per phone, the threads and the author's own words, to be written
-//     as `reddit claim (YYYY-MM-DD): ...` rows with `node cli.mjs status-set`.
+//   - phones: one scripts/reddit-map.json lists (new_devices) that a kept
+//     thread or a repo is about.
+//   - states: only with --claims, from the porter's own sentences (see
+//     claimsOf), quoted as `reddit claim (YYYY-MM-DD): "..."`, only where the
+//     row is missing, unknown or an older reddit claim. Without --claims the
+//     report lists, per phone, the threads and the author's own words, to be
+//     written with `node cli.mjs status-set`.
 // Every decision goes to the report (default: reddit-sync-report.json).
 // GITHUB_TOKEN, when set, raises GitHub's rate limit for the repo checks.
 
@@ -69,7 +71,11 @@ const SUB = flag('--subreddit', 'hackios');
 const INPUT = flag('--input', null);
 const REPORT = flag('--report', 'reddit-sync-report.json');
 const SINCE_ARG = flag('--since', null);
-const ARCHIVE = argv.includes('--archive');
+// The archive is the default source; --source reddit reads Reddit's JSON instead (--archive is the old spelling).
+const SOURCE = flag('--source', 'archive');
+if (!['archive', 'reddit'].includes(SOURCE)) throw new Error(`bad --source ${SOURCE}: archive or reddit`);
+const ARCHIVE = SOURCE === 'archive';
+const ALL = argv.includes('--all');
 const CLAIMS = argv.includes('--claims');
 const SAVE = flag('--save', null);
 const CONCURRENCY = Math.min(Math.max(Number(flag('--concurrency', 4)) || 4, 1), 8);
@@ -202,12 +208,12 @@ async function archiveWindow(from, to) {
   }
 }
 
-/** A post's comments, a page of 100 at a time. */
-async function archiveComments(id) {
+/** Every comment in the subreddit in [from, to), a page of 100 at a time. */
+async function archiveCommentWindow(from, to) {
   const out = [];
-  let after = 0;
+  let after = from;
   for (;;) {
-    const page = await arctic(`/comments/search?link_id=${id}${after ? `&after=${after}` : ''}&sort=asc&limit=100`);
+    const page = await arctic(`/comments/search?subreddit=${SUB}&after=${after}&before=${to}&sort=asc&limit=100`);
     out.push(...page);
     if (page.length < 100) return out;
     const last = page[page.length - 1].created_utc;
@@ -215,6 +221,19 @@ async function archiveComments(id) {
   }
 }
 
+/** Split [from, to) into windows of `step` seconds and read them in parallel. */
+async function inWindows(from, to, step, read) {
+  const jobs = [];
+  for (let a = from; a < to; a += step) jobs.push(read(a, Math.min(to, a + step)));
+  return (await Promise.all(jobs)).flat();
+}
+
+/**
+ * Posts and comments since `sinceUtc`: posts by week, comments by day (the
+ * archive times out on wide comment queries), each window in parallel. A
+ * comment on an older post brings that post in too (looked up by id), so a
+ * porter's update in an old thread is read.
+ */
 async function readArchive(sinceUtc) {
   const started = Date.now();
   const now = Math.floor(Date.now() / 1000) + 60;
@@ -222,26 +241,20 @@ async function readArchive(sinceUtc) {
   const first = (await arctic(`/posts/search?subreddit=${SUB}&sort=asc&limit=1`))[0];
   if (!first) return { posts: [], comments: [] };
   const start = Math.max(sinceUtc, first.created_utc);
-  const windows = Math.max(1, Math.min(CONCURRENCY * 2, Math.ceil((now - start) / (7 * 86400))));
-  const step = Math.ceil((now - start) / windows);
-  const pages = await Promise.all(Array.from({ length: windows }, (_, i) => archiveWindow(start + i * step, Math.min(now, start + (i + 1) * step))));
+  const [postRows, comments] = await Promise.all([
+    inWindows(start, now, 7 * 86400, archiveWindow),
+    inWindows(start, now, 86400, archiveCommentWindow),
+  ]);
   const byId = new Map();
-  for (const p of pages.flat()) byId.set(p.id, p);
+  for (const p of postRows) byId.set(p.id, p);
+  const missing = [...new Set(comments.map((c) => String(c.link_id || '').replace(/^t3_/, '')))].filter((id) => id && !byId.has(id));
+  for (let i = 0; i < missing.length; i += 100) {
+    for (const p of await arctic(`/posts/ids?ids=${missing.slice(i, i + 100).join(',')}`)) byId.set(p.id, p);
+  }
   const posts = [...byId.values()].sort((a, b) => a.created_utc - b.created_utc);
-  const withComments = posts.filter((p) => p.num_comments > 0);
-  const comments = [];
-  let done = 0;
-  await Promise.all(
-    withComments.map(async (p) => {
-      try {
-        comments.push(...(await archiveComments(p.id)));
-      } catch (e) {
-        report.errors.push({ post: permalink(p), error: String(e.message || e) });
-      }
-      if (++done % 25 === 0) console.error(`archive: comments of ${done}/${withComments.length} posts`);
-    }),
+  console.error(
+    `archive: ${postRows.length} posts since ${day(start)}, ${missing.length} older posts with new comments, ${comments.length} comments, ${archiveRequests} requests in ${Math.round((Date.now() - started) / 1000)} s`,
   );
-  console.error(`archive: ${posts.length} posts, ${comments.length} comments, ${archiveRequests} requests in ${Math.round((Date.now() - started) / 1000)} s`);
   return { posts, comments };
 }
 
@@ -395,7 +408,7 @@ const forkByRepo = new Map(forks.map((f) => [lc(f.repo), f]));
 const tracked = (await api('GET', '/api/posts?limit=500')).posts;
 const trackedUrls = new Set(tracked.map((p) => canonicalUrl(p.url)));
 const newest = tracked.map((p) => p.published).sort().pop();
-const since = SINCE_ARG ?? (ARCHIVE ? '2015-01-01' : newest ? new Date(Date.parse(newest) - 3 * 86400_000).toISOString().slice(0, 10) : '2026-10-01');
+const since = SINCE_ARG ?? (ALL ? '2015-01-01' : newest ? new Date(Date.parse(newest) - 3 * 86400_000).toISOString().slice(0, 10) : '2026-10-01');
 const sinceUtc = Date.parse(`${since}T00:00:00Z`) / 1000;
 
 if (APPLY) {
@@ -630,8 +643,11 @@ const AREA_WORDS = {
 const BOOT_DONE = /\b(boots?|booted|booting|got|gets|reach(ed|es)?|running|runs|shows|showing|into|to)\b[^.]{0,40}\b(home ?screen|springboard|lock ?screen)\b|\b(home ?screen|lock ?screen|springboard)\b[^.]{0,25}\b(works?|working|loads?|loaded|shows|reached|(is|are) (up|working))\b/i;
 /** Plans, conditions and questions say nothing about what works now. */
 const NOT_NOW = /\b(will|once|try|trying|tried to|to get|get|need|needs|next|want|wants|hope|hoping|if|could|would|should|plan|planning|going to|gonna|anyone|anybody|help|probably|maybe|might|how|when|until|unless|soon|todo|to do|roadmap|wasn't able|not able|unable|couldn't|haven't tested|not tested|troubles?|struggl\w*)\b/i;
-/** Sentences about another system on the phone say nothing about iOS. */
+/** Sentences about another system on the phone say nothing about iOS (macOS has its own area, below). */
 const OTHER_OS = /\b(windows|linux|macos|mac os|hackintosh|ubuntu)\b/i;
+/** macOS on the phone: the 'macos' area (scope extra), from a sentence that names it and says it runs. */
+const MACOS = /\b(mac ?os|hackintosh|about this mac)\b/i;
+const MACOS_RUNS = /\b(boots?|booted|running|runs|works|working|desktop|finder|about this mac)\b/i;
 const BROKEN = /\b(not working|doesn'?t work|don'?t work|isn'?t working|aren'?t working|not work(ing)? yet|broken|no (wi-?fi|sound|audio|touch|gpu|bluetooth|lte|camera|cameras|cellular)|(don'?t|doesn'?t) have|won'?t (start|work|load|boot))\b/i;
 const PARTIAL = /\b(in progress|wip|working on|partially|partly|half|laggy|buggy|unstable|kinda|semi|early|basic|somewhat|sort of|mostly)\b/i;
 const WORKS = /\b(works|working|fixed|functional)\b|✅/i;
@@ -647,7 +663,17 @@ function claimsOf(t) {
   for (const text of texts) {
     for (const raw of text.split(/(?<=[.!?])\s+|\n+|;\s*/)) {
       const sentence = raw.replace(/[\u200b-\u200d\ufeff]/g, '').replace(/[\u2018\u2019]/g, "'").replace(/\s+/g, ' ').trim();
-      if (sentence.length < 6 || sentence.length > 300 || /\?/.test(sentence) || NOT_NOW.test(sentence) || OTHER_OS.test(sentence)) continue;
+      if (sentence.length < 6 || sentence.length > 300 || /\?/.test(sentence) || NOT_NOW.test(sentence)) continue;
+      // macOS: the boot row of os macos (written as area 'macos' here, mapped when applied).
+      if (MACOS.test(sentence) && !/\b(windows|linux|ubuntu)\b/i.test(sentence)) {
+        // Booting that stops short (the logo, verbose, something not loading) is in progress.
+        const short = /\b(logo|verbose|doesn'?t|does not|not|won'?t|panic)\b/i.test(sentence);
+        const state = MACOS_RUNS.test(sentence)
+          ? short || PARTIAL.test(sentence) ? 'in-progress' : 'works'
+          : BROKEN.test(sentence) ? 'broken' : null;
+        if (state) note('macos', state, sentence);
+      }
+      if (OTHER_OS.test(sentence)) continue;
       if (BOOT_DONE.test(sentence)) note('boot', BROKEN.test(sentence) || /\b(still no|close to|almost)\b/i.test(sentence) ? 'in-progress' : 'works', sentence);
       // "Working: A, B. Not working: C" and "A works but B doesn't": judge each clause.
       for (const clause of sentence.split(/\b(?:but|however|except)\b|(?=\bnot working\b)|(?=\bbroken\s*:)/i)) {
@@ -674,6 +700,8 @@ if (CLAIMS) {
   }
   const rows = new Map();
   for (const d of devices) for (const s of d.statuses ?? []) rows.set(`${d.slug}|${s.area_slug}`, s);
+  // macOS claims are the macOS boot row (os macos, migration 0012).
+  for (const d of devices) for (const s of d.os_statuses?.macos ?? []) if (s.area_slug === 'boot') rows.set(`${d.slug}|macos`, s);
   // reddit-map.json reject_claims: rows a person read and found the sentence does not say (about another phone, code merged but not run, ...).
   const rejected = new Set((REDDIT_MAP.reject_claims ?? []).map((r) => `${r.device}|${r.area}`));
   for (const [key, c] of latest) {
@@ -693,7 +721,8 @@ if (CLAIMS) {
     if (APPLY) {
       try {
         await ensureDevice(c.slug, c.t);
-        await api('PUT', `/api/status/${encodeURIComponent(c.slug)}/${encodeURIComponent(c.area)}`, { state: c.state, detail, source: c.source });
+        const target = c.area === 'macos' ? { area: 'boot', os: 'macos' } : { area: c.area, os: 'ios' };
+        await api('PUT', `/api/status/${encodeURIComponent(c.slug)}/${encodeURIComponent(target.area)}`, { state: c.state, detail, source: c.source, os: target.os });
       } catch (e) {
         report.errors.push({ device: c.slug, area: c.area, error: String(e.message || e) });
       }

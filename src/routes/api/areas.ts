@@ -1,4 +1,4 @@
-// /api/areas — GET the checklist areas (public; each has scope all | oneios;
+// /api/areas — GET the checklist areas (public; each has scope all | oneios | extra;
 // ?limit= default and max 500, ?offset=), POST add one {slug, name, notes?,
 // scope?} (admin).
 

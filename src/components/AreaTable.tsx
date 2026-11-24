@@ -12,7 +12,7 @@ import { SourceLink } from "@/components/SourceLink";
 import { useAction } from "@/components/useAction";
 import { flash } from "@/components/motion";
 import { groupAreas } from "@/lib/areas";
-import { STATES, setStatus, type Area, type AreaState, type DeviceStatusEntry } from "@/lib/client";
+import { OS_LABELS, STATES, setStatus, type Area, type AreaState, type DeviceStatusEntry, type Os } from "@/lib/client";
 import { cn, formatDate, relativeTime } from "@/lib/utils";
 
 export interface AreaRowData {
@@ -25,11 +25,14 @@ export interface AreaRowData {
 function AreaEditForm({
   deviceSlug,
   row,
+  os = "ios",
   onDone,
   onSaved,
 }: {
   deviceSlug: string;
   row: AreaRowData;
+  /** The system the row is about (the page's iOS / macOS / tvOS switch). */
+  os?: Os;
   onDone: () => void;
   onSaved?: () => void;
 }) {
@@ -40,8 +43,8 @@ function AreaEditForm({
   const [source, setSource] = useState(entry?.source ?? "");
   const idp = `area-${area.slug}`;
   const [save, saving] = useAction(async () => {
-    await setStatus(deviceSlug, area.slug, { state, detail: detail.trim(), source: source.trim() });
-    toast.success(`${area.name}: ${STATE_LABELS[state]}`);
+    await setStatus(deviceSlug, area.slug, { state, detail: detail.trim(), source: source.trim(), os });
+    toast.success(`${area.name}${os === "ios" ? "" : ` on ${OS_LABELS[os]}`}: ${STATE_LABELS[state]}`);
     await router.invalidate();
     onDone();
     onSaved?.();
@@ -168,10 +171,13 @@ export function AreaTable({
   deviceSlug,
   rows,
   editable,
+  os = "ios",
 }: {
   deviceSlug: string;
   rows: AreaRowData[];
   editable: boolean;
+  /** Which system's rows these are; edits are written for it. */
+  os?: Os;
 }) {
   const [editing, setEditing] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
@@ -259,6 +265,7 @@ export function AreaTable({
                       <AreaEditForm
                         deviceSlug={deviceSlug}
                         row={r}
+                        os={os}
                         onDone={() => setEditing(null)}
                         onSaved={() => setSaved((p) => ({ slug: area.slug, n: (p?.n ?? 0) + 1 }))}
                       />

@@ -236,7 +236,7 @@ function Account({ compact }: { compact?: boolean }) {
             size="sm"
             className={cn("rounded-full", compact && "justify-start")}
             nativeButton={false}
-            render={<Link to="/admin">Admin</Link>}
+            render={<Link to="/profile" search={{ tab: "admin" }}>Admin</Link>}
           />
         ) : null}
         <Button

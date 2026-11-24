@@ -19,7 +19,6 @@ import {
   ghLink,
   listClaims,
   listRepoClaims,
-  reviewClaim,
   reviewRepoClaim,
   unlinkGithub,
   withdrawClaim,
@@ -34,12 +33,13 @@ import { CodeLine, Panel, Steps, siteOrigin } from "@/components/ProfileParts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GITHUB_ERRORS, GithubSignInButton, useGithubSignIn } from "@/components/GithubSignIn";
 import { Skeleton } from "@/components/motion";
+import { AdminPanel } from "@/components/AdminPanel";
 import { relativeTime } from "@/lib/utils";
 import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/profile")({
-  validateSearch: (search: Record<string, unknown>): { tab?: "github" | "claims" | "security"; error?: string } => ({
-    ...(search.tab === "github" || search.tab === "claims" || search.tab === "security" ? { tab: search.tab } : {}),
+  validateSearch: (search: Record<string, unknown>): { tab?: "github" | "claims" | "security" | "admin"; error?: string } => ({
+    ...(search.tab === "github" || search.tab === "claims" || search.tab === "security" || search.tab === "admin" ? { tab: search.tab } : {}),
     ...(typeof search.error === "string" ? { error: search.error } : {}),
   }),
   head: () => seo({ title: "Profile: iOSOnAnd", noindex: true }),
@@ -398,8 +398,8 @@ function RepoClaimsSection() {
   if (!user || missing) return null;
   const isMine = (c: RepoClaim) => c.user_id === user.id || (typeof c.user === "object" && c.user?.id === user.id);
   const mine = (claims ?? []).filter(isMine);
-  // Others' pending claims: every one for an admin, those on your repos for a maintainer.
-  const pending = (claims ?? []).filter((c) => c.status === "pending" && !isMine(c));
+  // Others' pending claims on your repos. An admin gets every one, and reviews them in the Admin tab.
+  const pending = isAdmin ? [] : (claims ?? []).filter((c) => c.status === "pending" && !isMine(c));
 
   return (
     <>
@@ -431,11 +431,8 @@ function RepoClaimsSection() {
         )}
       </Panel>
 
-      {isAdmin || pending.length ? (
-        <Panel
-          title="Repo claims to review"
-          description={isAdmin ? undefined : "People working on your repos who asked to join you as maintainers."}
-        >
+      {pending.length ? (
+        <Panel title="Repo claims to review" description="People working on your repos who asked to join you as maintainers.">
           {claims === null ? null : pending.length === 0 ? (
             <p className="text-muted-foreground">No pending repo claims.</p>
           ) : (
@@ -496,7 +493,7 @@ function RepoClaimsSection() {
 
 function ClaimsSection() {
   const router = useRouter();
-  const { user, isAdmin, refresh } = useAuth();
+  const { user } = useAuth();
   const [claims, setClaims] = useState<Claim[] | null>(null);
 
   const reload = useCallback(async () => {
@@ -511,13 +508,6 @@ function ClaimsSection() {
     void reload();
   }, [reload]);
 
-  const [review, reviewing] = useAction(async (id: number, decision: "approve" | "reject") => {
-    const res = await reviewClaim(id, decision);
-    toast.success(`Claim ${decision === "approve" ? "approved" : "rejected"}`, {
-      description: `${res.claim.user} on ${res.claim.device_slug}`,
-    });
-    await Promise.all([reload(), router.invalidate(), refresh()]);
-  });
   const [withdraw, withdrawing] = useAction(async (id: number) => {
     await withdrawClaim(id);
     toast.success("Claim withdrawn");
@@ -526,7 +516,6 @@ function ClaimsSection() {
 
   if (!user) return null;
   const mine = (claims ?? []).filter((c) => isOwnClaim(c, user));
-  const pending = (claims ?? []).filter((c) => c.status === "pending");
 
   return (
     <>
@@ -573,51 +562,6 @@ function ClaimsSection() {
         )}
       </Panel>
 
-      {isAdmin ? (
-        <Panel title="Claims to review">
-          {claims === null ? null : pending.length === 0 ? (
-            <p className="text-muted-foreground">No pending claims.</p>
-          ) : (
-            <ul className="flex flex-col divide-y rounded-lg border">
-              {pending.map((c) => (
-                <li key={c.id} className="flex flex-col gap-2 px-4 py-3 text-sm sm:flex-row sm:items-center">
-                  <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-                    <span className="font-medium">{c.user}</span>
-                    <span>on</span>
-                    <Link
-                      to="/device/$slug"
-                      params={{ slug: c.device_slug }}
-                      className="font-medium underline underline-offset-4"
-                    >
-                      {c.device_slug}
-                    </Link>
-                    {c.note ? <span className="min-w-0 break-words text-muted-foreground">{c.note}</span> : null}
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      onClick={() => void review(c.id, "approve")}
-                      disabled={reviewing}
-                      aria-label={`Approve ${c.user} on ${c.device_slug}`}
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => void review(c.id, "reject")}
-                      disabled={reviewing}
-                      aria-label={`Reject ${c.user} on ${c.device_slug}`}
-                    >
-                      Reject
-                    </Button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Panel>
-      ) : null}
     </>
   );
 }
@@ -759,7 +703,7 @@ function MyReposSection() {
   );
 }
 
-const TABS = ["overview", "github", "claims", "security"] as const;
+const TABS = ["overview", "github", "claims", "security", "admin"] as const;
 type Tab = (typeof TABS)[number];
 
 /** Name, email, GitHub and what you maintain, with the main actions. */
@@ -841,8 +785,10 @@ function MaintainedPhones() {
 }
 
 function ProfilePage() {
-  const { user, loading, maintains, maintainsRepos } = useAuth();
-  const { tab = "overview", error } = Route.useSearch();
+  const { user, loading, maintains, maintainsRepos, isAdmin } = useAuth();
+  const { tab: asked = "overview", error } = Route.useSearch();
+  // The Admin tab exists for admins only; anyone else lands on the overview.
+  const tab: Tab = asked === "admin" && !isAdmin ? "overview" : asked;
   const navigate = useNavigate({ from: "/profile" });
   const setTab = (t: Tab) => void navigate({ search: t === "overview" ? {} : { tab: t }, replace: true, resetScroll: false });
 
@@ -855,7 +801,7 @@ function ProfilePage() {
       <div className="flex max-w-md flex-col gap-4">
         <h1 className="text-xl font-semibold">Profile</h1>
         <p>
-          <Link to="/login" search={{ redirect: "/profile" }} className="underline underline-offset-4">
+          <Link to="/login" search={{ redirect: asked === "admin" ? "/profile?tab=admin" : "/profile" }} className="underline underline-offset-4">
             Log in
           </Link>{" "}
           to see your profile.
@@ -875,6 +821,7 @@ function ProfilePage() {
             <TabsTrigger value="github">GitHub</TabsTrigger>
             <TabsTrigger value="claims">Claims</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
+            {isAdmin ? <TabsTrigger value="admin">Admin</TabsTrigger> : null}
           </TabsList>
         </div>
         <TabsContent value="overview" className="flex flex-col gap-6 pt-2">
@@ -907,6 +854,11 @@ function ProfilePage() {
           <PasswordSection />
           <KeysPanel />
         </TabsContent>
+        {isAdmin ? (
+          <TabsContent value="admin" className="pt-2">
+            <AdminPanel />
+          </TabsContent>
+        ) : null}
       </Tabs>
     </div>
   );

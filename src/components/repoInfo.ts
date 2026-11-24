@@ -65,7 +65,7 @@ export const SUPPORT_LABELS: Record<string, string> = {
   primary: "Main device",
   merged: "Merged",
   ported: "Ported",
-  claimed: "Claimed",
+  claimed: "Says it supports",
 };
 
 /** "Merged from xaxaapple/s25ver", "Main device", "Claimed by the fork". */
@@ -73,7 +73,7 @@ export function supportPhrase(support: string, via: string | null): string {
   if (support === "primary") return "Main device";
   if (support === "merged") return via ? `Merged from ${via}` : "Merged";
   if (support === "ported") return via ? `Ported from ${via}` : "Ported";
-  return "Claimed by the repo";
+  return "says it supports this phone";
 }
 
 const FAMILY_NAMES: Record<string, string> = {

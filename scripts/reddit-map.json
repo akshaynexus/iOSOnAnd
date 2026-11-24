@@ -21,49 +21,81 @@
       "slug": "oneplus-8",
       "name": "OnePlus 8",
       "model": "instantnoodle",
-      "soc": "Snapdragon 865 (SM8250)"
+      "soc": "Snapdragon 865 (SM8250)",
+      "image_url": "https://cdn.opstatics.com/store/20170907/assets/images/events/instant-noodle/19821/design/back-green.png",
+      "image_credit": "© OnePlus, official product image, used for device identification",
+      "image_license": "© OnePlus",
+      "image_source_url": "https://www.oneplus.com/global/8"
     },
     {
       "slug": "note10-5g",
       "name": "Galaxy Note10 5G",
       "model": "SM-N971N",
-      "soc": "Exynos 9825"
+      "soc": "Exynos 9825",
+      "image_url": "https://images.samsung.com/is/image/samsung/sec-galaxy-note10-sm-n971-5g-sm-n971nzkakoo-177629161?$650_519_PNG$",
+      "image_credit": "© Samsung, official product image, used for device identification",
+      "image_license": "© Samsung",
+      "image_source_url": "https://www.samsung.com/sec/support/model/SM-N971NZKAKOO/"
     },
     {
       "slug": "iqoo-13",
       "name": "iQOO 13",
       "model": "PD2408",
-      "soc": "Snapdragon 8 Elite (SM8750)"
+      "soc": "Snapdragon 8 Elite (SM8750)",
+      "image_url": "https://in-exstatic-vivofs.vivo.com/gdHFRinHEMrj3yPG/1733151088779/79325b02420cc6e307ef1e394d6623cd.png",
+      "image_credit": "© vivo/iQOO, official product image, used for device identification",
+      "image_license": "© vivo",
+      "image_source_url": "https://www.iqoo.com/in/products/param/iqoo13"
     },
     {
       "slug": "oppo-find-x9-pro",
       "name": "OPPO Find X9 Pro",
       "model": "CPH2791",
-      "soc": "Dimensity 9500"
+      "soc": "Dimensity 9500",
+      "image_url": "https://www.oppo.com/content/dam/oppo/common/mkt/v2-2/find-x9-series-en/navigation/find-x9-pro/440-440-titanium-v2.png",
+      "image_credit": "© OPPO, official product image, used for device identification",
+      "image_license": "© OPPO",
+      "image_source_url": "https://www.oppo.com/uk/smartphones/series-find-x/find-x9-pro/"
     },
     {
       "slug": "realme-p4x",
       "name": "realme P4x",
       "model": "",
-      "soc": "MediaTek"
+      "soc": "MediaTek",
+      "image_url": "https://image01.realme.net/general/20260430/1777543093377bef09f715fb44855b2831ecb1e085d7e.png",
+      "image_credit": "© realme, official product image, used for device identification",
+      "image_license": "© realme",
+      "image_source_url": "https://www.realme.com/in/realme-p4x-5g"
     },
     {
       "slug": "pixel-3a-xl",
       "name": "Pixel 3a XL",
       "model": "bonito",
-      "soc": "Snapdragon 670 (SDM670)"
+      "soc": "Snapdragon 670 (SDM670)",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Pixel_3a_XL_Android_Pie_Always-On_Display.jpg/500px-Pixel_3a_XL_Android_Pie_Always-On_Display.jpg",
+      "image_credit": "Vakrieger",
+      "image_license": "Public domain",
+      "image_source_url": "https://commons.wikimedia.org/wiki/File:Pixel_3a_XL_Android_Pie_Always-On_Display.jpg"
     },
     {
       "slug": "a34",
       "name": "Galaxy A34 5G",
       "model": "SM-A346B",
-      "soc": "Dimensity 1080"
+      "soc": "Dimensity 1080",
+      "image_url": "https://images.samsung.com/is/image/samsung/p6pim/uk/sm-a346bzkaeub/gallery/uk-galaxy-a34-5g-sm-a346-sm-a346bzkaeub-535769821?$650_519_PNG$",
+      "image_credit": "© Samsung, official product image, used for device identification",
+      "image_license": "© Samsung",
+      "image_source_url": "https://www.samsung.com/uk/support/model/SM-A346BZKAEUB/"
     },
     {
       "slug": "oppo-a15s",
       "name": "OPPO A15s",
       "model": "CPH2179",
-      "soc": "Helio P35 (MT6765)"
+      "soc": "Helio P35 (MT6765)",
+      "image_url": "https://www.oppo.com/content/dam/oppo/common/mkt/v2-2/a15s/navigation/A15s-navigation-silver2-v2.png",
+      "image_credit": "© OPPO, official product image, used for device identification",
+      "image_license": "© OPPO",
+      "image_source_url": "https://www.oppo.com/in/smartphones/series-a/a15s/"
     }
   ],
   "reject_claims": [

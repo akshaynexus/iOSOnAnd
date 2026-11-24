@@ -48,6 +48,8 @@ export const CLAIM_SELECT = `SELECT c.*, u.display_name, u.github_login FROM cla
 export interface DeviceDetail extends Device {
   area_names: Record<string, string>;
   statuses: Array<DeviceStatus & { area_name: string }>;
+  /** Status rows for other systems than iOS (macos, tvos), by system. */
+  os_statuses: Record<string, Array<DeviceStatus & { area_name: string }>>;
   forks: ForkView[];
   claims: ClaimView[];
   maintainers: string[];
@@ -121,7 +123,11 @@ export async function withDetails(devices: Device[], withPosts = false): Promise
     return {
       ...d,
       area_names,
-      statuses: st.get(d.slug) ?? [],
+      // statuses: the iOS (and iPadOS) checklist, as always; os_statuses: the other systems' rows, by system.
+      statuses: (st.get(d.slug) ?? []).filter((s) => (s.os ?? 'ios') === 'ios'),
+      os_statuses: (st.get(d.slug) ?? [])
+        .filter((s) => (s.os ?? 'ios') !== 'ios')
+        .reduce<Record<string, typeof statuses>>((m, s) => ((m[s.os] ??= []).push(s), m), {}),
       forks: fk.get(d.slug) ?? [],
       claims: dc.map(mapClaimRow),
       maintainers,
@@ -139,6 +145,8 @@ export async function withDetails(devices: Device[], withPosts = false): Promise
 export const DEVICE_TEXT: Record<string, number> = {
   base: 16,
   ios_version: 64,
+  macos_version: 64,
+  tvos_version: 64,
   image_url: 500,
   image_credit: 300,
   image_license: 100,

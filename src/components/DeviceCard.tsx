@@ -171,7 +171,8 @@ export const DeviceCard = memo(function DeviceCard({
   const maintainers = maintainersOf(d);
   const state = (d.status in STATE_LABELS ? d.status : "unknown") as AreaState;
   const photo = devicePhoto(d);
-  const sub = [d.model, d.soc].filter(Boolean).join(" · ");
+  // macOS shares the line under the iOS version, so the card keeps its height.
+  const sub = [d.macos_version, d.model, d.soc].filter(Boolean).join(" · ");
   const compact = density === "compact";
   const owner = maintainers.length > 0 ? maintainers.join(", ") : "Unclaimed";
   const repoLine = mainRepo ?? "No repo";

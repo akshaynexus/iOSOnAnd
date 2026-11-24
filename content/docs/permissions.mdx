@@ -28,7 +28,8 @@ Reads are public. Every write needs a login: a session cookie from `/login`, or
 
 ## Admin panel
 
-`/admin` (admins only; the header shows an Admin link): pending device claims and repo claims with
+The Admin tab of `/profile` (`/profile?tab=admin`, admins only; the header shows an Admin link, and
+the old `/admin` address redirects there): pending device claims and repo claims with
 Approve and Reject, and every account with its GitHub login and what it maintains
 (`GET /api/users`). An admin is `users.is_admin = 1`; the bootstrap admin comes from `ADMIN_EMAIL`
 and `ADMIN_PASSWORD`, and another account is made an admin in the database:

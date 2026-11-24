@@ -1,6 +1,8 @@
 // POST /api/reddit/fetch — run the r/<subreddit> fetch (admin; CLI
-// reddit-fetch). Body {subreddit?} (default hackios). Stores unseen posts,
-// returns {added, posts}. 502 with {error, hint} when Reddit is unreachable.
+// reddit-fetch). Body {subreddit?} (default hackios). Finds the subreddit's
+// posts that mention OneiOS in the Arctic Shift archive (Reddit's own search
+// when the archive fails), stores unseen ones, returns {added, posts, source}.
+// 502 with {error, hint} when both are unreachable.
 
 import { createFileRoute } from '@tanstack/react-router';
 import { queryAll, queryFirst } from '@/lib/db';
@@ -18,7 +20,7 @@ async function handlePost({ request }: ApiCtx): Promise<Response> {
     throw new HttpError(400, 'bad subreddit', 'letters, digits and underscore only, without r/');
   }
   const known = new Set((await queryAll<{ url: string }>('SELECT url FROM reddit_posts')).map((r) => r.url));
-  const { candidates, error } = await fetchRedditCandidates({ knownUrls: known, subreddit });
+  const { candidates, error, source } = await fetchRedditCandidates({ knownUrls: known, subreddit });
   const added: RedditPost[] = [];
   for (const c of candidates) {
     const url = normalizeRedditUrl(c.url);
@@ -32,9 +34,9 @@ async function handlePost({ request }: ApiCtx): Promise<Response> {
   }
   await appendChangelog(actorName(user), `reddit-fetch r/${subreddit}: ${added.length} new candidate(s)`);
   if (error && added.length === 0) {
-    throw new HttpError(502, error, 'reddit may be down or rate limiting; retry in a few minutes');
+    throw new HttpError(502, error, 'the archive and reddit both failed; retry in a few minutes');
   }
-  return json({ added: added.length, posts: added, ...(error ? { warning: error } : {}) });
+  return json({ added: added.length, posts: added, source, ...(error ? { warning: error } : {}) });
 }
 
 export const Route = createFileRoute('/api/reddit/fetch')({

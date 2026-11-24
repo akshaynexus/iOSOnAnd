@@ -18,6 +18,8 @@ One row per phone.
 | `status` | the headline state, one of the four states below |
 | `best_result` | the furthest the port got, in one line |
 | `ios_version` | the iOS (or iPadOS, tvOS) version the port runs, as its source states it, e.g. `iOS 16.7.16`, `iOS 27.0.1 (24A446)`; empty when not stated |
+| `macos_version` | the macOS version a port runs on the phone, as its source states it, e.g. `macOS 27.2`; empty when none (migration 0011) |
+| `tvos_version` | the tvOS version a port runs on the phone; empty when none (migration 0012) |
 | `base` | `oneios` (a OneiOS-based port: hosted XNU next to Android) or `other`. Used only for the not-applicable rule below |
 | `image_url`, `image_credit`, `image_license`, `image_source_url` | a photo of the phone: the image, its author, its licence, and the page it comes from. Set by an admin (`device-set`) |
 | `notes`, `updated` | free text; date of the last write |
@@ -46,16 +48,43 @@ categories for the Compatibility tab and the device page.
 | Power and thermal | `battery`, `thermal` |
 | Security and apps | `passcode`, `face-id`, `wallet` |
 
-`scope` is `all` or `oneios`. `return-to-oneui`, `ipc` and `kernel-mem` are `oneios`: they describe
+`scope` is `all`, `oneios` or `extra`. `return-to-oneui`, `ipc` and `kernel-mem` are `oneios`: they describe
 OneiOS's hosted design (switching back to One UI, host-call IPIs, the hosted kernel's memory).
 For a device whose `base` is not `oneios` they are **not applicable**: a write is 400
 `area not applicable`, and the site shows N/A and leaves them out of the unknown counts.
 
+`extra` is for an area outside the iOS checklist: writable on every phone, not counted in its
+"N of M areas work". (Migration 0011 added a `macos` area of this kind; 0012 replaced it with
+statuses per system, below.)
+
 ## device_status
 
-One row per device and area: `state`, `detail` (what was seen) and `source` (the file, log,
-commit or link that proves it). The primary key is `(device_slug, area_slug)`; a write replaces
-the row.
+One row per device, area and system: `state`, `detail` (what was seen), `source` (the file, log,
+commit or link that proves it), `os` and `os_version`. The primary key is
+`(device_slug, area_slug, os)`; a write replaces the row.
+
+`os` is the system the row is about (migration 0012): `ios` (iOS and iPadOS, the default and the
+checklist the site counts), `macos` or `tvos`. A phone can have Wi-Fi working on iOS and broken on
+macOS. `os_version` is the version the evidence was seen on (`iOS 27.2`, `macOS 27.2`); a write
+that states one also fills the phone's `ios_version`, `macos_version` or `tvos_version` when that
+is still empty. `GET /api/devices/{slug}` returns the iOS rows as `statuses`, as before, and the
+others as `os_statuses` by system. `GET /api/status` takes `?os=` (`ios` by default, or `all`). On
+the phone's page the area table switches between the systems; the grid's **macOS** filter shows
+the phones where macOS boots or is under way, or that state a `macos_version`.
+
+```sh
+node cli.mjs status-set <device> wifi works --os macos --version "macOS 27.2" --detail "..." --source "..."
+node cli.mjs status-get --device <device> --os all
+```
+
+## status_history
+
+One row per status write (migration 0012): the device, area, system and version, the state
+before (`old_state`, null when there was no row) and after, the detail and source, who and when.
+`GET /api/devices/{slug}/history` (CLI `history <device>`) lists them newest first; the phone's
+page shows them under "What changed", grouped by who and time, with the maintainers' posted
+updates. Changes from before the table existed were read back from the changelog, without the
+state before or the source.
 
 | State | Meaning |
 |---|---|

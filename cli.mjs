@@ -215,6 +215,15 @@ function checkState(state) {
   }
 }
 
+/** ios (the default; ipados counts as ios), macos, tvos; with `all`, also "all" (for reads). */
+function checkOs(os, all = false) {
+  const v = String(os).toLowerCase();
+  if (v === "ipados" || v === "iphoneos") return "ios";
+  const ok = ["ios", "macos", "tvos", ...(all ? ["all"] : [])];
+  if (!ok.includes(v)) throw invalid(`invalid --os ${JSON.stringify(os)}. Must be one of: ${ok.join(" | ")}`);
+  return v;
+}
+
 async function checkArea(area) {
   const r = await api("/api/areas");
   const slugs = (r.areas || []).map((a) => a.slug);
@@ -316,14 +325,19 @@ Login (the token is stored per tracker URL in ~/.config/iosonand/tokens.json):
 
 Reads (no login):
   areas                                      the valid area slugs
-  status-get [--device SLUG] [--area SLUG] [--state STATE]
+  status-get [--device SLUG] [--area SLUG] [--state STATE] [--os ios|macos|tvos|all]
+  history <device> [--limit N]                what changed on the phone: each status
+                                             change, before and after, who and when
   fork-list [--device SLUG]
   post-list [--limit N]
   claim-list [--device SLUG] [--status pending|approved|rejected]
 
 Writes (login required; on 403 or 409 the server's error and hint are printed):
-  status-set <device> <area> <state> --detail TEXT --source REF
-                            admin, or a maintainer (approved claim) of <device>
+  status-set <device> <area> <state> --detail TEXT --source REF [--os ios|macos|tvos] [--version V]
+                            admin, or a maintainer (approved claim) of <device>.
+                            --os: the system it is about (ios, the default, also
+                            covers iPadOS); --version: the version it was seen on,
+                            e.g. "iOS 27.2" or "macOS 27.2"
   claim-add <device> [--note TEXT]           ask to maintain a device (any login)
   claim-approve <id>, claim-reject <id>      admin only
   fork-add --repo OWNER/REPO [--device SLUG] [--branch B] [--fork-url URL]
@@ -616,8 +630,10 @@ function cmdFlush() {
 
 async function cmdStatusSet(positionals, flags) {
   const [device, area, state] = positionals;
-  if (!device || !area || !state) throw usage("usage: status-set <device> <area> <state> --detail TEXT --source REF");
+  if (!device || !area || !state) throw usage("usage: status-set <device> <area> <state> --detail TEXT --source REF [--os ios|macos|tvos] [--version V]");
   checkState(state);
+  const os = str(flags, "os") ? checkOs(flags.os) : undefined;
+  const osVersion = str(flags, "version") || str(flags, "os-version") || undefined;
   await checkArea(area);
   const detail = str(flags, "detail");
   const source = str(flags, "source");
@@ -626,9 +642,9 @@ async function cmdStatusSet(positionals, flags) {
   const res = await api(`/api/status/${encodeURIComponent(device)}/${encodeURIComponent(area)}`, {
     method: "PUT",
     auth: true,
-    body: { state, detail, source },
+    body: { state, detail, source, ...(os ? { os } : {}), ...(osVersion ? { os_version: osVersion } : {}) },
   });
-  out({ ok: true, device, area, state, detail, source, server: res });
+  out({ ok: true, device, area, state, detail, source, ...(os ? { os } : {}), ...(osVersion ? { os_version: osVersion } : {}), server: res });
 }
 
 /* ------------------------------------------------------------------ */
@@ -997,7 +1013,16 @@ async function main() {
         checkState(flags.state);
         q.set("state", flags.state);
       }
+      if (str(flags, "os")) q.set("os", checkOs(flags.os, true));
       out(await api(`/api/status${q.toString() ? `?${q}` : ""}`));
+      return;
+    }
+    case "history": {
+      const device = positionals[0] || str(flags, "device");
+      if (!device) throw usage("usage: history <device> [--limit N] [--os ios|macos|tvos|all]");
+      const q = new URLSearchParams({ limit: String(Number(str(flags, "limit")) || 30) });
+      if (str(flags, "os")) q.set("os", checkOs(flags.os, true));
+      out(await api(`/api/devices/${encodeURIComponent(device)}/history?${q}`));
       return;
     }
     case "status-set":

@@ -35,9 +35,9 @@ function q(sql) {
 
 const TABLES = {
   areas: 'SELECT slug, name, notes, scope FROM areas ORDER BY slug',
-  devices: `SELECT slug, name, model, soc, repo_kind, status, best_result, notes, base, ios_version,
+  devices: `SELECT slug, name, model, soc, repo_kind, status, best_result, notes, base, ios_version, macos_version, tvos_version,
               image_url, image_credit, image_license, image_source_url, updated FROM devices ORDER BY slug`,
-  device_status: 'SELECT device_slug, area_slug, state, detail, source, updated FROM device_status ORDER BY device_slug, area_slug',
+  device_status: 'SELECT device_slug, area_slug, os, os_version, state, detail, source, updated FROM device_status ORDER BY device_slug, area_slug, os',
   forks: `SELECT repo, device_slug, kind, branch, url, best_result, ported, fork_only, verified, notes, base_project, updated
             FROM forks ORDER BY CASE kind WHEN 'upstream' THEN 0 WHEN 'standalone' THEN 1 ELSE 2 END, repo COLLATE NOCASE`,
   reddit_posts: 'SELECT title, url, published, note, image_url, image_width, image_height FROM reddit_posts ORDER BY id',

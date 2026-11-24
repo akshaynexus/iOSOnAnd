@@ -32,6 +32,10 @@ export function agentPrompt({ site, repo, device }: AgentPromptInput): string {
     `   Only claim what the repo or I can show. Ask me when unsure.`,
     `5. Attach proof when I give you screenshots or clips: node cli.mjs media-upload <file> --device ${DEVICE} --area <area> --caption "..."`,
     `6. Check the result: node cli.mjs whoami`,
+    `7. Set up tracker support in the repo, so its page stays current (what works, what doesn't) as we keep working:`,
+    `   - .gitignore: add .env, .env.*, cli.mjs, TRACKER_QUEUE.md; the key stays in TRACKER_TOKEN or the CLI's saved login, never in a tracked file`,
+    `   - add an "## iOSOnAnd tracker" section to the repo's agent instructions (AGENTS.md, and CLAUDE.md / .cursorrules if the repo uses those): this port is at ${SITE}/device/${DEVICE}; when a change makes an area work or breaks it, record it in the same session with status-set ${DEVICE} <area> <state> --detail "<what the build, log or test showed>" --source "<commit or log link>", reading status-get first; only what was shown, unproven stays unknown`,
+    `   - commit only those files (check git status: no key, no .env, no cli.mjs). The full version of this step is "Keep the tracker updated from your repo" on ${SITE}/docs/maintain-a-repo`,
   ].join("\n");
 }
 
@@ -62,6 +66,7 @@ export function trackerSupportPrompt({ site, repo, device }: AgentPromptInput): 
     `   - CLI: ${CLI} (download it again with the curl line above if it is missing)`,
     `   - read first: <CLI> status-get --device ${DEVICE}; the area slugs: <CLI> areas`,
     `   - record it: <CLI> status-set ${DEVICE} <area> works|in-progress|broken --detail "<what the build, log or test showed>" --source "<commit, log or PR link>"`,
+    `   - say which system it was on: --os ios (the default; iPadOS too), --os macos or --os tvos, and --version "<e.g. iOS 27.2 or macOS 27.2>"`,
     `   - with screenshots or clips: <CLI> update ${DEVICE} <files...> --text "<what changed>"`,
     `   - only record what a build, log, test or capture shows; anything unproven stays unknown`,
     `   - the key comes from TRACKER_TOKEN or the CLI's saved login, never from a file in this repo`,

@@ -9,7 +9,7 @@ import { DevicesTable } from "@/components/DevicesTable";
 import { useThemeMode } from "@/components/common";
 import { Reveal, withViewTransition } from "@/components/motion";
 import { familiesOfDevice, familyName, forksByRepo, mainRepoOf } from "@/components/repoInfo";
-import { boots, makerOf, reported, stateCounts } from "@/lib/areas";
+import { boots, makerOf, reported, runsMacos, stateCounts } from "@/lib/areas";
 import type { Area, Device, Fork } from "@/lib/client";
 import { parseDate } from "@/lib/utils";
 import { cn } from "@/lib/utils";
@@ -74,6 +74,7 @@ export function DeviceBrowser({
   const base = family ?? localBase;
   const setBase = (v: string) => (onFamilyChange ? onFamilyChange(v) : setLocalBase(v));
   const [bootOnly, setBootOnly] = useState(false);
+  const [macOnly, setMacOnly] = useState(false);
   const [maker, setMaker] = useState("");
   const [sort, setSort] = useState<Sort>("working");
   const [shown, setShown] = useState(PAGE);
@@ -112,6 +113,7 @@ export function DeviceBrowser({
       if (base === "none" && families.length > 0) return false;
       if (base && base !== "none" && !families.includes(base)) return false;
       if (bootOnly && !boots(d)) return false;
+      if (macOnly && !runsMacos(d)) return false;
       if (maker && makerOf(d) !== maker) return false;
       return true;
     });
@@ -132,21 +134,21 @@ export function DeviceBrowser({
         );
       })
       .map((x) => x.r);
-  }, [rows, base, bootOnly, maker, sort]);
+  }, [rows, base, bootOnly, macOnly, maker, sort]);
 
   // A filter change starts the list from the top again.
-  useEffect(() => setShown(PAGE), [base, bootOnly, maker, sort, devices]);
+  useEffect(() => setShown(PAGE), [base, bootOnly, macOnly, maker, sort, devices]);
 
   const visible = view === "cards" ? filtered.slice(0, density === "compact" ? shown * 2 : shown) : filtered;
   const limit = density === "compact" ? shown * 2 : shown;
-  const filtering = !!(base || bootOnly || maker);
+  const filtering = !!(base || bootOnly || macOnly || maker);
   const [sheetOpen, setSheetOpen] = useState(false);
   const clearFilters = () => {
     setBase("");
     setBootOnly(false);
     setMaker("");
   };
-  const activeCount = (base ? 1 : 0) + (maker ? 1 : 0) + (bootOnly ? 1 : 0);
+  const activeCount = (base ? 1 : 0) + (maker ? 1 : 0) + (bootOnly ? 1 : 0) + (macOnly ? 1 : 0);
 
   // The controls, inline from sm up and in the Filters sheet below sm. `p`
   // prefixes the ids so the two sets never share one.
@@ -207,6 +209,25 @@ export function DeviceBrowser({
         }}
       />
       Boots
+    </label>
+  );
+  const macToggle = (className: string) => (
+    <label
+      className={cn(
+        "inline-flex cursor-pointer items-center gap-2 rounded-md border border-input px-2.5 text-sm hover:bg-muted dark:bg-input/30",
+        className,
+      )}
+    >
+      <input
+        type="checkbox"
+        className="size-4 accent-(--brand)"
+        checked={macOnly}
+        onChange={(e) => {
+          const v = e.target.checked;
+          withViewTransition(() => setMacOnly(v));
+        }}
+      />
+      macOS
     </label>
   );
   const sortSelect = (p: string, className: string) => (
@@ -322,6 +343,7 @@ export function DeviceBrowser({
           {familySelect("", INLINE)}
           {makerSelect("", INLINE)}
           {bootsToggle("h-8")}
+          {macToggle("h-8")}
           {sortSelect("", INLINE)}
           {viewToggle()}
           {densityToggle(false)}
@@ -350,6 +372,14 @@ export function DeviceBrowser({
             <li>
               <button type="button" className={chip} onClick={() => withViewTransition(() => setBootOnly(false))} aria-label="Remove filter: Boots">
                 Boots
+                <X className="size-4 text-muted-foreground" aria-hidden />
+              </button>
+            </li>
+          ) : null}
+          {macOnly ? (
+            <li>
+              <button type="button" className={chip} onClick={() => withViewTransition(() => setMacOnly(false))} aria-label="Remove filter: macOS">
+                macOS
                 <X className="size-4 text-muted-foreground" aria-hidden />
               </button>
             </li>
@@ -390,6 +420,7 @@ export function DeviceBrowser({
             {makerSelect("sheet-", "")}
           </div>
           {bootsToggle("h-11 w-full")}
+          {macToggle("h-11 w-full")}
           <div className={SHEET_ROW}>
             <label htmlFor="sheet-flt-sort" className={SHEET_LABEL}>
               Sort

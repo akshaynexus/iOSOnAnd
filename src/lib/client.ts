@@ -28,7 +28,7 @@ export interface Area {
   name: string;
   notes: string;
   /** 'oneios': only applies to OneiOS-based ports (v2). Missing = 'all'. */
-  scope?: "all" | "oneios" | string;
+  scope?: "all" | "oneios" | "extra" | string;
 }
 
 /** A user as the API embeds it in forks, media and claims. */
@@ -102,9 +102,16 @@ export interface Media {
   created: string;
 }
 
+/** The system a status is about: ios covers iOS and iPadOS. */
+export type Os = "ios" | "macos" | "tvos";
+export const OS_LABELS: Record<Os, string> = { ios: "iOS", macos: "macOS", tvos: "tvOS" };
+
 export interface DeviceStatusEntry {
   device_slug: string;
   area_slug: string;
+  /** Missing on rows from before migration 0012: ios. */
+  os?: Os | string;
+  os_version?: string;
   state: AreaState;
   detail: string;
   source: string;
@@ -174,6 +181,10 @@ export interface Post {
   url: string;
   published: string;
   note: string;
+  /** The post's own preview image (migration 0007); '' when none. */
+  image_url?: string;
+  image_width?: number | null;
+  image_height?: number | null;
 }
 
 /** A device row as /api/devices lists it. */
@@ -190,6 +201,11 @@ export interface DeviceRow {
   /** v2 fields; absent until migration 0004 is applied. */
   base?: "oneios" | "other" | string;
   ios_version?: string;
+  /** The macOS version a port runs, when one does. */
+  macos_version?: string;
+  tvos_version?: string;
+  /** Status rows for other systems than iOS, by system (macos, tvos). */
+  os_statuses?: Record<string, DeviceStatusEntry[]>;
   image_url?: string;
   image_credit?: string;
   image_license?: string;
@@ -486,7 +502,7 @@ export function listClaims(
 export function setStatus(
   device: string,
   area: string,
-  update: { state: AreaState; detail?: string; source?: string },
+  update: { state: AreaState; detail?: string; source?: string; os?: Os; os_version?: string },
   opts?: CallOptions,
 ): Promise<{ status: DeviceStatusEntry }> {
   return req(
@@ -726,6 +742,31 @@ export interface DeviceUpdate {
   user: UserRef | null;
   created: string;
   media: Media[];
+}
+
+/** One status change on a phone (GET /api/devices/:slug/history). */
+export interface StatusChange {
+  id: number;
+  device_slug: string;
+  area_slug: string;
+  area_name: string | null;
+  os: Os | string;
+  os_version: string;
+  old_state: AreaState | null;
+  state: AreaState;
+  detail: string;
+  source: string;
+  who: string;
+  created: string;
+}
+
+export function listStatusHistory(
+  slug: string,
+  offset = 0,
+  limit = 20,
+  opts?: CallOptions,
+): Promise<{ history: StatusChange[]; total: number; next: number | null }> {
+  return req(`/api/devices/${encodeURIComponent(slug)}/history?limit=${limit}&offset=${offset}`, undefined, opts);
 }
 
 export function listDeviceUpdates(slug: string, offset = 0, opts?: CallOptions): Promise<{ updates: DeviceUpdate[]; total: number; next: number | null }> {

@@ -8,6 +8,7 @@ import { OverviewSummary } from "@/components/OverviewSummary";
 import { CompatMatrix } from "@/components/CompatMatrix";
 import { MainRepos, ReposTable } from "@/components/ReposTable";
 import { ReposByBase } from "@/components/ReposByBase";
+import { YourReposToClaim } from "@/components/ClaimCallout";
 import { cn } from "@/lib/utils";
 import { MaintainPanel } from "@/components/RepoClaim";
 import { LineageTree } from "@/components/LineageTree";
@@ -188,6 +189,7 @@ function HomePage() {
       <div key={tab} className="tab-fade flex flex-col gap-6">
       {tab === "overview" ? (
         <div className="flex flex-col gap-8">
+          <YourReposToClaim forks={data.forks} devices={data.devices} />
           {query ? null : <OverviewSummary data={data} family={family} onFamily={setFamily} />}
           <DeviceBrowser
             devices={shown}
@@ -209,6 +211,7 @@ function HomePage() {
 
       {tab === "repos" ? (
         <div className="flex flex-col gap-8">
+          <YourReposToClaim forks={data.forks} devices={data.devices} />
           {query ? null : (
             <ProjectsSection
               devices={data.devices}

@@ -57,15 +57,27 @@ export function applies(area: Pick<Area, "scope">, device: Pick<Device, "base">)
   return !device.base || device.base === "oneios";
 }
 
+/** An area outside the iOS checklist (scope 'extra': macOS): shown and writable, not counted in the iOS progress. */
+export function isExtra(area: Pick<Area, "scope">): boolean {
+  return area.scope === "extra";
+}
+
+/** The iOS checklist areas that apply to the device (the "of N areas" total). */
 export function applicableAreas(device: Pick<Device, "base">, areas: Area[]): Area[] {
-  return areas.filter((a) => applies(a, device));
+  return areas.filter((a) => applies(a, device) && !isExtra(a));
+}
+
+/** macOS boots (works) or is under way (in-progress) on the device, or a port states a macOS version. */
+export function runsMacos(d: Pick<Device, "os_statuses" | "macos_version">): boolean {
+  const s = d.os_statuses?.macos?.find((x) => x.area_slug === "boot")?.state;
+  return s === "works" || s === "in-progress" || !!d.macos_version;
 }
 
 /** How many applicable `areas` are in each state on `device` (no entry counts as unknown). */
 export function stateCounts(device: Pick<Device, "statuses" | "base">, areas: Area[]): StateCounts {
   const counts: StateCounts = { works: 0, "in-progress": 0, broken: 0, unknown: 0 };
   for (const a of areas) {
-    if (!applies(a, device)) continue;
+    if (!applies(a, device) || isExtra(a)) continue;
     const state = entryFor(device, a.slug)?.state ?? "unknown";
     counts[state in counts ? state : "unknown"]++;
   }

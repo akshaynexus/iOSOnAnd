@@ -101,6 +101,42 @@ describe('devices, areas and the not-applicable rule', () => {
     expect(plain.status).toBe(200);
   });
 
+  test('a status is per system: macOS and iOS rows of one area are separate, and each write is in the history', async () => {
+    const ios = await call('PUT', `/api/status/${DEV}/wifi`, { who: admin, body: { state: 'works', detail: 'test ios', version: 'iOS 27.2' } });
+    expect(ios.status).toBe(200);
+    expect(ios.body.status.os).toBe('ios');
+    expect(ios.body.status.os_version).toBe('iOS 27.2');
+    const mac = await call('PUT', `/api/status/${DEV}/wifi`, { who: admin, body: { state: 'broken', detail: 'test macos', os: 'macos', os_version: 'macOS 27.2' } });
+    expect(mac.status).toBe(200);
+    expect(mac.body.status.os).toBe('macos');
+    // ipados counts as ios; an unknown system is 400.
+    expect((await call('PUT', `/api/status/${DEV}/wifi`, { who: admin, body: { state: 'works', os: 'ipados' } })).body.status.os).toBe('ios');
+    expect((await call('PUT', `/api/status/${DEV}/wifi`, { who: admin, body: { state: 'works', os: 'windows' } })).status).toBe(400);
+
+    const one = await call('GET', `/api/status/${DEV}/wifi?os=macos`);
+    expect(one.body.status.state).toBe('broken');
+    expect((await call('GET', `/api/status/${DEV}/wifi`)).body.status.state).toBe('works');
+    const list = await call('GET', `/api/status?device=${DEV}&area=wifi&os=all`);
+    expect(list.body.statuses.map((s: any) => s.os).sort()).toEqual(['ios', 'macos']);
+    expect((await call('GET', `/api/status?device=${DEV}&area=wifi`)).body.statuses.map((s: any) => s.os)).toEqual(['ios']);
+
+    // The device: iOS rows in statuses, the rest in os_statuses; the macOS version is filled in when empty.
+    const d = await call('GET', `/api/devices/${DEV}`);
+    expect(d.body.device.statuses.every((s: any) => s.os === 'ios')).toBe(true);
+    expect(d.body.device.os_statuses.macos.find((s: any) => s.area_slug === 'wifi').state).toBe('broken');
+    expect(d.body.device.macos_version).toBe('macOS 27.2');
+
+    const h = await call('GET', `/api/devices/${DEV}/history?limit=5`);
+    expect(h.status).toBe(200);
+    // Newest first: the ipados write (stored as ios), the macOS write, the first iOS write.
+    const [latest, macRow, first] = h.body.history;
+    expect(latest).toMatchObject({ area_slug: 'wifi', os: 'ios', state: 'works', old_state: 'works', who: expect.any(String) });
+    expect(first).toMatchObject({ area_slug: 'wifi', os: 'ios', os_version: 'iOS 27.2' });
+    expect(macRow).toMatchObject({ area_slug: 'wifi', os: 'macos', state: 'broken', old_state: null, os_version: 'macOS 27.2' });
+    expect((await call('GET', `/api/devices/${DEV}/history?os=macos`)).body.history.every((r: any) => r.os === 'macos')).toBe(true);
+    expect((await call('GET', `/api/devices/no-such-${Date.now()}/history`)).status).toBe(404);
+  });
+
   test('device fields: base and image_* are admin-only, ios_version is not; bad values are 400', async () => {
     const r = await call('PATCH', `/api/devices/${DEV}`, {
       who: admin,

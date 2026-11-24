@@ -64,7 +64,26 @@ Add iOSOnAnd tracker support to this repo ({REPO}, phone: {DEVICE}), so the trac
 6. First sync: read the README, issues and recent commits, compare with status-get, and record what they show (ask me when unsure).
 ```
 
+The tracker may also offer it to you as a pull request. `scripts/tracker-prs.mjs` (run by the
+admins) opens one on each claimed repo that does not have it yet. The pull request adds:
+
+- `TRACKER.md`: the full guide, with your phone filled in;
+- the same Tracker section, in each agent-instructions file your repo already has (`AGENTS.md`,
+  `CLAUDE.md`, `.cursorrules` or `.github/copilot-instructions.md`), or in a new `AGENTS.md`;
+- a Claude Code skill, `.claude/skills/iosonand-tracker/SKILL.md`;
+- the `.gitignore` lines.
+
+It changes no code and holds no key; merge it, edit it or close it as you like. A repo that already
+has `TRACKER.md` or the skill, or an open pull request from the tracker, is skipped.
+
 ## The flow
+
+On the site, a phone nobody maintains shows **Add your repo** next to its name, and each of its
+unclaimed repos (under "Supported by" and in a "Nobody maintains this phone yet" card) has a
+**Claim** button. When you are signed in and a tracked repo is under your GitHub login and
+unclaimed, the phone's page and the Overview show it first ("This is your repo", "You have repos
+to claim"). The claim dialog's agent prompt claims the repo and then sets up tracker support in it
+(the section below), so the page stays current. From the CLI:
 
 1. **Sign in.** `node cli.mjs login` proves your GitHub account with a secret gist (the `gh` CLI
    must be logged in); the CLI deletes the gist afterwards. Your tracker account is now bound to
@@ -91,7 +110,7 @@ others. Ways in:
   already.
 - **A contributor** (GitHub lists commits by your login in the repo) claims it: the claim waits for
   a yes from one of the repo's maintainers, or an admin. They see it on their profile (Claims, Repo
-  claims to review) or with `node cli.mjs repo-claims`, and answer with `repo-claim-approve <id>` or
+  claims to review; admins: the Admin tab) or with `node cli.mjs repo-claims`, and answer with `repo-claim-approve <id>` or
   `repo-claim-reject <id>`. The claim lasts 30 days.
 - **A maintainer adds you** by your GitHub login: profile, My repos, Add a maintainer, or
   `node cli.mjs repo-maintainer-add OWNER/REPO --github LOGIN`. You need an account linked to that

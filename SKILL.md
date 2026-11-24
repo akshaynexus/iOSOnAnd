@@ -65,11 +65,17 @@ the key in `TRACKER_TOKEN` or the CLI login, never in a file in the repo.
 ## Update status
 
 ```sh
-node cli.mjs areas                              # valid area slugs and their scope
+node cli.mjs areas                              # valid area slugs and their scope (macos: macOS on the phone, not counted in iOS progress)
 node cli.mjs status-get --device <device>       # read first
 node cli.mjs status-set <device> <area> <state> --detail "what you saw" --source "file, log, commit or link"
 node cli.mjs status-get --device <device> --area <area>   # read back
+node cli.mjs history <device>                   # what changed: each status change, before and after
 ```
+
+A status is about one system: `--os ios` (the default; also iPadOS), `--os macos` or `--os tvos`,
+with `--version` for the version it was seen on, e.g.
+`status-set <device> boot works --os macos --version "macOS 27.2" --detail "..." --source "..."`.
+Read other systems with `status-get --device <device> --os macos` (or `--os all`).
 
 States: `works | broken | in-progress | unknown`. The CLI rejects other states and unknown area
 slugs before it sends. `return-to-oneui`, `ipc` and `kernel-mem` apply only to OneiOS-based ports:

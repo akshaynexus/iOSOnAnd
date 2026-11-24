@@ -19,6 +19,10 @@ export interface Device {
   /** 'oneios' | 'other' (migrations/0004). */
   base: string;
   ios_version: string;
+  /** macOS version a port runs ('' when none). */
+  macos_version?: string;
+  /** tvOS version a port runs ('' when none). */
+  tvos_version?: string;
   image_url: string;
   image_credit: string;
   image_license: string;
@@ -29,13 +33,17 @@ export interface Area {
   slug: string;
   name: string;
   notes: string;
-  /** 'all' | 'oneios': an 'oneios' area is not applicable to other ports. */
+  /** 'all' | 'oneios' | 'extra': an 'oneios' area is not applicable to other ports; an 'extra' one (macOS) applies to every phone but is not counted in its iOS progress. */
   scope: string;
 }
 
 export interface DeviceStatus {
   device_slug: string;
   area_slug: string;
+  /** 'ios' (iOS and iPadOS), 'macos' or 'tvos' (migration 0012). */
+  os: string;
+  /** The version the evidence was seen on; '' when not stated. */
+  os_version: string;
   state: State;
   detail: string;
   source: string;

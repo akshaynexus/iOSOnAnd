@@ -911,7 +911,13 @@ export const CLAIM_STATUSES = ['pending', 'approved', 'rejected'] as const;
 export const VERIFIED = ['fork-claim', 'reproduced', 'merged'] as const;
 export const REPO_KINDS = ['home', 'fork', 'snapshot', 'mirror', 'none'] as const;
 export const BASES = ['oneios', 'other'] as const;
-export const AREA_SCOPES = ['all', 'oneios'] as const;
+export const AREA_SCOPES = ['all', 'oneios', 'extra'] as const;
+/** The systems a status is about: 'ios' covers iOS and iPadOS (the checklist's default). */
+export const OSES = ['ios', 'macos', 'tvos'] as const;
+export type Os = (typeof OSES)[number];
+/** The device field that holds each system's version. */
+export const OS_VERSION_FIELD: Record<Os, string> = { ios: 'ios_version', macos: 'macos_version', tvos: 'tvos_version' };
+export const OS_LABELS: Record<Os, string> = { ios: 'iOS', macos: 'macOS', tvos: 'tvOS' };
 export const FORK_KINDS = ['upstream', 'fork', 'standalone'] as const;
 export const SUPPORT_LEVELS = ['primary', 'merged', 'ported', 'claimed'] as const;
 export const REPO_CLAIM_STATUSES = ['pending', 'approved', 'rejected', 'expired'] as const;
