@@ -667,10 +667,94 @@ export interface RepoClaim {
 }
 
 export function claimRepo(
-  input: { repo: string; device?: string; note?: string },
+  input: { repo: string; device?: string; new_device?: { name: string; model?: string; soc?: string }; note?: string },
   opts?: CallOptions,
-): Promise<{ claim: RepoClaim; fork?: Fork; already?: boolean; already_pending?: boolean }> {
+): Promise<{
+  claim: RepoClaim;
+  fork?: Fork;
+  already?: boolean;
+  already_pending?: boolean;
+  device_claim?: { status: "approved" | "pending"; claim_id: number | null; already?: boolean };
+}> {
   return req("/api/repos/claim", { method: "POST", body: JSON.stringify(input) }, opts);
+}
+
+/** An account as the admin list shows it (GET /api/users). */
+export interface AdminUser {
+  id: number;
+  display_name: string;
+  email: string | null;
+  github_login: string | null;
+  is_admin: boolean;
+  created: string;
+  maintains: string[];
+  maintains_repos: string[];
+}
+
+export function listUsers(opts?: CallOptions): Promise<{ users: AdminUser[]; total: number }> {
+  return req("/api/users?limit=500", undefined, opts);
+}
+
+/** A phone or tablet from Google Play's device list (GET /api/catalog). */
+export interface CatalogEntry {
+  id: number;
+  brand: string;
+  name: string;
+  display: string;
+  codenames: string[];
+  models: string[];
+  tracked: string | null;
+}
+
+export async function searchCatalog(q: string, limit = 8, opts?: CallOptions): Promise<CatalogEntry[]> {
+  const res: { catalog: CatalogEntry[] } = await req(`/api/catalog?q=${encodeURIComponent(q)}&limit=${limit}`, undefined, opts);
+  return res.catalog;
+}
+
+/** A maintainer's update on a phone: text with photos and clips. */
+export interface DeviceUpdate {
+  id: number;
+  device_slug: string;
+  body: string;
+  user: UserRef | null;
+  created: string;
+  media: Media[];
+}
+
+export function listDeviceUpdates(slug: string, offset = 0, opts?: CallOptions): Promise<{ updates: DeviceUpdate[]; total: number; next: number | null }> {
+  return req(`/api/devices/${encodeURIComponent(slug)}/updates?limit=10&offset=${offset}`, undefined, opts);
+}
+
+export function postDeviceUpdate(slug: string, body: string, mediaIds: number[], opts?: CallOptions): Promise<{ update: DeviceUpdate }> {
+  return req(`/api/devices/${encodeURIComponent(slug)}/updates`, { method: "POST", body: JSON.stringify({ body, media_ids: mediaIds }) }, opts);
+}
+
+export function deleteDeviceUpdate(slug: string, id: number, opts?: CallOptions): Promise<{ ok: true }> {
+  return req(`/api/devices/${encodeURIComponent(slug)}/updates/${id}`, { method: "DELETE" }, opts);
+}
+
+/** Every device's slug and name (GET /api/devices?brief=1), for pickers. */
+export async function listDeviceNames(opts?: CallOptions): Promise<Array<{ slug: string; name: string }>> {
+  const res: { devices: Array<{ slug: string; name: string }> } = await req('/api/devices?brief=1&limit=500', undefined, opts);
+  return res.devices;
+}
+
+/** A tracked repo by name, with its supported phones; null when it is not tracked. */
+export async function getForkByRepo(repo: string, opts?: CallOptions): Promise<Fork | null> {
+  const res: { forks: Fork[] } = await req(`/api/forks?repo=${encodeURIComponent(repo)}&limit=1`, undefined, opts);
+  return res.forks[0] ?? null;
+}
+
+/**
+ * Add a phone to a repo you maintain ("claimed" support). You become the
+ * phone's maintainer at once when nobody maintains it, else an admin decides.
+ */
+export function addRepoPhone(
+  forkId: number,
+  device: string,
+  opts?: CallOptions,
+): Promise<{ fork: Fork; device_claim?: { status: "approved" | "pending"; claim_id: number | null; already?: boolean } }> {
+  return req(`/api/forks/${forkId}/devices`, { method: "POST", body: JSON.stringify({ device_slug: device, support: "claimed" }) }, opts);
 }
 
 export function verifyRepoClaim(id: number, opts?: CallOptions): Promise<{ claim: RepoClaim; fork?: Fork }> {

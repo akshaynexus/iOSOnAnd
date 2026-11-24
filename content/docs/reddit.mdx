@@ -14,6 +14,7 @@ state.
 | `seed/seed.json` | the seed | `reddit_posts` rows and `device_status` rows read from r/hackios threads |
 | `node cli.mjs post-add --title "..." --link URL` | admin, or a maintainer of any device | adds one post (`POST /api/posts`) |
 | `node cli.mjs reddit-fetch [SUBREDDIT]` | admin | `POST /api/reddit/fetch`: searches the subreddit (default `hackios`) for "OneiOS", newest first, and stores posts not seen before |
+| `node scripts/sync-reddit.mjs [--apply]` | admin | reads every new thread and its comments, adds port posts and the repos porters link, and lists the threads to read for claims (below) |
 
 Rules for a post URL:
 
@@ -26,6 +27,41 @@ Rules for a post URL:
 or rate limits and nothing was added, it returns 502 with a hint to retry in a few minutes.
 Posts are links, not embeds. A post may carry a thumbnail from the post itself (`image_url`,
 `image_width`, `image_height`; an admin sets it with `node cli.mjs post-set <id> --image-url URL`).
+
+## The sync script
+
+`scripts/sync-reddit.mjs` reads r/hackios from Reddit's public JSON: the newest posts back to
+`--since` (default: three days before the newest post the tracker has) and each post's comments.
+
+```sh
+node scripts/sync-reddit.mjs                    # dry run: prints the plan, writes reddit-sync-report.json
+node scripts/sync-reddit.mjs --apply            # writes it (admin token)
+node scripts/sync-reddit.mjs --apply --url https://<tracker> --since 2026-10-01
+```
+
+Whose words count: the thread's author, in the post and in their own comments, and a commenter
+linking a repo under their own GitHub name. Repos other people link are only listed in the
+report.
+
+Which thread is about which phone: a tracked phone named in the title, else in the body, else a
+codename in the name of a repo the porter linked (codenames such as `sweet` or `lisa` are plain
+words, so free text does not count). A title that names a phone maker but no tracked phone is
+reported as a phone to add, not matched to a phone the body mentions.
+
+| It writes | When |
+|---|---|
+| a post | the thread is not tracked, names a tracked phone, and its author links a repo, or it names one phone and has a port flair |
+| a repo (`fork-claim`) | the porter links it, it is on GitHub, it is not tracked, and the thread names exactly one phone; `kind` and `base_project` come from GitHub, lineage from the tracker's own GitHub lookup |
+| a supported phone (`claimed`) | a tracked repo, linked by the porter in a thread about a phone it does not list yet |
+
+It never writes states. What works on a phone is in the porter's own sentences, which need a
+person to read; the report's `claims_to_review` lists each thread with those sentences and the
+`status-set` line to write a claim with. The report also lists threads about phones the tracker
+does not have and repos linked without a tracked phone.
+
+Reddit refuses some networks (403, "blocked by network security"). The script then stops with
+that message; run it from another network, or save Reddit's JSON responses to a folder and pass
+`--input DIR` (`posts.json`: an array of posts, `comments.json`: an array of comments).
 
 ## Why they stay claims
 

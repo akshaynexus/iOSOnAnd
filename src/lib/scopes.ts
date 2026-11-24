@@ -18,7 +18,7 @@ export const SCOPE_TEXT: Record<Scope, string> = {
   'status:write': 'status cells and device fields (PUT/POST /api/status..., PATCH /api/devices/{slug})',
   'fork:write': 'forks, repo claims and repo support rows (/api/forks..., /api/repos...)',
   'post:write': 'posts and the Reddit fetch (/api/posts..., /api/reddit/fetch)',
-  'media:write': 'uploads and their deletion (/api/media...)',
+  'media:write': 'uploads and their deletion (/api/media...), and photo updates on a phone (/api/devices/{slug}/updates)',
 };
 
 /** [method regex, path regex, scope]; the first match wins. Paths may hold {params}. */
@@ -29,6 +29,7 @@ const RULES: Array<[RegExp, RegExp, Scope]> = [
   [/.*/, /^\/api\/(forks|repos)(\/|$)/, 'fork:write'],
   [/.*/, /^\/api\/(posts(\/|$)|reddit\/)/, 'post:write'],
   [/.*/, /^\/api\/media(\/|$)/, 'media:write'],
+  [/.*/, /^\/api\/devices\/[^/]+\/updates(\/|$)/, 'media:write'],
 ];
 
 /** The scope a token needs for `method path`; `all` when no rule matches. */

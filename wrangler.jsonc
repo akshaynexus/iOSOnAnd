@@ -8,11 +8,17 @@
   "compatibility_date": "2026-11-20",
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
+  // Production: https://hackios.appaiproxy.com (custom domain on the
+  // appaiproxy.com zone; Cloudflare creates the DNS record and certificate).
+  "routes": [{ "pattern": "hackios.appaiproxy.com", "custom_domain": true }],
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "oneios-tracker",
-      "database_id": "local-only-for-now",
+      "database_id": "79d10893-d164-4cdd-a777-ba712dc02611",
+      // Local dev (vite dev, wrangler dev, --local) keys its SQLite file by
+      // this id, so the existing local DB under .wrangler/state stays in use.
+      "preview_database_id": "local-only-for-now",
       // `wrangler d1 migrations apply oneios-tracker --local|--remote` applies
       // migrations/NNNN_*.sql in order and records them in d1_migrations.
       "migrations_dir": "migrations"

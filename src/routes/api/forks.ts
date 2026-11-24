@@ -1,6 +1,6 @@
 // /api/forks — GET list (public; ?device= (the fork's own device or any device
 // it supports), ?kind=upstream|fork|standalone, ?base_project=, ?limit=
-// (default and max 500), ?offset=; sorted upstream first, then by repo;
+// (default and max 500), ?offset=, ?repo=OWNER/REPO (that one repo, case-insensitive); sorted upstream first, then by repo;
 // -> {forks, total, limit, offset, next}), POST add (admin, or a maintainer of
 // the fork's device_slug; forks without a device are admin-only; kind other
 // than fork, verified other than fork-claim: admin only). The repo name is
@@ -32,6 +32,7 @@ async function handleGet({ request }: ApiCtx): Promise<Response> {
   const device = sp.get('device')?.trim() || null;
   const kind = sp.get('kind')?.trim() || null;
   const baseProject = sp.get('base_project')?.trim() || null;
+  const repo = sp.get('repo')?.trim() || null;
   if (kind) oneOf(FORK_KINDS, kind, 'kind');
   const page = pageParams(sp, 500, 500);
   const where: string[] = [];
@@ -47,6 +48,10 @@ async function handleGet({ request }: ApiCtx): Promise<Response> {
   if (baseProject) {
     where.push('f.base_project = ? COLLATE NOCASE');
     vals.push(baseProject);
+  }
+  if (repo) {
+    where.push('f.repo = ? COLLATE NOCASE');
+    vals.push(repo);
   }
   const w = where.length ? `WHERE ${where.join(' AND ')}` : '';
   const { rows, page: info } = await paged<ForkRow>(

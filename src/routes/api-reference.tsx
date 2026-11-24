@@ -9,17 +9,18 @@
 import { useEffect, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useTheme } from "next-themes";
+import { seo } from "@/lib/seo";
 
 const SCALAR_VERSION = "1.82.1";
 const SCALAR_SRC = `https://cdn.jsdelivr.net/npm/@scalar/api-reference@${SCALAR_VERSION}/dist/browser/standalone.js`;
 
 export const Route = createFileRoute("/api-reference")({
-  head: () => ({
-    meta: [
-      { title: "API reference: iOSOnAnd" },
-      { name: "description", content: "Every iOSOnAnd tracker endpoint, its auth level, parameters and response shapes, with requests you can send." },
-    ],
-  }),
+  head: () =>
+    seo({
+      title: "API reference: iOSOnAnd",
+      description: "Every iOSOnAnd tracker endpoint, its auth level, parameters and response shapes, with requests you can send.",
+      path: "/api-reference",
+    }),
   component: ApiReference,
 });
 

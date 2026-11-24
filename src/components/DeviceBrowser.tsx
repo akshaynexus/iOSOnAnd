@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { InfiniteSentinel } from "@/components/InfiniteSentinel";
 import { LayoutGrid, Rows3, SlidersHorizontal, Table2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet } from "@/components/ui/sheet";
@@ -45,7 +46,7 @@ function save(key: string, v: string) {
   }
 }
 
-/** Devices on the Overview: filters, sort, cards or table, and "Show more". */
+/** Devices on the Overview: filters, sort, cards or table, loading more cards as you scroll. */
 export function DeviceBrowser({
   devices,
   areas,
@@ -436,14 +437,7 @@ export function DeviceBrowser({
             ))}
           </ul>
           {filtered.length > limit ? (
-            <div className="flex flex-col items-center gap-1">
-              <Button variant="outline" onClick={() => setShown((n) => n + PAGE)}>
-                Show more
-              </Button>
-              <p className="text-xs text-muted-foreground tabular-nums" aria-live="polite">
-                {limit} of {filtered.length}
-              </p>
-            </div>
+            <InfiniteSentinel onMore={() => setShown((n) => n + PAGE)} count={limit} total={filtered.length} />
           ) : null}
         </>
       ) : (

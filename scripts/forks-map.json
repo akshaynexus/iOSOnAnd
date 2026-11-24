@@ -1,0 +1,43 @@
+{
+  "_note": "Used by scripts/find-forks.mjs on top of scripts/hakios-map.json codenames. codenames: Android device codenames seen in fork names and branches -> our device slug (each checked against the phone's official codename). new_devices: phones the fork tree has ports for that the tracker did not list; --apply adds those that have at least one fork to add. skip_tokens: words in fork names that are not phones.",
+  "codenames": {
+    "topaz": "redmi-note-12-4g",
+    "tapas": "redmi-note-12-4g",
+    "a5xelte": "a5-2016",
+    "herolte": "s7",
+    "sailfish": "pixel-1",
+    "marlin": "pixel-xl",
+    "flame": "pixel-4",
+    "sheng": "xiaomi-pad-6s-pro",
+    "davinci": "redmi-k20",
+    "spes": "redmi-note-11",
+    "spesn": "redmi-note-11",
+    "merlin": "redmi-note-9",
+    "beryllium": "poco-f1",
+    "redfin": "pixel-5",
+    "veux": "redmi-note-11-pro-5g",
+    "polaris": "mi-mix-2s",
+    "lavender": "redmi-note-7",
+    "ginkgo": "redmi-note-8",
+    "taimen": "pixel-2-xl",
+    "river": "moto-g7",
+    "odessa": "moto-g9-plus",
+    "a9y18qlte": "galaxy-a9-2018",
+    "bramble": "pixel-4a-5g",
+    "gauguin": "mi-10t-lite",
+    "jackpotlte": "galaxy-a8-2018"
+  },
+  "new_devices": [
+    { "slug": "mi-mix-2s", "name": "Xiaomi Mi Mix 2S", "model": "polaris", "soc": "Snapdragon 845 (SDM845)" },
+    { "slug": "redmi-note-7", "name": "Redmi Note 7", "model": "lavender", "soc": "Snapdragon 660 (SDM660)" },
+    { "slug": "redmi-note-8", "name": "Redmi Note 8", "model": "ginkgo", "soc": "Snapdragon 665 (SM6125)" },
+    { "slug": "pixel-2-xl", "name": "Pixel 2 XL", "model": "taimen", "soc": "Snapdragon 835 (MSM8998)" },
+    { "slug": "moto-g7", "name": "Moto G7", "model": "river", "soc": "Snapdragon 632 (SDM632)" },
+    { "slug": "moto-g9-plus", "name": "Moto G9 Plus", "model": "odessa", "soc": "Snapdragon 730G (SM7150)" },
+    { "slug": "galaxy-a9-2018", "name": "Galaxy A9 (2018)", "model": "a9y18qlte", "soc": "Snapdragon 660 (SDM660)" },
+    { "slug": "pixel-4a-5g", "name": "Pixel 4a 5G", "model": "bramble", "soc": "Snapdragon 765G (SM7250)" },
+    { "slug": "mi-10t-lite", "name": "Xiaomi Mi 10T Lite", "model": "gauguin", "soc": "Snapdragon 750G (SM7225)" },
+    { "slug": "galaxy-a8-2018", "name": "Galaxy A8 (2018)", "model": "jackpotlte", "soc": "Exynos 7885" }
+  ],
+  "skip_tokens": ["bergamota", "bringup", "probe", "qemu", "payload", "entry", "polaris-mix2s"]
+}

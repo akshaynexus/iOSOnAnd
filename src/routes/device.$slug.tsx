@@ -8,6 +8,8 @@ import { StateLabel, StatusBar } from "@/components/StatusBadge";
 import { AreaTable } from "@/components/AreaTable";
 import { ForkDialog } from "@/components/ForkDialog";
 import { ClaimPanel } from "@/components/ClaimPanel";
+import { AddRepoToPhone } from "@/components/RepoClaim";
+import { DeviceUpdates } from "@/components/DeviceUpdates";
 import { BasedOnChips, ReposTable, forkHref } from "@/components/ReposTable";
 import { MediaGallery, UploadButton } from "@/components/Media";
 import { devicePhoto } from "@/components/DeviceCard";
@@ -18,6 +20,7 @@ import { applicableAreas, applies, entryFor, stateCounts } from "@/lib/areas";
 import { loadDevice, maintainersOf, type Area, type Device, type Fork } from "@/lib/client";
 import { LinkedText } from "@/components/SourceLink";
 import { formatDate, relativeTime, vtName } from "@/lib/utils";
+import { SITE_URL, absoluteUrl, jsonLd, seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/device/$slug")({
   loader: async ({ params }) => {
@@ -25,14 +28,27 @@ export const Route = createFileRoute("/device/$slug")({
     if (!res.device) throw notFound();
     return res as { device: Device; areas: Area[] };
   },
-  head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [
-          { title: `${loaderData.device.name}: iOSOnAnd` },
-          { name: "description", content: loaderData.device.best_result || loaderData.device.notes },
-        ]
-      : [],
-  }),
+  head: ({ loaderData }) => {
+    if (!loaderData) return {};
+    const d = loaderData.device;
+    const path = `/device/${encodeURIComponent(d.slug)}`;
+    const photo = devicePhoto(d);
+    const lead = [d.model, d.soc].filter(Boolean).join(", ");
+    const description = [`iOS on the ${d.name}${lead ? ` (${lead})` : ""}.`, d.best_result || d.notes].filter(Boolean).join(" ");
+    return {
+      ...seo({ title: `${d.name}: iOS status on iOSOnAnd`, description, path, image: photo, type: "article" }),
+      scripts: [
+        jsonLd({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Devices", item: `${SITE_URL}/` },
+            { "@type": "ListItem", position: 2, name: d.name, item: absoluteUrl(path) },
+          ],
+        }),
+      ],
+    };
+  },
   component: DevicePage,
   errorComponent: RouteError,
   pendingComponent: RoutePending,
@@ -243,16 +259,18 @@ function DevicePage() {
         <AreaTable deviceSlug={device.slug} rows={rows} editable={editable} />
       </section>
 
+      <DeviceUpdates deviceSlug={device.slug} editable={editable} onPosted={() => setUploads((n) => n + 1)} />
+
       <MediaGallery deviceSlug={device.slug} areaNames={areaNames} reloadKey={uploads} />
 
       <section className="flex flex-col gap-3">
         <div className="flex items-center gap-3">
           <h2 className="text-base font-semibold">Repos</h2>
-          {editable ? (
-            <span className="ml-auto">
-              <ForkDialog deviceSlug={device.slug} />
-            </span>
-          ) : null}
+          <span className="ml-auto flex items-center gap-2">
+            {/* Your own GitHub repo for this phone: claim it (src/lib/repos.ts). */}
+            <AddRepoToPhone device={{ slug: device.slug, name: device.name }} />
+            {editable ? <ForkDialog deviceSlug={device.slug} /> : null}
+          </span>
         </div>
         <ReposTable
           forks={device.forks}

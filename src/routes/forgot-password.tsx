@@ -1,14 +1,16 @@
 import { useState } from "react";
+import { PrimaryAction } from "@/components/common";
 import type { FormEvent } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/Field";
 import { useAction } from "@/components/useAction";
 import { requestPasswordReset } from "@/lib/client";
+import { AuthCard, authLink } from "@/components/AuthCard";
+import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/forgot-password")({
-  head: () => ({ meta: [{ title: "Reset password: iOSOnAnd" }] }),
+  head: () => seo({ title: "Reset password: iOSOnAnd", noindex: true }),
   component: ForgotPasswordPage,
 });
 
@@ -27,8 +29,14 @@ function ForgotPasswordPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-sm flex-col gap-6">
-      <h1 className="text-xl font-semibold">Reset password</h1>
+    <AuthCard
+      title="Reset password"
+      footer={
+        <Link to="/login" className={authLink}>
+          Back to log in
+        </Link>
+      }
+    >
       {sent ? (
         <p role="status">
           If an account uses {email.trim()}, a reset link is on its way. It works once, for 30 minutes.
@@ -46,16 +54,11 @@ function ForgotPasswordPage() {
               required
             />
           </Field>
-          <Button type="submit" disabled={pending}>
+          <PrimaryAction type="submit" size="md" className="mt-2 w-full" disabled={pending}>
             {pending ? "Sending" : "Send reset link"}
-          </Button>
+          </PrimaryAction>
         </form>
       )}
-      <p className="text-sm text-muted-foreground">
-        <Link to="/login" className="underline underline-offset-4">
-          Back to log in
-        </Link>
-      </p>
-    </div>
+    </AuthCard>
   );
 }

@@ -111,6 +111,9 @@ export interface AnimatedListProps<T extends AnimatedListItem = AnimatedListItem
   className?: string;
   itemClassName?: string;
   style?: CSSProperties;
+  /** Called when the list is scrolled to within `endThreshold` px of its end (infinite scroll). */
+  onEndReached?: () => void;
+  endThreshold?: number;
 }
 
 interface Engine {
@@ -143,7 +146,9 @@ const AnimatedList = <T extends AnimatedListItem = AnimatedListItem>({
   maxHeight = 440,
   className = "",
   itemClassName = "",
-  style
+  style,
+  onEndReached,
+  endThreshold = 240
 }: AnimatedListProps<T>) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -156,6 +161,21 @@ const AnimatedList = <T extends AnimatedListItem = AnimatedListItem>({
   const navigatingRef = useRef(false);
   const [selected, setSelected] = useState(initialSelectedIndex);
   const baseId = useId();
+
+  // Infinite scroll: ask for more near the end, and again after each batch
+  // while the list is still shorter than its viewport.
+  const endRef = useRef(onEndReached);
+  endRef.current = onEndReached;
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    const check = () => {
+      if (endRef.current && viewport.scrollHeight - viewport.clientHeight - viewport.scrollTop <= endThreshold) endRef.current();
+    };
+    viewport.addEventListener("scroll", check, { passive: true });
+    check();
+    return () => viewport.removeEventListener("scroll", check);
+  }, [items.length, endThreshold, onEndReached === undefined]);
   const settings = {
     items,
     onItemSelect,

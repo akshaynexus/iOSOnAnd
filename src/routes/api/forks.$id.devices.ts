@@ -3,6 +3,11 @@
 // "OWNER/REPO" (a tracked repo the work came from), note?} upserts one row.
 // DELETE ?device= (or {device_slug}) removes one. Admin; the repo's
 // maintainer may add and remove 'claimed' rows only. -> {fork}.
+// The repo's maintainer maintains its primary/merged/ported phones without a
+// claim (src/lib/auth.ts, MAINTAINING_SUPPORT). A phone they add themselves
+// also makes them its maintainer: at once when nobody maintains it, else a
+// pending device claim an admin decides -> {fork, device_claim: {status,
+// claim_id}}.
 // CLI: repo-support OWNER/REPO <device> --support ... [--via] [--note].
 
 import { createFileRoute } from '@tanstack/react-router';
@@ -11,6 +16,7 @@ import { HttpError, actorName, isAdmin, json, readJson, requireUser, str } from 
 import { apiHandlers, type ApiCtx } from '@/lib/api';
 import { findForkByRepo, forkView, loadForkRow, normalizeRepo, setSupport, supportLevel, type ForkRow } from '@/lib/forks';
 import { appendChangelog } from '@/lib/changelog';
+import { grantSupportedPhone, supportedPhoneNote } from '@/lib/repos';
 
 async function editor(request: Request, fork: ForkRow, support: string | null) {
   const user = await requireUser(request);
@@ -48,7 +54,8 @@ async function handlePost({ request, params }: ApiCtx): Promise<Response> {
   }
   await setSupport(fork.id, device, support, viaId, str(body, 'note', 4000));
   await appendChangelog(actorName(user), `repo ${fork.repo} supports ${device} (${support}${viaRaw ? ` via ${viaRaw}` : ''})`);
-  return json({ fork: await forkView(await loadForkRow(fork.id)) });
+  const device_claim = fork.maintainer_user_id === user.id && support === 'claimed' ? await grantSupportedPhone(user, fork, device) : null;
+  return json({ fork: await forkView(await loadForkRow(fork.id)), ...(device_claim ? { device_claim } : {}) });
 }
 
 async function handleDelete({ request, params }: ApiCtx): Promise<Response> {
@@ -59,6 +66,10 @@ async function handleDelete({ request, params }: ApiCtx): Promise<Response> {
   if (!row) throw new HttpError(404, 'no support row', `${fork.repo} has no row for ${device}`);
   const user = await editor(request, fork, row.support);
   await exec('DELETE FROM repo_devices WHERE fork_id = ? AND device_slug = ?', [fork.id, device]);
+  // The repo maintainer's claim on that phone, made when they added it, goes with it.
+  if (fork.maintainer_user_id != null) {
+    await exec('DELETE FROM claims WHERE user_id = ? AND device_slug = ? AND note = ?', [fork.maintainer_user_id, device, supportedPhoneNote(fork.repo)]);
+  }
   await appendChangelog(actorName(user), `repo ${fork.repo} no longer lists ${device}`);
   return json({ fork: await forkView(await loadForkRow(fork.id)) });
 }

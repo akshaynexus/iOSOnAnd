@@ -83,9 +83,10 @@ Two ways, both ending in a bearer token the CLI sends:
 ## Claiming the repo
 
 `repo-claim` makes the agent's user the maintainer of the repo and of its phone. When the user's
-GitHub login is the repo's owner, it is approved at once. Otherwise the tracker hands out a code;
-the agent writes it alone to `.iosonand-verify` on the default branch, pushes, runs `repo-verify`,
-and deletes the file again. A repo the tracker does not list yet needs `--device`; `repo-add`
+GitHub login is the repo's owner, it is approved at once. For a repo owned by a GitHub
+organization the user is a member of, the tracker hands out a code; the agent writes it alone to
+`.iosonand-verify` on the default branch, pushes, runs `repo-verify`, and deletes the file again.
+A personal repo of another GitHub login cannot be claimed (403). A repo the tracker does not list yet needs `--device`; `repo-add`
 also sets its branch and best result. [Maintain a repo](/docs/maintain-a-repo) has the details.
 
 ## The honesty rules
@@ -211,7 +212,8 @@ error: PUT http://localhost:3001/api/status/walk-8436/ipc -> 400 area not applic
 
 What it shows: the owner check approved the first repo at once; the status key could write
 statuses but not upload; the second key could upload; a repo owned by someone else needed the
-proof file (not pushed here, so 422); and an OneiOS-only area was refused for a non-OneiOS port.
+proof file (not pushed here, so 422; since then, a personal repo of another login is refused with
+403 before any code is handed out, and only an organization's repo takes the proof file); and an OneiOS-only area was refused for a non-OneiOS port.
 The test rows were removed afterwards.
 
 ## SKILL.md, the drop-in skill

@@ -11,6 +11,12 @@ ADMIN_PASSWORD=
 # Optional: server-side GitHub token for API enrichment (fork/reddit lookups).
 GITHUB_TOKEN=
 
+# Optional: "Continue with GitHub" (src/lib/githubOAuth.ts). A GitHub OAuth App
+# (github.com/settings/developers) with the callback URL
+# <site>/api/auth/github/callback. Empty: the button is hidden.
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+
 # Password pepper: an HMAC key mixed into every password hash, kept out of the
 # database. `bun run setup` fills a random one into .dev.vars. Production:
 # `wrangler secret put PASSWORD_PEPPER` once (e.g. `openssl rand -base64 32`)

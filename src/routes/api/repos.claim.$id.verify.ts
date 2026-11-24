@@ -1,7 +1,9 @@
 // POST /api/repos/claim/$id/verify (login: the claimant, or an admin).
 // Reads .iosonand-verify from the repo's default branch (src/lib/repoproof.ts)
-// and approves the claim when its trimmed content equals the nonce:
-// 200 {claim, fork}. 422 when the file is missing or wrong, 410 when the
+// and approves the claim when its trimmed content equals the nonce and the
+// claimant's GitHub login is the owner, a public member of the owning
+// organization, or a contributor to the repo: 200 {claim, fork}. 403 when the
+// login is none of those, 422 when the file is missing or wrong, 410 when the
 // claim expired (24 h), 409 when it is not pending, 502 when GitHub cannot be
 // reached. CLI: repo-verify <id>.
 
@@ -9,7 +11,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { HttpError, isAdmin, json, requireUser } from '@/lib/auth';
 import { apiHandlers, type ApiCtx } from '@/lib/api';
 import { forkView } from '@/lib/forks';
-import { approveRepoClaim, expireStaleClaims, githubApiHeaders, loadRepoClaim, mapRepoClaim } from '@/lib/repos';
+import { approveRepoClaim, expireStaleClaims, githubApiHeaders, isOrgMemberOrContributor, loadRepoClaim, mapRepoClaim } from '@/lib/repos';
 import { PROOF_PATH, checkProofFile } from '@/lib/repoproof';
 
 async function handlePost({ request, params }: ApiCtx): Promise<Response> {
@@ -36,6 +38,20 @@ async function handlePost({ request, params }: ApiCtx): Promise<Response> {
       proof.found !== null
         ? `${PROOF_PATH} on the default branch of ${claim.repo} holds "${proof.found}", not this claim's code; write the code alone, push, retry (raw.githubusercontent.com may cache up to 5 min)`
         : `no ${PROOF_PATH} on the default branch of ${claim.repo}: write the claim's code alone to it, push, then retry`,
+    );
+  }
+  // The file proves push access; the claimant's own GitHub login must also
+  // belong to the owner (src/lib/repos.ts, claimPath).
+  const owner = claim.repo.split('/')[0];
+  const login = claim.github_login;
+  if (!login) {
+    throw new HttpError(403, 'link your GitHub account first', 'the claimant has no linked GitHub account: link it (node cli.mjs link, or the profile page), then verify again');
+  }
+  if (login.toLowerCase() !== owner.toLowerCase() && !(await isOrgMemberOrContributor(owner, claim.repo, login))) {
+    throw new HttpError(
+      403,
+      'not a member of the owner',
+      `@${login} is neither a public member of @${owner} nor a contributor to ${claim.repo}: make your membership public (https://github.com/orgs/${owner}/people) and verify again, or ask an admin`,
     );
   }
   const done = await approveRepoClaim(claim, user, 'proof-file');

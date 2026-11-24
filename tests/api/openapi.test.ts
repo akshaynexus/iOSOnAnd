@@ -178,11 +178,13 @@ describe('OpenAPI document structure', () => {
           if (prm.in === 'path') expect(prm.required, where).toBe(true);
         }
 
-        // A JSON 2xx, and errors as {error, hint}.
+        // A JSON 2xx (or, for a browser redirect, a 3xx with Location), and errors as {error, hint}.
         const codes = Object.keys(op.responses);
         const ok = codes.filter((c) => /^2\d\d$/.test(c));
-        expect(ok.length, `${where}: no 2xx response`).toBeGreaterThan(0);
+        const redirects = codes.filter((c) => /^3\d\d$/.test(c));
+        expect(ok.length + redirects.length, `${where}: no 2xx or 3xx response`).toBeGreaterThan(0);
         for (const c of ok) expect(op.responses[c].content?.['application/json']?.schema, `${where} ${c}`).toBeDefined();
+        for (const c of redirects) expect(op.responses[c].headers?.Location, `${where} ${c}: a redirect needs Location`).toBeDefined();
         for (const c of codes.filter((c) => /^[45]\d\d$/.test(c))) {
           expect(op.responses[c].$ref, `${where} ${c}`).toBe(`#/components/responses/E${c}`);
         }

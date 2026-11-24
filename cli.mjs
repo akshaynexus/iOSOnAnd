@@ -34,7 +34,7 @@ const RELATIONS = ["fork-of", "derived-from", "ported-from", "uses"];
 const WRITE_COMMANDS = new Set([
   "status-set", "device-add", "device-set", "fork-add", "fork-sync", "post-add",
   "claim-add", "claim-approve", "claim-reject", "reddit-fetch", "post-set",
-  "repo-claim", "repo-add", "repo-support", "repo-lineage", "media-upload",
+  "repo-claim", "repo-add", "repo-support", "repo-lineage", "media-upload", "update",
 ]);
 let TOKEN_FLAG = null;
 
@@ -345,6 +345,11 @@ Repos (a repo you own on GitHub is yours at once; else a proof file):
                             .iosonand-verify on the default branch, push, then
   repo-verify <claim id>    check the file and approve the claim
   repo-add OWNER/REPO --device SLUG [--branch B] [--best-result T] [--note T]
+  repo-add OWNER/REPO --new-device "Phone name" [--model CODENAME] [--soc CHIP]
+                            a phone the tracker does not list yet (your own repo only)
+  catalog <name, codename or model>
+                            search every Android phone and tablet (Google Play's
+                            list); prints the repo-add line to use for each
                             add an untracked repo and claim it in one step
   repo-claims [--status pending|approved|rejected|expired]
   repo-claim-approve <id>, repo-claim-reject <id>    admin only
@@ -362,6 +367,10 @@ API keys (use one with TRACKER_TOKEN=ion_... or --token ion_...):
   keys-revoke <id>, keys-rotate <id>
 
 Media (proof screenshots and clips; images 15 MB, videos 95 MB):
+  update <device> [photo-or-clip ...] --text "what changed" [--area A]
+                            a photo update: uploads the files and posts them with
+                            the text on the phone's page (maintainers; up to 10 files)
+  updates <device>          the phone's updates, newest first
   media-upload <file> --device SLUG [--area A] [--fork-id N] [--caption T]
   media-list [--device SLUG] [--area A] [--fork-id N] [--limit N]
   media-delete <id>         the uploader or an admin
@@ -668,8 +677,14 @@ async function forkOf(repoArg) {
 async function cmdRepoClaim(cmd, positionals, flags) {
   const repo = positionals[0] || str(flags, "repo");
   if (!repo) throw usage(`usage: ${cmd} OWNER/REPO${cmd === "repo-add" ? " --device SLUG [--branch B] [--best-result T]" : " [--device SLUG] [--note TEXT]"}`);
-  if (cmd === "repo-add" && !str(flags, "device")) throw usage("usage: repo-add OWNER/REPO --device SLUG [--branch B] [--best-result T]");
+  if (cmd === "repo-add" && !str(flags, "device") && !str(flags, "new-device")) {
+    throw usage('usage: repo-add OWNER/REPO (--device SLUG | --new-device "Phone name" [--model CODENAME] [--soc CHIP]) [--branch B] [--best-result T]');
+  }
   const b = { repo, device: str(flags, "device") || undefined, note: str(flags, "note") };
+  // A phone the tracker does not list (find its name with `catalog`); only with your own repo.
+  if (str(flags, "new-device") && !b.device) {
+    b.new_device = { name: flags["new-device"], ...(str(flags, "model") ? { model: flags.model } : {}), ...(str(flags, "soc") ? { soc: flags.soc } : {}) };
+  }
   if (str(flags, "branch")) b.branch = flags.branch;
   if (str(flags, "best-result")) b.best_result = flags["best-result"];
   const { res, data } = await api("/api/repos/claim", { method: "POST", auth: true, body: b, raw: true });
@@ -699,6 +714,12 @@ async function cmdMediaUpload(positionals, flags) {
   const file = positionals[0];
   const device = str(flags, "device");
   if (!file || !device) throw usage("usage: media-upload <file> --device SLUG [--area A] [--fork-id N] [--caption T]");
+  const media = await uploadFile(file, device, { area: str(flags, "area"), forkId: str(flags, "fork-id"), caption: str(flags, "caption") });
+  out({ ok: true, media: { ...media, url: TRACKER_URL + media.url } });
+}
+
+/** POST /api/media for one file; returns the media row. */
+async function uploadFile(file, device, { area = "", forkId = "", caption = "" } = {}) {
   let st;
   try {
     st = fs.statSync(file);
@@ -712,12 +733,56 @@ async function cmdMediaUpload(positionals, flags) {
   const form = new FormData();
   // The text fields go first: the server checks them before it stores the file.
   form.append("device", device);
-  if (str(flags, "area")) form.append("area", flags.area);
-  if (str(flags, "fork-id")) form.append("fork_id", flags["fork-id"]);
-  if (str(flags, "caption")) form.append("caption", flags.caption);
+  if (area) form.append("area", area);
+  if (forkId) form.append("fork_id", forkId);
+  if (caption) form.append("caption", caption.slice(0, 500));
   form.append("file", blob, path.basename(file));
   const r = await api("/api/media", { method: "POST", auth: true, form });
-  out({ ok: true, media: { ...r.media, url: TRACKER_URL + r.media.url } });
+  return r.media;
+}
+
+/**
+ * update <device> [file ...] --text "..." [--area A]: a photo update in one
+ * go. Each file is uploaded (captioned with the text), then they are posted
+ * together as one update on the phone.
+ */
+async function cmdUpdate(positionals, flags) {
+  const [device, ...files] = positionals;
+  if (str(flags, "photo")) files.push(flags.photo);
+  const text = str(flags, "text") || str(flags, "body");
+  if (!device || (!text && !files.length)) {
+    throw usage('usage: update <device> [photo-or-clip ...] --text "what changed" [--area A]');
+  }
+  if (files.length > 10) throw usage("at most 10 files per update");
+  const media = [];
+  for (const f of files) {
+    info(`uploading ${f}...`);
+    media.push(await uploadFile(f, device, { area: str(flags, "area"), caption: text }));
+  }
+  const r = await api(`/api/devices/${encodeURIComponent(device)}/updates`, {
+    method: "POST",
+    auth: true,
+    body: { body: text, media_ids: media.map((m) => m.id) },
+  });
+  const u = r.update;
+  out({ ok: true, update: { ...u, media: (u.media || []).map((m) => ({ ...m, url: TRACKER_URL + m.url })) }, page: `${TRACKER_URL}/device/${device}` });
+}
+
+/** catalog <words>: search every Android phone and tablet (Google Play's list). */
+async function cmdCatalog(positionals, flags) {
+  const q = positionals.join(" ").trim();
+  if (q.length < 2) throw usage('usage: catalog <name, codename or model> [--limit N], e.g. catalog redmi note 7');
+  const r = await api(`/api/catalog?q=${encodeURIComponent(q)}${str(flags, "limit") ? `&limit=${encodeURIComponent(flags.limit)}` : ""}`);
+  const rows = (r.catalog || []).map((c) => ({
+    name: c.display,
+    codenames: c.codenames,
+    models: c.models.slice(0, 5),
+    tracked: c.tracked,
+    add: c.tracked
+      ? `node cli.mjs repo-add OWNER/REPO --device ${c.tracked}`
+      : `node cli.mjs repo-add OWNER/REPO --new-device "${c.display}"${c.codenames[0] ? ` --model ${c.codenames[0]}` : ""}`,
+  }));
+  out({ query: q, catalog: rows });
 }
 
 function body(flags, map) {
@@ -1006,6 +1071,17 @@ async function main() {
     }
     case "media-upload":
       return cmdMediaUpload(positionals, flags);
+    case "update":
+      return cmdUpdate(positionals, flags);
+    case "updates": {
+      const device = positionals[0];
+      if (!device) throw usage("usage: updates <device> [--limit N]");
+      const r = await api(`/api/devices/${encodeURIComponent(device)}/updates${str(flags, "limit") ? `?limit=${encodeURIComponent(flags.limit)}` : ""}`);
+      out({ ...r, updates: (r.updates || []).map((u) => ({ ...u, media: u.media.map((m) => ({ ...m, url: TRACKER_URL + m.url })) })) });
+      return;
+    }
+    case "catalog":
+      return cmdCatalog(positionals, flags);
     case "media-list": {
       const q = new URLSearchParams();
       for (const [k, fl] of [["device", "device"], ["area", "area"], ["fork_id", "fork-id"], ["limit", "limit"], ["offset", "offset"]]) {

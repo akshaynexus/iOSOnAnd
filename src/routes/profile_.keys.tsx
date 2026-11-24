@@ -2,14 +2,17 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 import { useAuth } from "@/components/auth";
 import { ApiKeys } from "@/components/ApiKeys";
+import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/profile_/keys")({
-  head: () => ({ meta: [{ title: "API keys: iOSOnAnd" }] }),
+  validateSearch: (search: Record<string, unknown>): { welcome?: 1 } => (search.welcome ? { welcome: 1 } : {}),
+  head: () => seo({ title: "API keys: iOSOnAnd", noindex: true }),
   component: KeysPage,
 });
 
 function KeysPage() {
   const { user, loading } = useAuth();
+  const { welcome } = Route.useSearch();
   if (loading) {
     return (
       <p className="text-muted-foreground" role="status">
@@ -36,6 +39,15 @@ function KeysPage() {
         <ChevronLeft className="size-4" aria-hidden />
         Profile
       </Link>
+      {welcome ? (
+        <div role="status" className="flex flex-col gap-1 rounded-[14px] border bg-card p-4">
+          <p className="font-medium">Welcome{user.github_login ? `, @${user.github_login}` : ""}</p>
+          <p className="text-muted-foreground">
+            Your account is bound to your GitHub login, so your own repos are approved the moment you claim them. Make a key below for the machine or agent
+            that will claim repos and post updates, then give it to the CLI as TRACKER_TOKEN.
+          </p>
+        </div>
+      ) : null}
       <ApiKeys />
     </div>
   );

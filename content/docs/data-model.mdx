@@ -132,6 +132,20 @@ Uploads on R2: `device_slug`, optional `fork_id` and `area_slug`, `user_id`, `r2
 `content_type` (from the file bytes), `bytes`, `width`, `height`, `caption`, `created` and
 `deleted` (a soft delete; the R2 object is removed). See [Uploads](/docs/uploads).
 
+## device_updates
+
+A maintainer's post on a phone: `device_slug`, `user_id`, `body` (up to 2000 characters),
+`created` and `deleted`. Its photos and clips are `media` rows with `update_id` set. See
+[Uploads](/docs/uploads#photo-updates).
+
+## device_catalog
+
+Every Android phone and tablet Google Play lists (`play_public/supported_devices.csv`), one row
+per brand and marketing name: `brand`, `name`, `codenames`, `models` and a lowercased `search`
+column. Not tracker data: it is what `GET /api/catalog?q=` and the "My phone isn't listed" picker
+search when someone adds a phone. `scripts/sync-catalog.mjs [--local|--remote]` replaces it
+(TVs, boxes, car units and watches are left out).
+
 ## reddit_posts
 
 Links shown on the Updates tab: `title`, `url` (unique, stored as `https://www.reddit.com/r/...`
@@ -167,4 +181,10 @@ sources:
 - **Photos** set by an admin with `device-set`, credited with author and licence and linked to
   their source page.
 
-After the seed, rows change through the API; the changelog records each write.
+After the seed, rows change through the API; the changelog records each write. Two sync scripts
+write through it too, and never change a maintainer's row:
+
+- **The HakiOS ports registry** (`scripts/sync-hakios.mjs`, [HakiOS registry](/docs/hakios-registry)):
+  detail starts with `HakiOS registry:`, source the port's registry page.
+- **hackiosx.dev** (`scripts/sync-hackiosx.mjs`, [hackiosx.dev](/docs/hackiosx)): detail starts
+  with `hackiosx.dev`, source the section of its projects page.

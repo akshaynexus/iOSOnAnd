@@ -5,12 +5,12 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Field, NativeSelect } from "@/components/Field";
+import { Field } from "@/components/Field";
 import { useAuth } from "@/components/auth";
 import { useAction } from "@/components/useAction";
 import { CopyButton, PrimaryAction } from "@/components/common";
 import { agentPrompt } from "@/lib/agentPrompt";
-import { claimRepo, verifyRepoClaim, type RepoClaim } from "@/lib/client";
+import { claimRepo, getForkByRepo, listDeviceNames, searchCatalog, verifyRepoClaim, type CatalogEntry, type Fork, type RepoClaim } from "@/lib/client";
 import { formatDate, relativeTime } from "@/lib/utils";
 
 function useSite(): string {
@@ -39,7 +39,7 @@ export function PromptBox({ repo, device, className }: { repo?: string; device?:
         </div>
         <pre
           suppressHydrationWarning
-          className="max-h-56 overflow-auto p-3 font-mono text-xs leading-relaxed break-words whitespace-pre-wrap"
+          className="max-h-56 overflow-auto p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap [overflow-wrap:anywhere]"
         >
           {text}
         </pre>
@@ -116,10 +116,136 @@ export function ClaimNextStep({ claim, onDone }: { claim: RepoClaim; onDone?: ()
   );
 }
 
+type Phone = { slug: string; name: string };
+type PhoneChoice = { kind: "listed"; slug: string } | { kind: "new"; name: string; model: string; soc: string } | null;
+
+/** Search a listed phone, or say it is not listed and name it. */
+function PhonePicker({
+  phones,
+  value,
+  onChange,
+  required,
+}: {
+  phones: Phone[];
+  value: PhoneChoice;
+  onChange: (v: PhoneChoice) => void;
+  required: boolean;
+}) {
+  const [q, setQ] = useState("");
+  const hits = useMemo(() => {
+    const t = q.trim().toLowerCase();
+    const list = t ? phones.filter((p) => p.name.toLowerCase().includes(t) || p.slug.includes(t)) : phones;
+    return list.slice(0, 8);
+  }, [phones, q]);
+  // Every Android phone and tablet (Google Play's list), for phones the tracker does not list yet.
+  const [catalog, setCatalog] = useState<CatalogEntry[]>([]);
+  useEffect(() => {
+    const t = q.trim();
+    if (t.length < 2) {
+      setCatalog([]);
+      return;
+    }
+    const timer = setTimeout(() => {
+      searchCatalog(t, 6).then(
+        (rows) => setCatalog(rows.filter((r) => !r.tracked)),
+        () => setCatalog([]),
+      );
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [q]);
+
+  if (value?.kind === "listed") {
+    const name = phones.find((p) => p.slug === value.slug)?.name ?? value.slug;
+    return (
+      <div className="flex items-center justify-between gap-3 rounded-md border px-3 py-2">
+        <span className="font-medium">{name}</span>
+        <Button type="button" variant="ghost" size="sm" onClick={() => onChange(null)}>
+          Change
+        </Button>
+      </div>
+    );
+  }
+  if (value?.kind === "new") {
+    const set = (k: "name" | "model" | "soc", v: string) => onChange({ ...value, [k]: v });
+    return (
+      <div className="flex flex-col gap-3 rounded-md border p-3">
+        <Field id="new-phone-name" label="Phone name">
+          <Input id="new-phone-name" value={value.name} onChange={(e) => set("name", e.target.value)} placeholder="Redmi Note 7" required autoFocus />
+        </Field>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field id="new-phone-model" label="Codename or model">
+            <Input id="new-phone-model" value={value.model} onChange={(e) => set("model", e.target.value)} placeholder="lavender" />
+          </Field>
+          <Field id="new-phone-soc" label="Chip">
+            <Input id="new-phone-soc" value={value.soc} onChange={(e) => set("soc", e.target.value)} placeholder="Snapdragon 660" />
+          </Field>
+        </div>
+        <Button type="button" variant="ghost" size="sm" className="self-start" onClick={() => onChange(null)}>
+          Pick a listed phone instead
+        </Button>
+      </div>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-2">
+      <Input
+        id="claim-phone"
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        placeholder="Search phones, e.g. Pixel 4 or s24"
+        autoComplete="off"
+        aria-controls="claim-phone-list"
+        required={required}
+      />
+      <ul id="claim-phone-list" role="listbox" aria-label="Phones" className="flex max-h-56 flex-col overflow-y-auto rounded-md border">
+        {hits.map((p) => (
+          <li key={p.slug} role="option" aria-selected={false}>
+            <button
+              type="button"
+              className="w-full px-3 py-2 text-left hover:bg-muted focus-visible:bg-muted focus-visible:outline-none pointer-coarse:py-3"
+              onClick={() => onChange({ kind: "listed", slug: p.slug })}
+            >
+              {p.name}
+            </button>
+          </li>
+        ))}
+        {catalog.length ? (
+          <li role="presentation" className="border-t px-3 pt-2 pb-1 text-xs text-muted-foreground">
+            Not tracked yet: add it
+          </li>
+        ) : null}
+        {catalog.map((c) => (
+          <li key={`cat-${c.id}`} role="option" aria-selected={false}>
+            <button
+              type="button"
+              className="flex w-full items-baseline justify-between gap-3 px-3 py-2 text-left hover:bg-muted focus-visible:bg-muted focus-visible:outline-none pointer-coarse:py-3"
+              onClick={() => onChange({ kind: "new", name: c.display, model: c.codenames[0] ?? c.models[0] ?? "", soc: "" })}
+            >
+              <span>{c.display}</span>
+              {c.codenames[0] ? <span className="shrink-0 font-mono text-xs text-muted-foreground">{c.codenames[0]}</span> : null}
+            </button>
+          </li>
+        ))}
+        <li role="option" aria-selected={false} className="border-t">
+          <button
+            type="button"
+            className="w-full px-3 py-2 text-left text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:bg-muted focus-visible:outline-none pointer-coarse:py-3"
+            onClick={() => onChange({ kind: "new", name: q.trim(), model: "", soc: "" })}
+          >
+            {catalog.length ? "None of these: type the name yourself" : `My phone isn't listed${q.trim() ? `: add "${q.trim()}"` : ""}`}
+          </button>
+        </li>
+      </ul>
+    </div>
+  );
+}
+
 /**
- * The claim dialog for a repo row ("This is mine") and for a new repo ("Add
- * your repo", no `repo`). It shows the agent prompt; logged-in users can also
- * claim right here.
+ * The claim dialog: "This is mine" on a repo row (`repo` set), "Add your repo"
+ * (nothing set, or `device` set on a phone's page). Paste the repo; the
+ * dialog says whether the tracker lists it and for which phones, and who can
+ * claim it. Pick the phone (or name one that is not listed) and claim. The
+ * agent prompt is the other way, folded away.
  */
 export function ClaimRepoDialog({
   open,
@@ -132,36 +258,84 @@ export function ClaimRepoDialog({
   onOpenChange: (open: boolean) => void;
   repo?: string;
   device?: string | null;
-  devices: { slug: string; name: string }[];
+  devices: Phone[];
 }) {
   const router = useRouter();
   const { user, loading, refresh } = useAuth();
   const [repoInput, setRepoInput] = useState(repo ?? "");
-  const [deviceInput, setDeviceInput] = useState(device ?? "");
+  const [phone, setPhone] = useState<PhoneChoice>(device ? { kind: "listed", slug: device } : null);
   const [claim, setClaim] = useState<RepoClaim | null>(null);
+  const [phones, setPhones] = useState<Phone[]>(devices);
+  const [lookup, setLookup] = useState<{ repo: string; fork: Fork | null } | null>(null);
+
   useEffect(() => {
     if (!open) return;
     setRepoInput(repo ?? "");
-    setDeviceInput(device ?? "");
+    setPhone(device ? { kind: "listed", slug: device } : null);
     setClaim(null);
   }, [open, repo, device]);
 
-  const sorted = useMemo(() => [...devices].sort((a, b) => a.name.localeCompare(b.name)), [devices]);
-  const promptRepo = repo ?? (normalizeRepo(repoInput) || undefined);
-  const promptDevice = (device ?? deviceInput) || undefined;
+  // The full phone list for the picker (a phone's page passes only its own).
+  useEffect(() => {
+    if (!open || devices.length > 1) return;
+    listDeviceNames().then((all) => setPhones(all.length ? all : devices), () => setPhones(devices));
+  }, [open, devices]);
 
-  const [submit, submitting] = useAction(async () => {
-    const r = normalizeRepo(repoInput);
-    if (!/^[\w.-]+\/[\w.-]+$/.test(r)) {
-      toast.error("Enter the repo as OWNER/REPO", { description: "For example akshaynexus/OneiOS." });
+  const normalized = normalizeRepo(repoInput);
+  const valid = /^[\w.-]+\/[\w.-]+$/.test(normalized);
+  // Is the repo tracked already? Looked up as you type (debounced).
+  useEffect(() => {
+    if (!valid) {
+      setLookup(null);
       return;
     }
-    const res = await claimRepo({ repo: r, device: deviceInput || undefined });
+    const t = setTimeout(() => {
+      getForkByRepo(normalized).then(
+        (fork) => setLookup({ repo: normalized, fork }),
+        () => setLookup(null),
+      );
+    }, 350);
+    return () => clearTimeout(t);
+  }, [normalized, valid]);
+
+  const fork = lookup?.repo === normalized ? lookup.fork : undefined;
+  const sorted = useMemo(() => [...phones].sort((a, b) => a.name.localeCompare(b.name)), [phones]);
+  const listedOn = fork ? [fork.device_slug, ...(fork.supports ?? []).map((x) => x.device_slug)].filter((x, i, a): x is string => !!x && a.indexOf(x) === i) : [];
+  const owner = valid ? normalized.split("/")[0] : "";
+  const yours = !!user?.github_login && owner.toLowerCase() === user.github_login.toLowerCase();
+  const phoneRequired = fork === null; // a repo the tracker does not list needs its phone
+  const promptRepo = valid ? normalized : undefined;
+  const promptDevice = phone?.kind === "listed" ? phone.slug : undefined;
+
+  const [submit, submitting] = useAction(async () => {
+    if (!valid) {
+      toast.error("Enter the repo as OWNER/REPO", { description: "For example akshaynexus/OneiOS, or paste the GitHub link." });
+      return;
+    }
+    if (phoneRequired && !phone) {
+      toast.error("Pick the phone this repo is for");
+      return;
+    }
+    const res = await claimRepo({
+      repo: normalized,
+      ...(phone?.kind === "listed" ? { device: phone.slug } : {}),
+      ...(phone?.kind === "new" ? { new_device: { name: phone.name.trim(), model: phone.model.trim() || undefined, soc: phone.soc.trim() || undefined } } : {}),
+    });
     setClaim(res.claim);
-    if (res.already) {
-      toast.success(`You already maintain ${res.claim.repo || r}`);
+    const name = res.claim?.repo || normalized;
+    if (res.already && res.device_claim) {
+      toast.success(`Phone added to ${name}`, {
+        description:
+          res.device_claim.status === "pending"
+            ? "Another user maintains this phone, so an admin reviews your claim on it."
+            : "You maintain it now.",
+      });
+      await Promise.all([refresh(), router.invalidate()]);
+      onOpenChange(false);
+    } else if (res.already) {
+      toast.success(`You already maintain ${name}`);
     } else if (res.claim.status === "approved") {
-      toast.success(`You maintain ${res.claim.repo || r} now`);
+      toast.success(`You maintain ${name} now`);
       await Promise.all([refresh(), router.invalidate()]);
     }
   });
@@ -173,72 +347,78 @@ export function ClaimRepoDialog({
 
   // From the router, not window: the same value on the server and the client.
   const redirect = useRouterState({ select: (s) => s.location.pathname + s.location.searchStr });
+  const phoneName = (slug: string) => sorted.find((p) => p.slug === slug)?.name ?? slug;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{repo ? `Claim ${repo}` : "Add your repo"}</DialogTitle>
-          <DialogDescription>
-            Paste the prompt into your coding agent. It gets the tracker CLI, claims the repo and records what works.
-          </DialogDescription>
+          <DialogDescription>Claim your port's repo to keep its phones up to date yourself.</DialogDescription>
         </DialogHeader>
-        <PromptBox repo={promptRepo} device={promptDevice} />
+
         {claim ? (
           <ClaimNextStep claim={claim} onDone={() => onOpenChange(false)} />
-        ) : loading ? null : user ? (
-          <form onSubmit={onSubmit} className="flex flex-col gap-3 border-t pt-4">
-            <p className="font-medium">Or claim it here</p>
+        ) : loading ? null : !user ? (
+          <div className="flex flex-col items-start gap-3">
+            <p className="text-muted-foreground">Log in with an account linked to your GitHub to claim a repo.</p>
+            <PrimaryAction onClick={() => void router.navigate({ to: "/login", search: { redirect } })}>Log in</PrimaryAction>
+          </div>
+        ) : (
+          <form onSubmit={onSubmit} className="flex flex-col gap-4">
+            {user.github_login ? null : (
+              <p className="rounded-md border px-3 py-2 text-sm">
+                Claims are checked against the repo's GitHub owner.{" "}
+                <Link to="/profile" className="font-medium underline underline-offset-4">
+                  Link your GitHub account
+                </Link>{" "}
+                first.
+              </p>
+            )}
             {repo ? null : (
-              <Field id="claim-repo" label="Repo" hint="OWNER/REPO or the GitHub URL">
+              <Field id="claim-repo" label="Repo">
                 <Input
                   id="claim-repo"
                   value={repoInput}
                   onChange={(e) => setRepoInput(e.target.value)}
-                  placeholder="owner/repo"
+                  placeholder="github.com/you/your-port"
                   autoComplete="off"
+                  inputMode="url"
                   required
                 />
               </Field>
             )}
+            {valid ? (
+              <p className="text-sm text-muted-foreground" aria-live="polite">
+                {fork === undefined
+                  ? "Checking the tracker"
+                  : fork
+                    ? listedOn.length
+                      ? `Listed for ${listedOn.map(phoneName).join(", ")}. Claiming it makes you their maintainer.`
+                      : "Listed, with no phone yet."
+                    : "Not listed yet: pick the phone it is for."}{" "}
+                {yours ? "It's under your GitHub account, so it's approved at once." : user.github_login ? `Owned by @${owner}: only that account (or a member, for an organization) can claim it.` : null}
+              </p>
+            ) : null}
             {device ? null : (
-              <Field id="claim-device" label="Phone" hint={repo ? undefined : "Needed when the repo is not tracked yet"}>
-                <NativeSelect id="claim-device" value={deviceInput} onChange={(e) => setDeviceInput(e.target.value)}>
-                  <option value="">Choose a phone</option>
-                  {sorted.map((d) => (
-                    <option key={d.slug} value={d.slug}>
-                      {d.name}
-                    </option>
-                  ))}
-                </NativeSelect>
-              </Field>
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-medium">{fork ? "Add another phone (optional)" : "Phone"}</span>
+                <PhonePicker phones={sorted.filter((p) => !listedOn.includes(p.slug))} value={phone} onChange={setPhone} required={phoneRequired && !phone} />
+              </div>
             )}
-            <div className="flex items-center gap-3">
-              <PrimaryAction type="submit" disabled={submitting}>
-                {submitting ? "Claiming" : "Claim now"}
-              </PrimaryAction>
-              {user.github_login ? (
-                <span className="text-xs text-muted-foreground">
-                  Repos under @{user.github_login} are approved at once.
-                </span>
-              ) : (
-                <span className="text-xs text-muted-foreground">
-                  <Link to="/profile" className="underline underline-offset-4">
-                    Link GitHub
-                  </Link>{" "}
-                  to have your own repos approved at once.
-                </span>
-              )}
-            </div>
+            <PrimaryAction type="submit" size="md" className="w-full" disabled={submitting || !valid}>
+              {submitting ? "Claiming" : fork && listedOn.length && !phone ? "Claim repo" : phone?.kind === "new" ? "Add phone and claim" : "Claim repo"}
+            </PrimaryAction>
           </form>
-        ) : (
-          <p className="border-t pt-4 text-muted-foreground">
-            <Link to="/login" search={{ redirect }} className="text-foreground underline underline-offset-4">
-              Log in
-            </Link>{" "}
-            to claim it here instead.
-          </p>
         )}
+
+        <details className="group rounded-lg border">
+          <summary className="cursor-pointer px-3 py-2 text-sm font-medium select-none">Use your coding agent instead</summary>
+          <div className="flex flex-col gap-2 border-t p-3">
+            <p className="text-sm text-muted-foreground">Paste this into your agent. It gets the tracker CLI, claims the repo and records what works.</p>
+            <PromptBox repo={promptRepo} device={promptDevice} />
+          </div>
+        </details>
       </DialogContent>
     </Dialog>
   );
@@ -276,6 +456,17 @@ export function ThisIsMine({
   );
 }
 
+/** "Add your repo" on a phone's page: the claim dialog with the phone set. */
+export function AddRepoToPhone({ device }: { device: { slug: string; name: string } }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <PrimaryAction onClick={() => setOpen(true)}>Add your repo</PrimaryAction>
+      {open ? <ClaimRepoDialog open={open} onOpenChange={setOpen} device={device.slug} devices={[device]} /> : null}
+    </>
+  );
+}
+
 /** The "Do you maintain one of these repos?" panel (Repos tab), or its short form (Overview). */
 export function MaintainPanel({
   devices,
@@ -295,11 +486,7 @@ export function MaintainPanel({
           <h2 id={short ? "maintain-short" : "maintain-heading"} className="text-base font-semibold">
             Do you maintain one of these repos?
           </h2>
-          <p className="mt-1 text-muted-foreground">
-            {short
-              ? "Claim it and keep your phone's status current yourself."
-              : "Claim it to keep your phone's status current. Copy the prompt into your coding agent, or claim the repo here."}
-          </p>
+          <p className="mt-1 text-muted-foreground">Claim it and keep your phones' status current yourself. A phone we don't list yet can be added with it.</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {short ? (
@@ -308,7 +495,6 @@ export function MaintainPanel({
           <PrimaryAction onClick={() => setOpen(true)}>Add your repo</PrimaryAction>
         </div>
       </div>
-      {short ? null : <PromptBox />}
       {open ? <ClaimRepoDialog open={open} onOpenChange={setOpen} devices={devices} /> : null}
     </section>
   );

@@ -98,6 +98,8 @@ async function handleDelete({ request, params }: ApiCtx): Promise<Response> {
       console.error('media delete failed:', e);
     }
   }
+  await exec('UPDATE media SET update_id = NULL WHERE device_slug = ?', [slug]);
+  await exec('DELETE FROM device_updates WHERE device_slug = ?', [slug]);
   await exec('DELETE FROM media WHERE device_slug = ?', [slug]);
   await exec('DELETE FROM devices WHERE slug = ?', [slug]);
   await appendChangelog(actorName(user), `device ${slug} removed`);

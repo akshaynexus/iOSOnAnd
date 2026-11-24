@@ -4,7 +4,7 @@
 // dashboard's matrix gets every cell from one list call.
 
 import { queryAll } from '@/lib/db';
-import { BASES, HttpError, oneOf, str } from '@/lib/auth';
+import { BASES, HttpError, MAINTAINERS_SQL, oneOf, str } from '@/lib/auth';
 import type { Claim, Device, DeviceStatus, RedditPost } from '@/lib/types';
 import { FORK_SELECT, deviceFamilies, forkViews, supportedBy, type ForkRow, type ForkView, type SupportedBy } from '@/lib/forks';
 import { mediaSummary, type Media } from '@/lib/media';
@@ -78,7 +78,7 @@ async function bySlugs<T>(sqlBefore: string, sqlAfter: string, slugs: string[]):
 export async function withDetails(devices: Device[], withPosts = false): Promise<DeviceDetail[]> {
   if (!devices.length) return [];
   const slugs = devices.map((d) => d.slug);
-  const [areas, statuses, forkRows, claims, posts, support, media] = await Promise.all([
+  const [areas, statuses, forkRows, claims, posts, support, media, maintainerRows] = await Promise.all([
     queryAll<{ slug: string; name: string }>('SELECT slug, name FROM areas'),
     bySlugs<DeviceStatus & { area_name: string }>(
       'SELECT ds.*, a.name AS area_name FROM device_status ds JOIN areas a ON a.slug = ds.area_slug WHERE ds.device_slug',
@@ -90,6 +90,11 @@ export async function withDetails(devices: Device[], withPosts = false): Promise
     withPosts ? queryAll<RedditPost>('SELECT * FROM reddit_posts ORDER BY id DESC LIMIT 10') : Promise.resolve([]),
     supportedBy(slugs),
     mediaSummary(slugs),
+    bySlugs<{ device_slug: string; user_id: number; display_name: string | null; github_login: string | null }>(
+      `SELECT DISTINCT m.device_slug, u.id AS user_id, u.display_name, u.github_login FROM (${MAINTAINERS_SQL}) m JOIN users u ON u.id = m.uid WHERE m.device_slug`,
+      'ORDER BY u.id',
+      slugs,
+    ),
   ]);
   const forks = await forkViews(forkRows);
   const area_names: Record<string, string> = {};
@@ -106,13 +111,13 @@ export async function withDetails(devices: Device[], withPosts = false): Promise
   const st = group(statuses);
   const fk = group(forks);
   const cl = group(claims);
+  const mt = group(maintainerRows);
   return devices.map((d) => {
     const dc = cl.get(d.slug) ?? [];
     const sup = support.get(d.slug) ?? [];
     const families = deviceFamilies(sup, fk.get(d.slug) ?? []);
-    const maintainers = dc
-      .filter((c) => c.status === 'approved')
-      .map((c) => claimLabel(c.display_name, c.github_login, c.user_id));
+    // Approved claims and repo maintainers (src/lib/auth.ts, MAINTAINERS_SQL), one entry per user.
+    const maintainers = [...new Set((mt.get(d.slug) ?? []).map((m) => claimLabel(m.display_name, m.github_login, m.user_id)))];
     return {
       ...d,
       area_names,

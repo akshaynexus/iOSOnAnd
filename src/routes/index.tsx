@@ -11,6 +11,7 @@ import { LineageTree } from "@/components/LineageTree";
 import { ChangelogFeed, PostsFeed } from "@/components/UpdatesFeed";
 import { deviceMatches, forkMatches } from "@/lib/areas";
 import { forkKind, loadDashboard } from "@/lib/client";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, jsonLd, seo } from "@/lib/seo";
 
 const TABS = ["overview", "compatibility", "repos", "updates", "changelog"] as const;
 type Tab = (typeof TABS)[number];
@@ -36,6 +37,23 @@ export const Route = createFileRoute("/")({
     return out;
   },
   loader: () => loadDashboard(),
+  head: () => ({
+    ...seo({ title: "iOSOnAnd: which Android phones run iOS", description: SITE_DESCRIPTION, path: "/" }),
+    scripts: [
+      jsonLd({
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        name: SITE_NAME,
+        url: SITE_URL,
+        description: SITE_DESCRIPTION,
+        potentialAction: {
+          "@type": "SearchAction",
+          target: `${SITE_URL}/?q={search_term_string}`,
+          "query-input": "required name=search_term_string",
+        },
+      }),
+    ],
+  }),
   component: HomePage,
   errorComponent: RouteError,
   pendingComponent: RoutePending,

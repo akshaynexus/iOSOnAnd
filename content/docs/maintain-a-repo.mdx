@@ -42,7 +42,9 @@ Repo: {REPO or "<OWNER/REPO>"}{, phone: DEVICE}
      --best-result "..."` does the same with the repo's branch and best result.
    - Another user maintains the repo: 409, and the hint names them. They (or an admin) can step
      down with `repo-unmaintain`.
-3. **Owner check or proof file** (below). Either way the claim ends approved.
+3. **Owner check or proof file** (below). A repo is claimed by its owner: the claim needs a
+   linked GitHub account, and that login must be the repo's owner (or, for an organization's
+   repo, one of its members).
 4. **Work.** `whoami` lists the repo under `maintains_repos` and its phone under `maintains`.
 
 ## The two checks
@@ -50,7 +52,8 @@ Repo: {REPO or "<OWNER/REPO>"}{, phone: DEVICE}
 | Check | When | What the tracker does |
 |---|---|---|
 | owner | your GitHub login (proven at sign-in) equals the repo's `OWNER`, case-insensitive | approves at once: 200, method `owner` |
-| proof file | anyone else, e.g. a collaborator, or an organisation repo | 202 with a pending claim and a code; you prove push access with a file |
+| proof file | `OWNER` is a GitHub organization, and your GitHub login is a public member of it or a contributor to the repo | 202 with a pending claim and a code; you prove push access with a file |
+| refused | no GitHub account linked, or `OWNER` is another person's login (even if you can push to it as a collaborator) | 403; the hint says why. Log in with the owner's account, or ask an admin |
 
 The proof file:
 
@@ -70,6 +73,7 @@ code. A claim lasts 24 hours; asking again within that time returns the same cla
 | Answer | Meaning |
 |---|---|
 | 200 | approved: you maintain the repo and its phone |
+| 403 | your GitHub login is neither a public member of the organization nor a contributor to the repo: make your membership public on `github.com/orgs/OWNER/people`, then verify again |
 | 422 | `verification file not found or wrong`: the hint says which |
 | 410 | the claim expired: run `repo-claim` again for a new code |
 | 409 | the claim is not pending any more (approved, rejected), or someone else got the repo first |
@@ -82,7 +86,26 @@ repo removes that repo again, unless someone maintains it.
 ## What a maintainer may do
 
 After approval you are the repo's maintainer (`forks.maintainer_user_id`) and a maintainer of its
-phone (an approved device claim is added for you). You may:
+phones. One claim covers every phone the repo runs on; there is no claim per phone:
+
+- **Its own phone, and the phones an admin lists on it** (`primary`, `merged`, `ported`): you
+  maintain them as long as you maintain the repo. A phone an admin adds later is yours at once.
+- **A phone you add yourself**: on your profile (Overview tab, My repos, Add a phone), with
+  `repo-support OWNER/REPO <phone> --support claimed`, or with `repo-claim OWNER/REPO --device
+  <phone>` for a repo you already maintain. You maintain it at once when nobody else does; when
+  another user maintains it, a device claim waits for an admin, so adding a phone to your repo
+  never takes it from its maintainer. Removing the phone from the repo ends it.
+- **A new repo for a phone already listed**: "Add your repo" on the phone's page, or
+  `repo-claim OWNER/REPO --device <phone>`.
+- **A phone the tracker does not list**: in "Add your repo", choose "My phone isn't listed" and
+  give its name (codename and chip are optional), or send `new_device: {name, model, soc}` to
+  `POST /api/repos/claim`. Only with a repo your GitHub login owns, since that claim is approved at
+  once; the phone starts with every area unknown. 409 when the phone is listed already (the hint
+  names it).
+
+One account can maintain any number of repos and phones this way.
+
+You may:
 
 - set the phone's statuses (`status-set`), except the three OneiOS-only areas on a phone whose
   port is not OneiOS-based (400 `area not applicable`);
@@ -97,4 +120,5 @@ phone (an approved device claim is added for you). You may:
 - create API keys for your agents with only the scopes they need ([API keys](/docs/api-keys)).
 
 To step down: `node cli.mjs repo-unmaintain OWNER/REPO` (`DELETE /api/forks/id/maintainer`). The
-device claim the repo claim gave you goes too, unless you maintain another repo of that phone.
+phones you maintained through the repo go too, unless you maintain them some other way (another
+repo, or your own device claim).

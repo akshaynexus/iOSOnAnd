@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
+import { PrimaryAction } from "@/components/common";
 import type { FormEvent } from "react";
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/Field";
 import { useAuth } from "@/components/auth";
@@ -11,9 +11,14 @@ import { confirmPasswordReset } from "@/lib/client";
 
 // The reset link is /reset-password#token=<secret>. The fragment never reaches
 // the server (no logs, no Referer); this page reads it and then clears it.
+import { AuthCard, authLink } from "@/components/AuthCard";
+import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/reset-password")({
-  head: () => ({ meta: [{ title: "New password: iOSOnAnd" }, { name: "referrer", content: "no-referrer" }] }),
+  head: () => {
+    const s = seo({ title: "New password: iOSOnAnd", noindex: true });
+    return { ...s, meta: [...s.meta, { name: "referrer", content: "no-referrer" }] };
+  },
   component: ResetPasswordPage,
 });
 
@@ -48,12 +53,11 @@ function ResetPasswordPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-sm flex-col gap-6">
-      <h1 className="text-xl font-semibold">Set a new password</h1>
+    <AuthCard title="Set a new password">
       {token === null ? null : !token ? (
         <p>
           This link has no reset code.{" "}
-          <Link to="/forgot-password" className="underline underline-offset-4">
+          <Link to="/forgot-password" className={authLink}>
             Ask for a new link
           </Link>
         </p>
@@ -71,12 +75,12 @@ function ResetPasswordPage() {
               required
             />
           </Field>
-          <Button type="submit" disabled={pending}>
+          <PrimaryAction type="submit" size="md" className="mt-2 w-full" disabled={pending}>
             {pending ? "Saving" : "Set password"}
-          </Button>
+          </PrimaryAction>
           <p className="text-sm text-muted-foreground">Every device is logged out and your API keys are revoked.</p>
         </form>
       )}
-    </div>
+    </AuthCard>
   );
 }

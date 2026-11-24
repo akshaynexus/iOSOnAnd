@@ -11,6 +11,7 @@ import { RootProvider } from 'fumadocs-ui/provider/tanstack';
 import { useFumadocsLoader } from 'fumadocs-core/source/client';
 import { docs, source } from '@/lib/source';
 import { useMDXComponents } from '@/components/mdx';
+import { seo } from '@/lib/seo';
 
 const serverLoader = createServerFn({ method: 'GET' })
   .validator((slugs: string[]) => slugs)
@@ -33,14 +34,15 @@ export const Route = createFileRoute('/docs/$')({
     await docs.getPage(data.path)?.preload();
     return data;
   },
-  head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [
-          { title: `${loaderData.title}: iOSOnAnd docs` },
-          ...(loaderData.description ? [{ name: 'description', content: loaderData.description }] : []),
-        ]
-      : [],
-  }),
+  head: ({ loaderData, params }) =>
+    loaderData
+      ? seo({
+          title: `${loaderData.title}: iOSOnAnd docs`,
+          description: loaderData.description || null,
+          path: `/docs${params._splat ? `/${params._splat.replace(/^\/+|\/+$/g, '')}` : ''}`,
+          type: 'article',
+        })
+      : {},
 });
 
 function Content({ path }: { path: string }) {

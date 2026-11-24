@@ -23,6 +23,8 @@ sources are in [`content/docs/`](content/docs).
 | `/docs/uploads` | [uploads.mdx](content/docs/uploads.mdx) | images and clips on R2: types, limits, Range |
 | `/docs/getting-started` | [getting-started.mdx](content/docs/getting-started.mdx) | local run, scripts, tests, deploy |
 | `/docs/reddit` | [reddit.mdx](content/docs/reddit.mdx) | Reddit posts and claims |
+| `/docs/hakios-registry` | [hakios-registry.mdx](content/docs/hakios-registry.mdx) | the HakiOS ports registry sync |
+| `/docs/hackiosx` | [hackiosx.mdx](content/docs/hackiosx.mdx) | the hackiosx.dev sync |
 | `/api-reference` | [src/lib/openapi.ts](src/lib/openapi.ts) | every endpoint (OpenAPI 3.1 at `/api/openapi.json`) |
 
 [PLAN.md](PLAN.md) is the build plan. [AGENTS.md](AGENTS.md) is the brief for
@@ -52,6 +54,14 @@ safe to run on every start:
 `node scripts/sync-hakios.mjs [--apply]` combines the HakiOS ports registry
 (hakios-developers.com) with the tracker: its phones, repos and per-feature
 states, without overwriting maintainers' rows (docs: `/docs/hakios-registry`).
+`node scripts/sync-hackiosx.mjs [--apply]` does the same for the project pages
+of hackiosx.dev, through a hand-checked sentence map (`scripts/hackiosx-map.json`,
+docs: `/docs/hackiosx`). `node scripts/sync-reddit.mjs [--apply]` adds new
+r/hackios port posts and the repos porters link, and lists the threads to read
+for claims (docs: `/docs/reddit`).
+`node scripts/sync-catalog.mjs [--local|--remote]` loads every Android phone and
+tablet Google Play lists into the device catalog that "add a phone" searches
+(`GET /api/catalog`, CLI `catalog`).
 
 Uploads use the emulated R2 under `.wrangler/state`, so they need no setup.
 
@@ -66,8 +76,8 @@ Log in at `/login` with the `ADMIN_EMAIL` and `ADMIN_PASSWORD` from
 Tests run against a running tracker: `bun test tests/api` (`TRACKER_URL`
 defaults to `http://127.0.0.1:3001`; `unit.test.ts` and `docs.test.ts` need
 no tracker). The other scripts, the tests and the
-deploy steps (untested: no Cloudflare account has been used yet) are on
-`/docs/getting-started`.
+deploy steps are on `/docs/getting-started`. Production runs at
+`https://hackios.appaiproxy.com` (`bun run deploy`).
 
 ## Use the CLI
 
@@ -116,10 +126,6 @@ curl -X PUT "$BASE/api/status/s24-ultra/wifi" -H "authorization: Bearer $TOKEN" 
 
 ## Not built yet
 
-- Cloudflare deploy (steps on `/docs/getting-started`, not run yet; it also
-  needs `wrangler r2 bucket create iosonand-media`).
-- Password reset by email. An admin can create accounts with `user-add`;
-  there is no reset flow.
 - Reddit embeds. Posts are links. `reddit-fetch` (admin) pulls r/hackios
   candidates on request; there is no scheduled (cron) fetch.
 - Skill distribution to forks. Copy `SKILL.md` and `cli.mjs` by hand.

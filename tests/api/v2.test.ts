@@ -25,6 +25,9 @@ const DEV = `t-${RUN}`; // base other
 const DEVO = `to-${RUN}`; // base oneios
 const PASSWORD = `pw-${RUN}-correct-horse`;
 const GH = `tgh${RUN}`; // alice's (test) GitHub login
+const GHB = `tgb${RUN}`; // bob's (test) GitHub login, set in the repo-claim tests
+// A real GitHub organization, so a repo under it takes the proof-file path.
+const ORG = 'UniXNU';
 
 // A 2x3 PNG (signature + IHDR) and the first bytes of an MP4 (ftyp isom).
 const PNG = new Uint8Array([
@@ -232,15 +235,33 @@ describe('API keys', () => {
 
 describe('repo claims', () => {
   const ownRepo = `${GH}/port-${RUN}`;
-  const otherRepo = `other-${RUN}/port`;
+  const otherRepo = `${ORG}/port-${RUN}`;
+  /** GitHub could not be reached or rate limited the tracker: the GitHub-backed checks are skipped. */
+  const githubDown = (r: { status: number }) => r.status === 502 || r.status === 503;
   let ownFork = 0;
 
-  test('an untracked repo needs a device; anonymous is 401', async () => {
+  test('anonymous is 401; no linked GitHub account is 403; an untracked repo needs a device', async () => {
     expect((await call('POST', '/api/repos/claim', { body: { repo: otherRepo } })).status).toBe(401);
+    const unlinked = await call('POST', '/api/repos/claim', { who: bob.who, body: { repo: otherRepo, device: DEV } });
+    expect(unlinked.status).toBe(403);
+    expect(unlinked.body.error).toBe('link your GitHub account first');
+    expect((await call('POST', '/api/repos/claim', { who: bob.who, body: { repo: 'not a repo', device: DEV } })).status).toBe(400);
+    if (!LOCAL) return; // the test github_login is set in the local D1
+    expect(localSql(`UPDATE users SET github_login = '${GHB}' WHERE id = ${bob.id}`).ok).toBe(true);
     const r = await call('POST', '/api/repos/claim', { who: bob.who, body: { repo: otherRepo } });
+    if (githubDown(r)) return;
     expect(r.status).toBe(400);
     expect(r.body.error).toBe('device required');
-    expect((await call('POST', '/api/repos/claim', { who: bob.who, body: { repo: 'not a repo', device: DEV } })).status).toBe(400);
+  });
+
+  test("another person's repo is 403, even for a linked account", async () => {
+    if (!LOCAL) return;
+    const r = await call('POST', '/api/repos/claim', { who: alice.who, body: { repo: `torvalds/port-${RUN}`, device: DEV } });
+    if (githubDown(r)) return;
+    expect(r.status).toBe(403);
+    expect(r.body.error).toBe('not the repo owner');
+    expect(r.body.hint).toContain('@torvalds');
+    expect(r.body.hint).toContain(`@${GH}`);
   });
 
   test('the GitHub owner is approved at once and becomes repo and device maintainer', async () => {
@@ -268,8 +289,10 @@ describe('repo claims', () => {
     expect(taken.body.hint).toContain(`@${GH}`);
   });
 
-  test('anyone else gets a pending proof-file claim; a missing file is 422; an admin rejects it and the created fork goes', async () => {
+  test("an organization's repo gets a pending proof-file claim; a missing file is 422; an admin rejects it and the created fork goes", async () => {
+    if (!LOCAL) return;
     const r = await call('POST', '/api/repos/claim', { who: bob.who, body: { repo: otherRepo, device: DEV, note: 'mine' } });
+    if (githubDown(r)) return;
     expect(r.status).toBe(202);
     const c = r.body.claim;
     expect(c.status).toBe('pending');
@@ -300,7 +323,9 @@ describe('repo claims', () => {
   });
 
   test('an admin approves a pending claim (method admin); the maintainer steps down and loses the granted device', async () => {
+    if (!LOCAL) return;
     const r = await call('POST', '/api/repos/claim', { who: bob.who, body: { repo: `${otherRepo}-2`, device: DEVO } });
+    if (githubDown(r)) return;
     expect(r.status).toBe(202);
     const ok = await call('POST', `/api/repos/claims/${r.body.claim.id}/approve`, { who: admin });
     expect(ok.status).toBe(200);
@@ -340,6 +365,77 @@ describe('repo claims', () => {
     expect(cl.status).toBe(200);
     expect((await call('DELETE', `/api/forks/${ownFork}/devices?device=${DEVO}`, { who: alice.who })).status).toBe(200);
     expect((await call('POST', `/api/forks/${ownFork}/devices`, { who: admin, body: { device_slug: DEVO, support: 'best' } })).status).toBe(400);
+  });
+
+  test('a phone the tracker does not list is added with the claim of your own repo', async () => {
+    if (!LOCAL) return;
+    const name = `Test Phone ${RUN}`;
+    const repo = `${GH}/newphone-${RUN}`;
+    // Not your repo (or no GitHub account): 403 before anything is created.
+    const other = await call('POST', '/api/repos/claim', { who: bob.who, body: { repo: `${GH}/x-${RUN}`, new_device: { name } } });
+    expect(other.status).toBe(403);
+    expect((await call('GET', `/api/devices?q=${encodeURIComponent(name)}`)).body.total).toBe(0);
+    const r = await call('POST', '/api/repos/claim', { who: alice.who, body: { repo, new_device: { name, model: 'tst', soc: 'Test SoC' } } });
+    expect(r.status).toBe(200);
+    expect(r.body.claim.status).toBe('approved');
+    const slug = r.body.fork.device_slug;
+    expect(slug).toBe(`test-phone-${RUN}`);
+    made.forks.push(r.body.fork.id);
+    const d = await call('GET', `/api/devices/${slug}`);
+    expect(d.body.device).toMatchObject({ name, model: 'tst', soc: 'Test SoC', status: 'unknown' });
+    expect((await call('GET', '/api/auth/me', { who: alice.who })).body.maintains).toContain(slug);
+    const dup = await call('POST', '/api/repos/claim', { who: alice.who, body: { repo: `${GH}/newphone2-${RUN}`, new_device: { name: name.toUpperCase() } } });
+    expect(dup.status).toBe(409);
+    expect(dup.body.hint).toContain(slug);
+    // Clean up: the repo row, then the phone.
+    expect((await call('DELETE', `/api/forks/${r.body.fork.id}`, { who: admin })).status).toBe(200);
+    made.forks.splice(made.forks.indexOf(r.body.fork.id), 1);
+    expect((await call('DELETE', `/api/devices/${slug}`, { who: admin })).status).toBe(200);
+  });
+
+  test("a repo's maintainer maintains its primary/merged/ported phones without a claim", async () => {
+    if (!LOCAL) return;
+    const before = await call('GET', '/api/auth/me', { who: alice.who });
+    expect(before.body.maintains).not.toContain(DEVO);
+    expect((await call('POST', `/api/forks/${ownFork}/devices`, { who: admin, body: { device_slug: DEVO, support: 'ported', note: 'test' } })).status).toBe(200);
+    const me = await call('GET', '/api/auth/me', { who: alice.who });
+    expect(me.body.maintains).toContain(DEVO);
+    expect((await call('PUT', `/api/status/${DEVO}/touch`, { who: alice.who, body: { state: 'works', detail: 'test', source: 'test' } })).status).toBe(200);
+    const d = await call('GET', `/api/devices/${DEVO}`);
+    expect(d.body.device.maintainers).toContain(`@${GH}`);
+    expect((await call('DELETE', `/api/forks/${ownFork}/devices?device=${DEVO}`, { who: admin })).status).toBe(200);
+    expect((await call('GET', '/api/auth/me', { who: alice.who })).body.maintains).not.toContain(DEVO);
+    expect((await call('PUT', `/api/status/${DEVO}/touch`, { who: alice.who, body: { state: 'works', detail: 'test', source: 'test' } })).status).toBe(403);
+  });
+
+  test('a phone the maintainer adds: theirs at once when nobody maintains it, else an admin decides; removing it drops it', async () => {
+    if (!LOCAL) return;
+    const add = await call('POST', `/api/forks/${ownFork}/devices`, { who: alice.who, body: { device_slug: DEVO, support: 'claimed' } });
+    expect(add.status).toBe(200);
+    expect(add.body.device_claim.status).toBe('approved');
+    expect((await call('GET', '/api/auth/me', { who: alice.who })).body.maintains).toContain(DEVO);
+    expect((await call('DELETE', `/api/forks/${ownFork}/devices?device=${DEVO}`, { who: alice.who })).status).toBe(200);
+    expect((await call('GET', '/api/auth/me', { who: alice.who })).body.maintains).not.toContain(DEVO);
+
+    // Bob maintains DEVO: alice adding it to her repo does not take it over.
+    const bc = await call('POST', '/api/claims', { who: bob.who, body: { device: DEVO, note: 'test' } });
+    expect(bc.status).toBe(201);
+    expect((await call('POST', `/api/claims/${bc.body.claim.id}/approve`, { who: admin })).status).toBe(200);
+    const taken = await call('POST', `/api/forks/${ownFork}/devices`, { who: alice.who, body: { device_slug: DEVO, support: 'claimed' } });
+    expect(taken.status).toBe(200);
+    expect(taken.body.device_claim.status).toBe('pending');
+    expect((await call('GET', '/api/auth/me', { who: alice.who })).body.maintains).not.toContain(DEVO);
+    expect((await call('DELETE', `/api/forks/${ownFork}/devices?device=${DEVO}`, { who: alice.who })).status).toBe(200);
+    expect((await call('DELETE', `/api/claims/${bc.body.claim.id}`, { who: admin })).status).toBe(200);
+
+    // Claiming a repo you already maintain with another phone adds that phone.
+    const again = await call('POST', '/api/repos/claim', { who: alice.who, body: { repo: ownRepo, device: DEVO } });
+    expect(again.status).toBe(200);
+    expect(again.body.already).toBe(true);
+    expect(again.body.device_claim.status).toBe('approved');
+    expect(again.body.fork.supports.map((x: any) => x.device_slug)).toContain(DEVO);
+    expect((await call('DELETE', `/api/forks/${ownFork}/devices?device=${DEVO}`, { who: alice.who })).status).toBe(200);
+    expect((await call('GET', '/api/auth/me', { who: alice.who })).body.maintains).not.toContain(DEVO);
   });
 
   test('lineage: the maintainer records "based on"; /api/lineage and ?base_project= show it', async () => {
@@ -504,6 +600,50 @@ describe('media', () => {
     expect((await call('GET', png.url, { binary: true })).status).toBe(404);
     expect((await call('GET', `/api/media/${png.id}`)).status).toBe(404);
     made.media = made.media.filter((id) => id !== png.id);
+  });
+});
+
+describe('photo updates and the device catalog', () => {
+  test('a maintainer posts an update with an upload; others cannot attach it; the author removes it', async () => {
+    if (!LOCAL) return; // alice maintains DEV through the owner claim (local only)
+    const k = await key(alice.who, ['media:write']);
+    const up = await call('POST', '/api/media', { who: { token: k.token }, form: form({ device: DEV, caption: `upd ${RUN}` }, { bytes: PNG, name: 'u.png' }) });
+    expect(up.status).toBe(201);
+    made.media.push(up.body.media.id);
+    // A status:write key cannot post updates (media:write).
+    const sk = await key(alice.who, ['status:write']);
+    expect((await call('POST', `/api/devices/${DEV}/updates`, { who: { token: sk.token }, body: { body: 'x' } })).status).toBe(403);
+    // Not a maintainer of DEV: 403. An empty update: 400.
+    expect((await call('POST', `/api/devices/${DEV}/updates`, { who: bob.who, body: { body: 'x' } })).status).toBe(403);
+    expect((await call('POST', `/api/devices/${DEV}/updates`, { who: { token: k.token }, body: {} })).status).toBe(400);
+    const r = await call('POST', `/api/devices/${DEV}/updates`, { who: { token: k.token }, body: { body: `Wi-Fi joins networks ${RUN}`, media_ids: [up.body.media.id] } });
+    expect(r.status).toBe(201);
+    expect(r.body.update).toMatchObject({ device_slug: DEV, body: `Wi-Fi joins networks ${RUN}` });
+    expect(r.body.update.media.map((m: any) => m.id)).toEqual([up.body.media.id]);
+    // The same upload cannot go into a second update.
+    const again = await call('POST', `/api/devices/${DEV}/updates`, { who: { token: k.token }, body: { body: 'again', media_ids: [up.body.media.id] } });
+    expect(again.status).toBe(400);
+    expect(again.body.error).toBe('bad media_ids');
+    const list = await call('GET', `/api/devices/${DEV}/updates`);
+    expect(list.status).toBe(200);
+    expect(list.body.updates[0].id).toBe(r.body.update.id);
+    expect(list.body.updates[0].media[0].url).toMatch(new RegExp(`^/media/${DEV}/`));
+    expect((await call('DELETE', `/api/devices/${DEV}/updates/${r.body.update.id}`, { who: bob.who })).status).toBe(403);
+    expect((await call('DELETE', `/api/devices/${DEV}/updates/${r.body.update.id}`, { who: { token: k.token } })).status).toBe(200);
+    expect((await call('GET', `/api/devices/${DEV}/updates`)).body.total).toBe(0);
+    expect((await call('GET', '/api/devices/no-such-phone/updates')).status).toBe(404);
+  });
+
+  test('the catalog finds phones by name and codename and marks tracked ones', async () => {
+    if (!LOCAL) return; // loaded locally by scripts/sync-catalog.mjs
+    const short = await call('GET', '/api/catalog?q=a');
+    expect(short.status).toBe(400);
+    const r = await call('GET', '/api/catalog?q=lavender');
+    if (!r.body.catalog?.length) return; // catalog not loaded in this database
+    expect(r.body.catalog.some((c: any) => c.codenames.includes('lavender') && c.display === 'Redmi Note 7')).toBe(true);
+    const s24 = await call('GET', '/api/catalog?q=galaxy%20s24%20ultra');
+    expect(s24.body.catalog[0].display).toBe('Galaxy S24 Ultra');
+    expect(s24.body.catalog[0].tracked).toBe('s24-ultra');
   });
 });
 

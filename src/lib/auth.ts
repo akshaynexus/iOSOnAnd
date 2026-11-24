@@ -776,20 +776,38 @@ export async function requireAdmin(req: Request): Promise<UserRow> {
 /* Trust model: maintainers = approved claims                          */
 /* ------------------------------------------------------------------ */
 
-/** Device slugs the user maintains (approved claims), sorted. */
+/**
+ * Support levels an admin sets (src/routes/api/forks.$id.devices.ts). The
+ * maintainer of a repo maintains every phone the repo supports at one of
+ * these levels, and the repo's own device, without a claim per phone; a
+ * phone the maintainer adds themselves ("claimed") goes through a device
+ * claim instead (approved at once only when nobody maintains that phone).
+ */
+export const MAINTAINING_SUPPORT = ['primary', 'merged', 'ported'] as const;
+const SUPPORT_IN = `(${MAINTAINING_SUPPORT.map((s) => `'${s}'`).join(', ')})`;
+
+/**
+ * (device_slug, uid) pairs: every device maintainer. One user per row; the
+ * same pair may repeat. Approved device claims, repo maintainers for the
+ * repo's own device, and repo maintainers for its supported phones.
+ */
+export const MAINTAINERS_SQL = `
+  SELECT device_slug, user_id AS uid FROM claims WHERE status = 'approved'
+  UNION SELECT device_slug, maintainer_user_id AS uid FROM forks WHERE maintainer_user_id IS NOT NULL AND device_slug IS NOT NULL
+  UNION SELECT rd.device_slug, f.maintainer_user_id AS uid FROM repo_devices rd JOIN forks f ON f.id = rd.fork_id
+    WHERE f.maintainer_user_id IS NOT NULL AND rd.support IN ${SUPPORT_IN}`;
+
+/** Device slugs the user maintains (approved claims, and the phones of repos they maintain), sorted. */
 export async function maintainedSlugs(userId: number): Promise<string[]> {
   const rows = await queryAll<{ device_slug: string }>(
-    "SELECT DISTINCT device_slug FROM claims WHERE user_id = ? AND status = 'approved' ORDER BY device_slug",
+    `SELECT DISTINCT device_slug FROM (${MAINTAINERS_SQL}) WHERE uid = ? ORDER BY device_slug`,
     [userId],
   );
   return rows.map((r) => r.device_slug);
 }
 
 export async function isMaintainer(userId: number, deviceSlug: string): Promise<boolean> {
-  return !!(await queryFirst(
-    "SELECT 1 AS ok FROM claims WHERE user_id = ? AND device_slug = ? AND status = 'approved' LIMIT 1",
-    [userId, deviceSlug],
-  ));
+  return !!(await queryFirst(`SELECT 1 AS ok FROM (${MAINTAINERS_SQL}) WHERE uid = ? AND device_slug = ? LIMIT 1`, [userId, deviceSlug]));
 }
 
 export async function canEditDevice(u: UserRow, deviceSlug: string | null): Promise<boolean> {
@@ -822,7 +840,7 @@ export async function requireDeviceEditor(req: Request, deviceSlug: string | nul
 export async function requirePoster(req: Request): Promise<UserRow> {
   const u = await requireUser(req);
   if (isAdmin(u)) return u;
-  const any = await queryFirst("SELECT 1 AS ok FROM claims WHERE user_id = ? AND status = 'approved' LIMIT 1", [u.id]);
+  const any = await queryFirst(`SELECT 1 AS ok FROM (${MAINTAINERS_SQL}) WHERE uid = ? LIMIT 1`, [u.id]);
   if (any) return u;
   throw new HttpError(
     403,

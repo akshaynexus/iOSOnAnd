@@ -41,3 +41,6 @@ Thumbs.db
 
 # Offline write queue from `node cli.mjs queue` (local, not shared)
 TRACKER_QUEUE.md
+
+# Sync script reports (scripts/sync-*.mjs)
+*-sync-report.json

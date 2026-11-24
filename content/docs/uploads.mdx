@@ -69,6 +69,29 @@ Image width and height are read from the file (PNG, JPEG, WebP, AVIF headers); v
 - `DELETE /api/media/{id}`: the uploader or an admin. It is a soft delete (the row keeps
   `deleted = 1`) and the R2 object is removed, so `/media/<key>` answers 404 afterwards.
 
+## Photo updates
+
+An update is a maintainer's post on a phone: what changed, with up to 10 photos or clips. It shows
+in the Updates section of the phone's page (newest first); its files also show in the gallery.
+
+```sh
+node cli.mjs update s25 boot.mp4 wifi.png --text "Wi-Fi joins networks now; Safari loads pages" --area wifi
+node cli.mjs updates s25
+```
+
+`update` uploads each file (`POST /api/media`, captioned with the text), then posts them together:
+`POST /api/devices/{slug}/updates {body, media_ids}`. On the phone's page, maintainers post the
+same from the Updates form (images lose their EXIF data first, as with any upload).
+
+- Who: admin, or a maintainer of the phone; a key needs `media:write`.
+- `media_ids`: your uploads of that phone that are in no other update (else 400).
+- `GET /api/devices/{slug}/updates` (public) lists them with their media;
+  `DELETE /api/devices/{slug}/updates/{id}` (the author or an admin) removes one and leaves its
+  files in the gallery.
+
+An update is a claim like any other: it shows what the maintainer saw. A status change still goes
+through `status-set` with its detail and source.
+
 ## Local dev and deploy
 
 `vite dev` uses the emulated R2 under `.wrangler/state`, so uploads work locally with no setup.

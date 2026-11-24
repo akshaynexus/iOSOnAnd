@@ -7,7 +7,7 @@ import { Moon, Search, Sun, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/auth";
 import { useAction } from "@/components/useAction";
-import { PrimaryAction, useThemeMode } from "@/components/common";
+import { useThemeMode } from "@/components/common";
 import PillNav from "@/components/reactbits/PillNav";
 import type { PillNavItem } from "@/components/reactbits/PillNav";
 import { deviceMatches } from "@/lib/areas";
@@ -205,7 +205,7 @@ function SiteSearch({ className, autoFocus }: { className?: string; autoFocus?: 
 }
 
 function Account({ compact }: { compact?: boolean }) {
-  const { user, loading, refresh } = useAuth();
+  const { user, loading, refresh, isAdmin } = useAuth();
   const navigate = useNavigate();
   const router = useRouter();
   const [onLogout, loggingOut] = useAction(async () => {
@@ -230,6 +230,15 @@ function Account({ compact }: { compact?: boolean }) {
             </Link>
           }
         />
+        {isAdmin ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            className={cn("rounded-full", compact && "justify-start")}
+            nativeButton={false}
+            render={<Link to="/admin">Admin</Link>}
+          />
+        ) : null}
         <Button
           variant="ghost"
           size="sm"
@@ -251,9 +260,12 @@ function Account({ compact }: { compact?: boolean }) {
         nativeButton={false}
         render={<Link to="/login">Log in</Link>}
       />
-      <PrimaryAction onClick={() => void navigate({ to: "/signup" })} className={compact ? "w-full" : undefined}>
-        Sign up
-      </PrimaryAction>
+      <Button
+        size="sm"
+        className={cn("rounded-full px-4", compact && "w-full")}
+        nativeButton={false}
+        render={<Link to="/signup">Sign up</Link>}
+      />
     </div>
   );
 }

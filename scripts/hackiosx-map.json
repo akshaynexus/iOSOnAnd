@@ -1,0 +1,117 @@
+{
+  "_note": "Used by scripts/sync-hackiosx.mjs. hackiosx.dev is prose, so this file says, sentence by sentence, which tracker areas each sentence on https://hackiosx.dev/projects supports, checked by hand against the page on 2026-11-24. The sync writes a state only for a sentence that is on the live page exactly as written here; a sentence the page adds or rewords is reported as unmapped and writes nothing until it is added here. projects: the three main projects, keyed by the page's h2 id; works and missing map a list item (exact text) to [area, state] pairs, an empty list means the sentence names no tracker area. ports: the community ports table, keyed by the repo the page links (canonical name), with the State column text and its areas. repo_aliases: names the page links that GitHub redirects (renames). new_devices: phones the page lists that the tracker did not have. repos: new repos, checked on GitHub (fork parent, default branch).",
+  "checked": "2026-11-24",
+  "repo_aliases": {
+    "oosexgang/hackios-xnu-kernel": "oosexgang/hakios-xnu-kernel",
+    "mkukarin01/ios-topaz-experiments": "mkukarin01/ios-kunzite-experiments"
+  },
+  "new_devices": [
+    {
+      "slug": "redmi-note-12-4g",
+      "name": "Redmi Note 12 4G",
+      "model": "topaz",
+      "soc": "Snapdragon 685 (SM6225)",
+      "ios_version": "iOS 16.7.16",
+      "notes": "Codename topaz (also tapas). The ios-topaz port runs the iPhone X iOS 16.7.16 (20H392) userland on a 4 KB-page kernel."
+    }
+  ],
+  "repos": {
+    "MakrSas/ios-topaz": { "kind": "fork", "base_project": "ios-sweet", "branch": "topaz", "base": "dipa-studio/ios-sweet", "relation": "fork-of" }
+  },
+  "projects": {
+    "hackios": {
+      "name": "HackiOS",
+      "device": "poco-x5-pro",
+      "repos": ["oosexgang/hakios-xnu-kernel", "oosexgang/hackios-xnu-userland"],
+      "works": {
+        "Lock screen, home screen, gestures, Control Center, widgets": [["boot", "works"]],
+        "Settings, Clock, Calendar, Photos, Notes, Safari and more": [],
+        "Touchscreen with multitouch, power and volume keys": [["touch", "works"]],
+        "All 8 cores; about 20 seconds to the lock screen": [],
+        "Adreno 642L GPU drawing the interface": [["gpu", "works"]],
+        "Wi-Fi: join a network in Settings, browse in Safari": [["wifi", "works"]],
+        "Speakers, microphone, front and rear camera in Camera.app": [["audio", "works"], ["camera", "works"]],
+        "Sileo and Procursus (apt, tweaks, SSH)": []
+      },
+      "missing": {
+        "Cellular and Bluetooth": [["modem", "broken"], ["bluetooth", "broken"]],
+        "Charging while iOS runs (the battery only drains)": [["battery", "broken"]],
+        "Metal for apps (Apple's system shaders are being brought up one by one)": [],
+        "App Store downloads and Apple ID sign-in": [],
+        "Video recording": [["video-encode", "broken"]]
+      }
+    },
+    "ios-sweet": {
+      "name": "ios-sweet",
+      "device": "redmi-note-10-pro",
+      "repos": ["dipa-studio/ios-sweet"],
+      "works": {
+        "Lock screen and home screen (about 4 minutes on the Apple logo)": [["boot", "works"]],
+        "Touchscreen, swipe-up to go home, app switcher": [],
+        "Power and volume buttons, screen lock and wake": [["touch", "works"]],
+        "Settings, Control Center, notification center": [],
+        "The App Store opens (installing apps is untested, since there is no internet yet)": [],
+        "All 8 CPU cores, read/write storage": []
+      },
+      "missing": {
+        "Wi-Fi, Bluetooth, mobile network": [["wifi", "broken"], ["bluetooth", "broken"], ["modem", "broken"]],
+        "Audio, camera, sensors, GPS, Face ID": [["audio", "broken"], ["camera", "broken"], ["sensors", "broken"], ["face-id", "broken"]],
+        "GPU: the CPU draws everything": [["gpu", "broken"]],
+        "Real battery level (it always shows 100 %)": [["battery", "broken"]]
+      }
+    },
+    "unixnu": {
+      "name": "UniXNU",
+      "device": "xiaomi-pad-6s-pro",
+      "repos": ["UniXNU/UniXNU", "UniXNU/UniXNU-sheng"],
+      "works": {
+        "iPadOS home screen and Settings": [["boot", "works"]],
+        "GPU: a native kernel driver for the Adreno 740, with Metal translated to Vulkan for Mesa's Turnip driver; the system interface is composited on the GPU": [["gpu", "works"]],
+        "Touchscreen, display, UFS storage": [["touch", "in-progress"]]
+      },
+      "missing": {
+        "Wi-Fi, Bluetooth, USB, audio, camera, sensors": [["wifi", "broken"], ["bluetooth", "broken"], ["audio", "broken"], ["camera", "broken"], ["sensors", "broken"]],
+        "Battery driver, sleep and wake": [["battery", "broken"]]
+      },
+      "_touch": "Touchscreen works; the page does not mention buttons, so Touch + buttons is in progress, not works."
+    }
+  },
+  "ports": {
+    "MakrSas/ios-topaz": {
+      "device": "redmi-note-12-4g",
+      "state": "Home screen with touch and buttons, all 8 cores, Wi-Fi with Safari, Adreno 610 GPU through Mesa, sound, charging",
+      "areas": [["boot", "works"], ["touch", "works"], ["wifi", "works"], ["gpu", "works"], ["audio", "works"], ["battery", "works"]]
+    },
+    "ch1tmdgus/ios-v60": {
+      "device": "lg-v60",
+      "state": "iOS interface with working touch and buttons",
+      "areas": [["boot", "works"], ["touch", "works"]]
+    },
+    "joranv1/ios-sailfish": {
+      "device": "pixel-1",
+      "state": "All stock apps, GPU drawing through Mesa on the Adreno 530, Wi-Fi in Settings with Safari, real battery and charging, about 20 seconds to the lock screen, on 2 GB of RAM",
+      "areas": [["boot", "works"], ["gpu", "works"], ["wifi", "works"], ["battery", "works"]]
+    },
+    "NWylynko/ios-flame": {
+      "device": "pixel-4",
+      "state": "Home screen and stock apps drawn with Metal on the Adreno 640 (through Mesa's Vulkan driver), Wi-Fi in Settings, Safari, SSH over USB",
+      "areas": [["boot", "works"], ["gpu", "works"], ["wifi", "works"]]
+    },
+    "PixOS-Project/pixelios-kernel": {
+      "device": "pixel-6a",
+      "state": "Lock screen and home screen, touch, all 8 cores (button driver not tested yet)",
+      "areas": [["boot", "works"], ["touch", "in-progress"]]
+    },
+    "mkukarin01/ios-kunzite-experiments": {
+      "device": "poco-m8",
+      "state": "SpringBoard runs, USB networking and live log; GPU work in progress",
+      "areas": [["boot", "in-progress"], ["gpu", "in-progress"]],
+      "_boot": "SpringBoard running is not stated as reaching a usable Home Screen, so boot is in progress."
+    },
+    "wardevsa/ios-a5xelte": {
+      "device": "s7",
+      "state": "iOS setup screen with touch and all four buttons; CPU rendering, very slow",
+      "areas": [["boot", "in-progress"], ["touch", "works"], ["gpu", "broken"]]
+    }
+  }
+}

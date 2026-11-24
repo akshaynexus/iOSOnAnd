@@ -38,11 +38,19 @@ node cli.mjs repo-claim OWNER/REPO --device <device>
 ```
 
 - Your GitHub login is OWNER: approved at once; you maintain the repo and its phone.
-- Otherwise it prints a code: write it alone to `.iosonand-verify` on the default branch, push,
+- OWNER is a GitHub organization you belong to (public member, or a contributor to the repo):
+  it prints a code: write it alone to `.iosonand-verify` on the default branch, push,
   run `node cli.mjs repo-verify <claim id>`, then delete the file again. 422 = file missing or
   wrong; the claim lasts 24 h.
+- Anyone else's personal repo, or no GitHub account linked (`node cli.mjs login`): 403.
+- One repo claim covers all its phones: the ones an admin lists on it, and any you add with
+  `node cli.mjs repo-claim OWNER/REPO --device <device>` (yours at once unless someone else
+  maintains that phone; then an admin decides).
 - A repo the tracker does not list needs `--device`; `repo-add OWNER/REPO --device <device>
   --branch B --best-result "..."` adds and claims it.
+- A phone the tracker does not list: find it with `node cli.mjs catalog <name or codename>`
+  (every Android phone and tablet Google Play lists), then
+  `repo-add OWNER/REPO --new-device "Redmi Note 7" --model lavender` (your own repo only).
 - Without a repo: `node cli.mjs claim-add <device> --note "..."`, and an admin approves it.
 
 `node cli.mjs whoami` prints `maintains` (devices), `maintains_repos` and `token_scopes`.
@@ -63,6 +71,7 @@ for any other phone the server answers 400 `area not applicable`.
 ## Proof, repo facts, posts
 
 ```sh
+node cli.mjs update <device> shot.png clip.mp4 --text "what changed" --area <area>   # a photo update: files + text, on the phone's page
 node cli.mjs media-upload shot.png --device <device> --area <area> --caption "..."   # images 15 MB, videos 95 MB
 node cli.mjs media-list --device <device>
 node cli.mjs fork-sync --repo OWNER/REPO --best-result "boots to lock screen"

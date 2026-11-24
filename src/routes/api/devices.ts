@@ -1,6 +1,6 @@
 // /api/devices — GET list (?q= searches slug/name/model/SoC/notes, ?state=,
 // ?base=, ?family= (a label in its families), ?limit= (default and max 500),
-// ?offset=; public; each device carries families/family,
+// ?offset=, ?brief=1 (only {slug, name} per device, for pickers); public; each device carries families/family,
 // statuses, forks, claims, maintainers, supported_by and media, read in a
 // fixed number of queries; -> {devices, total, limit, offset, next}), POST
 // create (admin). 409 on duplicate slug.
@@ -65,6 +65,8 @@ async function handleGet({ request }: ApiCtx): Promise<Response> {
     return json({ devices: rows, ...pageInfo(hit.length, page.limit, page.offset, rows.length) });
   }
   const { rows, page: info } = await paged<Device>(`SELECT * FROM devices ${w} ORDER BY slug`, `SELECT COUNT(*) AS n FROM devices ${w}`, vals, page);
+  // ?brief=1: slug and name only, for pickers (the full rows are large).
+  if (sp.get('brief') === '1') return json({ devices: rows.map((d) => ({ slug: d.slug, name: d.name })), ...info });
   return json({ devices: await withDetails(rows), ...info });
 }
 

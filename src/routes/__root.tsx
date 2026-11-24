@@ -3,7 +3,10 @@ import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/components/auth";
 import { Page } from "@/components/Page";
 import { Toaster } from "@/components/ui/sonner";
+import { SITE_DESCRIPTION, seo } from "@/lib/seo";
 import "../styles.css";
+
+const base = seo({ title: "iOSOnAnd: iOS on Android status", description: SITE_DESCRIPTION });
 
 export const Route = createRootRoute({
   head: () => ({
@@ -11,11 +14,8 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { title: "iOSOnAnd: iOS on Android status" },
-      {
-        name: "description",
-        content: "Per-device, per-area status of iOS 27 running next to One UI on rooted Galaxy phones (OneiOS and its forks).",
-      },
+      { name: "format-detection", content: "telephone=no" },
+      ...base.meta,
     ],
   }),
   component: RootComponent,

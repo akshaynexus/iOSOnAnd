@@ -122,26 +122,12 @@ function usePaged<T extends { id: number }>(
   return { items, next, more, loading };
 }
 
-function MoreButton({
-  shown,
-  total,
-  onMore,
-  loading,
-}: {
-  shown: number;
-  total?: number;
-  onMore: () => void;
-  loading: boolean;
-}) {
+/** The count under an infinitely scrolling feed; the next page loads near the list's end. */
+function FeedStatus({ shown, total, loading, done }: { shown: number; total?: number; loading: boolean; done: boolean }) {
   return (
-    <div className="flex flex-col items-center gap-1">
-      <Button variant="outline" onClick={onMore} disabled={loading}>
-        {loading ? "Loading" : "Load more"}
-      </Button>
-      <p className="text-xs text-muted-foreground tabular-nums" aria-live="polite">
-        {total ? `${shown} of ${total}` : `${shown} shown`}
-      </p>
-    </div>
+    <p className="text-center text-xs text-muted-foreground tabular-nums" aria-live="polite">
+      {loading ? "Loading more" : total ? `${shown} of ${total}` : done ? `${shown} shown` : `${shown} shown, scroll for more`}
+    </p>
   );
 }
 
@@ -190,10 +176,9 @@ export function PostsFeed({ posts, next, total }: { posts: Post[]; next: number 
             stagger={0.03}
             onItemSelect={(item) => window.open(item.url, "_blank", "noopener,noreferrer")}
             className="updates-list"
+            onEndReached={feed.next !== null ? () => void feed.more() : undefined}
           />
-          {feed.next !== null ? (
-            <MoreButton shown={feed.items.length} total={total} onMore={() => void feed.more()} loading={feed.loading} />
-          ) : null}
+          <FeedStatus shown={feed.items.length} total={total} loading={feed.loading} done={feed.next === null} />
         </>
       )}
     </div>
@@ -239,10 +224,9 @@ export function ChangelogFeed({
         animateOnce
         stagger={0.03}
         className="updates-list"
+        onEndReached={feed.next !== null ? () => void feed.more() : undefined}
       />
-      {feed.next !== null ? (
-        <MoreButton shown={feed.items.length} total={total} onMore={() => void feed.more()} loading={feed.loading} />
-      ) : null}
+      <FeedStatus shown={feed.items.length} total={total} loading={feed.loading} done={feed.next === null} />
     </div>
   );
 }
