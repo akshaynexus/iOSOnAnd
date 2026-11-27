@@ -35,7 +35,7 @@ const WRITE_COMMANDS = new Set([
   "status-set", "device-add", "device-set", "fork-add", "fork-sync", "post-add",
   "claim-add", "claim-approve", "claim-reject", "reddit-fetch", "post-set",
   "repo-claim", "repo-add", "repo-support", "repo-lineage", "media-upload", "update", "repo-maintainer-add", "repo-maintainer-remove",
-  "feature-add", "feature-set", "feature-remove", "media-link", "gpu-set", "gpu-issue-add", "gpu-issue-set", "gpu-issue-remove",
+  "feature-add", "feature-set", "feature-remove", "media-link", "gpu-set", "gpu-issue-add", "gpu-issue-set", "gpu-issue-remove", "porting-apply",
 ]);
 let TOKEN_FLAG = null;
 
@@ -176,7 +176,7 @@ function isLocalUrl(u) {
 /* Arguments and prompts                                               */
 /* ------------------------------------------------------------------ */
 
-const BOOLEAN_FLAGS = new Set(["admin", "register", "token", "help", "no-check"]);
+const BOOLEAN_FLAGS = new Set(["admin", "register", "token", "help", "no-check", "overwrite"]);
 
 /** Parse argv into { positionals, flags }. Supports --key value, --key=value, --flag. */
 function parseArgs(argv) {
@@ -397,6 +397,10 @@ Porting records (UniXNU's device records, as on unixnu.com/devices; no login):
   porting <device> | --repo R | --codename C | --component Adreno740 | --area gpu --status device-verified
                             each port repo's per-area status (device-verified,
                             host-verified, implemented, planned), best first
+  porting-apply <record> [--overwrite] [--areas a,b]
+                            the phone's maintainers: fill its statuses from the record
+                            (on device -> works, host-tested / implemented -> in progress);
+                            rows with a state stay unless --overwrite
   porting-get <record>      one record in full: per area the components, what it
                             achieved, limits, next step, build/boot commands, evidence
   components [words]        the framework's drivers (e.g. components wifi, components
@@ -419,8 +423,9 @@ Porting records (UniXNU's device records, as on unixnu.com/devices; no login):
 Repos (a repo you own on GitHub is yours at once; else a proof file):
   repo-claim OWNER/REPO [--device SLUG] [--note TEXT]
                             claim a repo. Prints a verification code when GitHub
-                            does not show you as the owner: write it alone to
-                            .iosonand-verify on the default branch, push, then
+                            does not show you as the owner: put it alone in
+                            .iosonand-verify on a throwaway iosonand-verify branch
+                            (never the main branch), push the branch, then
   repo-verify <claim id>    check the file and approve the claim
   repo-add OWNER/REPO --device SLUG [--branch B] [--best-result T] [--note T]
                             add an untracked repo and claim it in one step
@@ -964,9 +969,10 @@ async function cmdRepoClaim(cmd, positionals, flags) {
   if (res.status === 202 && c.nonce) {
     info(
       `Claim #${c.id} is pending (until ${c.expires}). To prove you can push to ${c.repo}:\n` +
-        `  printf '%s\\n' '${c.nonce}' > .iosonand-verify && git add .iosonand-verify && git commit -m "iOSOnAnd verification" && git push\n` +
+        `on a throwaway branch, so nothing lands on your main branch:\n` +
+        `  git switch --orphan iosonand-verify && printf '%s\\n' '${c.nonce}' > .iosonand-verify && git add .iosonand-verify && git commit -m "iOSOnAnd verification" && git push origin iosonand-verify && git switch -\n` +
         `  node ./cli.mjs repo-verify ${c.id}\n` +
-        `then delete .iosonand-verify again.`,
+        `then delete the branch: git push origin --delete iosonand-verify && git branch -D iosonand-verify`,
     );
   } else if (res.status === 202 && c.method === "review") {
     info(`Claim #${c.id} is pending: a maintainer of ${c.repo} (or an admin) approves it with repo-claim-approve ${c.id}; then you join its maintainers.`);
@@ -1222,6 +1228,14 @@ async function main() {
       out(await api(`/api/porting/${encodeURIComponent(key)}`));
       return;
     }
+    case "porting-apply": {
+      const key = positionals[0];
+      if (!key) throw usage("usage: porting-apply <record> [--overwrite] [--areas wifi,gpu]   (the phone's maintainers: fill its statuses from the record)");
+      const b = { overwrite: !!flags.overwrite };
+      if (str(flags, "areas")) b.areas = flags.areas.split(",").map((s) => s.trim()).filter(Boolean);
+      out(await api(`/api/porting/${encodeURIComponent(key)}/apply`, { method: "POST", auth: true, body: b }));
+      return;
+    }
     case "components": {
       const q = new URLSearchParams();
       if (positionals.length) q.set("q", positionals.join(" "));
@@ -1397,7 +1411,7 @@ async function main() {
       const id = positionals[0];
       if (!id || !/^\d+$/.test(id)) throw usage("usage: repo-verify <claim id>  (the id repo-claim printed)");
       const r = await api(`/api/repos/claim/${id}/verify`, { method: "POST", auth: true });
-      info(`verified: you maintain ${r.fork?.repo}${r.fork?.device_slug ? ` and ${r.fork.device_slug}` : ""}. Delete .iosonand-verify from the repo now.`);
+      info(`verified: you maintain ${r.fork?.repo}${r.fork?.device_slug ? ` and ${r.fork.device_slug}` : ""}. Delete the iosonand-verify branch now: git push origin --delete iosonand-verify`);
       out(r);
       return;
     }

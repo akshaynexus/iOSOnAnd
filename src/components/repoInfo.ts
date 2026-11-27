@@ -11,11 +11,20 @@ export const ONEIOS_REPO = "akshaynexus/OneiOS";
 const SUPPORT_RANK: Record<string, number> = { primary: 0, merged: 1, ported: 2, claimed: 3 };
 const KIND_RANK: Record<string, number> = { upstream: 0, standalone: 1, fork: 2 };
 
-/** Repos that support the device, upstream first, then by support level. */
-export function supportersOf(d: Pick<Device, "supported_by" | "forks" | "repo_kind">): SupportedBy[] {
+/**
+ * Repos that support the device: upstream first; then the phone's own repos
+ * (its forks, the ones its maintainers work on) before repos ported in from
+ * elsewhere, such as a GPU driver another phone's port shares; then by
+ * support level.
+ */
+export function supportersOf(d: Pick<Device, "supported_by" | "forks" | "repo_kind"> & { slug?: string }): SupportedBy[] {
   if (Array.isArray(d.supported_by) && d.supported_by.length > 0) {
+    const own = (repo: string) => (d.forks.some((f) => f.repo.toLowerCase() === repo.toLowerCase() && (!d.slug || f.device_slug === d.slug)) ? 0 : 1);
     return [...d.supported_by].sort(
       (a, b) =>
+        (a.kind === "upstream" ? 0 : 1) - (b.kind === "upstream" ? 0 : 1) ||
+        (a.support === "primary" ? 0 : 1) - (b.support === "primary" ? 0 : 1) ||
+        own(a.repo) - own(b.repo) ||
         (KIND_RANK[a.kind] ?? 3) - (KIND_RANK[b.kind] ?? 3) ||
         (SUPPORT_RANK[a.support] ?? 4) - (SUPPORT_RANK[b.support] ?? 4),
     );
@@ -34,7 +43,7 @@ export function supportersOf(d: Pick<Device, "supported_by" | "forks" | "repo_ki
 }
 
 /** The repo to show for a device: its first supporter, or null. */
-export function mainRepoOf(d: Pick<Device, "supported_by" | "forks" | "repo_kind">): string | null {
+export function mainRepoOf(d: Pick<Device, "supported_by" | "forks" | "repo_kind"> & { slug?: string }): string | null {
   return supportersOf(d)[0]?.repo ?? null;
 }
 

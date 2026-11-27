@@ -305,3 +305,84 @@ export async function importComponents(items: Array<Record<string, any>>): Promi
   }
   return n;
 }
+
+/* ------------------------------------------------------------------ */
+/* Apply a record to its phone                                         */
+/* ------------------------------------------------------------------ */
+
+/** The framework's areas that match a tracker area. */
+export const PORTING_AREA_MAP: Record<string, string> = {
+  input: 'touch',
+  gpu: 'gpu',
+  network: 'wifi',
+  audio: 'audio',
+  bluetooth: 'bluetooth',
+  cellular: 'modem',
+  modem: 'modem',
+  baseband: 'modem',
+  camera: 'camera',
+  sensors: 'sensors',
+  haptics: 'haptics',
+};
+const PORTING_STATE: Record<string, string> = { 'device-verified': 'works', 'host-verified': 'in-progress', implemented: 'in-progress' };
+
+/** "ipados-17.7.11-21H461" -> "iPadOS 17.7.11 (21H461)". */
+export function osProfileVersion(profile: string): string {
+  const m = /^(ipados|ios|macos|tvos)-(\d+(?:\.\d+)*)(?:-([0-9A-Za-z]+))?/i.exec(profile.trim());
+  if (!m) return '';
+  const name = { ipados: 'iPadOS', ios: 'iOS', macos: 'macOS', tvos: 'tvOS' }[m[1].toLowerCase()]!;
+  return `${name} ${m[2]}${m[3] ? ` (${m[3]})` : ''}`;
+}
+
+/**
+ * POST /api/porting/{key}/apply: write the record's areas to its phone's
+ * statuses (device-verified -> works, host-verified / implemented ->
+ * in-progress; planned is skipped), citing the record. Rows that already have
+ * a state stay unless `overwrite`; `areas` limits it to some tracker areas.
+ * Fills the phone's iOS version from the OS profile when it has none. The
+ * phone's maintainers or an admin (upsertStatus checks).
+ */
+export async function applyPorting(
+  req: Request,
+  key: string,
+  opts: { overwrite?: boolean; areas?: string[] },
+  upsert: (req: Request, device: string, area: string, body: Record<string, unknown>) => Promise<unknown>,
+): Promise<{ device: string; applied: Array<{ area: string; state: string }>; kept: string[]; ios_version: string }> {
+  const rec = await getPorting(key);
+  if (!rec.device_slug) throw new HttpError(409, 'record has no phone', 'this porting record is not tied to a phone on the tracker');
+  const device = rec.device_slug;
+  const current = new Map(
+    (await queryAll<{ area_slug: string; state: string }>("SELECT area_slug, state FROM device_status WHERE device_slug = ? AND os = 'ios'", [device])).map((r) => [r.area_slug, r.state]),
+  );
+  const version = osProfileVersion(rec.os_profile);
+  const best = new Map<string, { state: string; detail: string }>();
+  const rank = (s: string) => (s === 'works' ? 2 : 1);
+  for (const a of rec.areas) {
+    const area = PORTING_AREA_MAP[a.id];
+    const state = PORTING_STATE[a.status];
+    if (!area || !state || (opts.areas?.length && !opts.areas.includes(area))) continue;
+    const prev = best.get(area);
+    if (prev && rank(prev.state) >= rank(state)) continue;
+    best.set(area, { state, detail: `repo claim (${rec.framework} porting record, ${rec.repo || rec.record}, ${a.status}): ${a.completion[0] || a.limits[0] || a.id}` });
+  }
+  const applied: Array<{ area: string; state: string }> = [];
+  const kept: string[] = [];
+  for (const [area, v] of best) {
+    const had = current.get(area);
+    if (had && had !== 'unknown' && !opts.overwrite) {
+      kept.push(area);
+      continue;
+    }
+    await upsert(req, device, area, { state: v.state, detail: v.detail.slice(0, 2000), source: rec.page_url || rec.source_url, ...(version ? { os_version: version } : {}) });
+    applied.push({ area, state: v.state });
+  }
+  let ios_version = '';
+  if (version && /^(iOS|iPadOS)/.test(version)) {
+    const d = await queryFirst<{ ios_version: string }>('SELECT ios_version FROM devices WHERE slug = ?', [device]);
+    if (d && !d.ios_version) {
+      await exec('UPDATE devices SET ios_version = ? WHERE slug = ?', [version, device]);
+      ios_version = version;
+    }
+  }
+  return { device, applied, kept, ios_version };
+}

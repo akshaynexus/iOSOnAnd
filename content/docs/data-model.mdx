@@ -73,8 +73,8 @@ commit or link that proves it), `os` and `os_version`. The primary key is
 `os` is the system the row is about (migration 0012): `ios` (iOS and iPadOS, the default and the
 checklist the site counts), `macos` or `tvos`. A phone can have Wi-Fi working on iOS and broken on
 macOS. `os_version` is the version the evidence was seen on (`iOS 27.2`, `macOS 27.2`); a write
-that states one also fills the phone's `ios_version`, `macos_version` or `tvos_version` when that
-is still empty. `GET /api/devices/{slug}` returns the iOS rows as `statuses`, as before, and the
+that states one also sets the phone's `ios_version`, `macos_version` or `tvos_version` when that
+is empty or names an older version (`iOS 27.2` replaces `iOS 16.5`, not the other way round). `GET /api/devices/{slug}` returns the iOS rows as `statuses`, as before, and the
 others as `os_statuses` by system. `GET /api/status` takes `?os=` (`ios` by default, or `all`). On
 the phone's page the area table switches between the systems; the grid's **macOS** filter shows
 the phones where macOS boots or is under way, or that state a `macos_version`.
@@ -146,6 +146,15 @@ node cli.mjs gpu-issues --kind white-widgets          # every phone that hit it,
 
 API: `GET/POST /api/devices/{slug}/gpu/issues`, `PATCH/DELETE /api/devices/{slug}/gpu/issues/{id}`,
 `GET /api/gpu/issues?kind=&state=&q=`.
+
+## stats_daily
+
+Public usage statistics (migration 0021): `day`, `kind`, `key` and a count `n`, nothing per person.
+`device_view` (key: phone slug) and `profile_view` (key: user id) count page opens, once per browser
+and day; `search` (key: the search, lowercased) and `search_device` (key: the phone it matched best)
+count searches that match a phone. The site sends them with `POST /api/stats/hit`; `GET /api/stats`
+and the [Statistics](/stats) page read them, and device and profile responses carry `views`
+(`d7`, `d30`, `total`).
 
 ## device_features
 

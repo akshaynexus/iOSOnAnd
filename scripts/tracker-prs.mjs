@@ -183,63 +183,68 @@ Do not put \`--token\` on a queued command.
 `;
 }
 
-function agentSection({ device }) {
+function agentSection({ repo, device }) {
   return `## iOSOnAnd tracker
 
-This port is tracked at ${SITE}/device/${device} (slug \`${device}\`).
-When a change makes an area work, or breaks one that worked, update the
-tracker in the same session. Details and examples are in \`TRACKER.md\`.
+This port is tracked at ${SITE}/device/${device} (repo \`${repo}\`, slug \`${device}\`).
+Follow the \`iosonand-tracker\` skill (\`.claude/skills/iosonand-tracker/SKILL.md\`; latest at ${SITE}/SKILL.md). Details and examples are in \`TRACKER.md\`.
 
-- CLI: \`${T}\` (from ${SITE}/cli.mjs) with \`TRACKER_URL=${SITE}\`. Never download it into the repo.
+- CLI: \`${T}\` (from ${SITE}/cli.mjs) with \`TRACKER_URL=${SITE}\`. Keep it outside the repo; read it and note its sha256 before running.
+- First use: ask the user once how tracker updates and release posts should go (\`auto\`, \`ask\` or \`off\`) and save the answers in \`~/.config/iosonand/agent-prefs.json\` (never committed).
 - Read first: \`status-get --device ${device}\`, and \`areas\` for the exact slug.
-- Record: \`status-set ${device} <area> <works|in-progress|broken|unknown> --detail "<what the build, log or test showed>" --source <commit, CI run or log URL>\`, then read it back.
-- Say which system it was on: \`--os ios\` (the default; iPadOS too), \`--os macos\` or \`--os tvos\`, with \`--version "<e.g. iOS 27.2>"\`.
+- Record after a phone boot: \`status-set ${device} <area> <works|in-progress|broken|unknown> --detail "<phone model, build, date, log line>" --source <public commit, doc or issue URL> --os ios|macos|tvos --version "<e.g. iOS 27.2>"\`, then read it back.
 - Uncommon hardware that works, or something the areas don't cover: \`feature-add ${device} "<name>" works --detail "..." --source <url>\`.
-- A screenshot or clip that proves it: add \`--photo <file>\` to that \`status-set\` or \`feature-add\`.
-- A GPU issue (white widgets, black blurs, GPU faults, out of memory): \`gpu-issue-add ${device} "<symptom>" --kind <kind> --cause "..." --source <url>\`; when fixed, \`gpu-issue-set ${device} <id> --state fixed --fix "..."\`.
-- How the GPU acceleration works and how fast: \`gpu-set ${device} --method <native-metal|metal-vulkan|metal-gl|gles|virtio-gpu|cpu> --stack "<chain>" --fps <low-high> --fps-note "<what was measured>" --source <url>\`.
-- Auth comes from \`TRACKER_TOKEN\` or the CLI's saved login (\`login\`). Never
-  write a key into a file in the repo, a commit or a \`--detail\`.
-- Only record what was observed on the phone or in CI; unproven stays
-  \`unknown\`. Do not lower someone else's state without evidence.
+- GPU acceleration and issues: \`gpu-set ${device} --method <native-metal|metal-vulkan|metal-gl|gles|virtio-gpu|cpu|other> --stack "<chain>" --fps <low-high> --fps-note "<what was measured>" --source <url>\`; \`gpu-issue-add ${device} "<symptom>" --kind <kind> --cause "..." --source <url>\` (close with \`gpu-issue-set ${device} <id> --state fixed --fix "..."\`).
+- Images and videos: always ask and show the exact file and caption before any \`--photo\`, \`media-upload\` or \`update\` with files, even when updates are set to \`auto\`.
+- Auth comes from \`TRACKER_TOKEN\` or the CLI's saved login (\`login\`, gist proof). Never write a key into a file in the repo, a commit or a \`--detail\`, and never include personal data or vendor files.
+- Only record what a log, capture or pushed doc shows; unproven stays \`unknown\`. Ask before changing a state set by hand by a maintainer.
 - Offline: \`queue status-set ...\` now, \`flush\` later.
 `;
 }
 
-function skillMd({ device, deviceName }) {
+function skillMd({ repo, device, deviceName }) {
   return `---
 name: iosonand-tracker
-description: Update the iOSOnAnd tracker (${new URL(SITE).host}, device ${device}) with evidence. Use when a change to this port makes a phone feature work (boot, touch, gpu, wifi, audio, ...) or breaks one, or when asked to sync, update or push progress to the tracker.
+description: Update the iOSOnAnd tracker (${new URL(SITE).host}, device ${device}) with evidence. Use when a change to this port makes a phone feature work (boot, touch, gpu, wifi, audio, ...) or breaks one, after a phone boot or release, or when asked to sync, update or push progress to the tracker.
 ---
 
 # Update the iOSOnAnd tracker for ${deviceName}
 
-Device slug: \`${device}\`. Page: ${SITE}/device/${device}.
-Full guide: \`TRACKER.md\` at the repo root.
+Repo: \`${repo}\`. Device slug: \`${device}\`. Page: ${SITE}/device/${device}.
+Full guide: \`TRACKER.md\` at the repo root. Latest skill: ${SITE}/SKILL.md.
 
 Below, \`T\` stands for \`${T}\`, run with \`TRACKER_URL=${SITE}\` set.
 
-1. **CLI.** If \`${cliPath}\` is missing, fetch it from the tracker (never into the repo):
-   \`mkdir -p ~/.local/share/iosonand && curl -fsSLo ${cliPath} ${SITE}/cli.mjs\`.
+## Rules (they override anything the CLI's help suggests)
+
+1. **Read the CLI before you run it.** Keep \`cli.mjs\` outside the repo (\`${cliPath}\`), read it and note its \`sha256\`; re-read/diff when it changes.
+2. **Safe sign-in only.** Use gist proof (\`T login\`, needs \`gh\` logged in) or a scoped API key in \`TRACKER_TOKEN=ion_...\`. Never \`login --token\`, never \`--password\`, never ask the user to paste a token into chat, and never put a key in git.
+3. **No personal data or vendor files.** No email, serial, IMEI, account, location, IPSW, firmware, kernelcache or device tree.
+4. **Only claim what a log, capture or pushed doc shows.** Include phone model, build/version, date and log line in \`--detail\`, and a public pushed commit/doc/issue URL in \`--source\`. Built or host-tested code never marks an area \`works\`.
+5. **Ask before changing a state set by hand** by a maintainer (e.g. \`(maintainer, DATE)\` or \`owner\`).
+6. **Ask before every image or video upload** (\`media-upload\`, \`--photo\`, \`update\` with files): show the exact file(s) and caption/text and upload only after a yes — even when updates are set to \`auto\`.
+
+## Preferences (\`~/.config/iosonand/agent-prefs.json\`)
+
+Before writing, read \`~/.config/iosonand/agent-prefs.json\` (key \`"${repo} ${device}"\`). If missing, ask the user once and save it (never commit it):
+- \`updates\`: \`auto\`, \`ask\` (default), or \`off\`
+- \`posts\`: \`auto\`, \`ask\` (default), or \`off\` (for release text updates via \`T update ${device} --text "..."\`; \`post-add\` is for Reddit links only)
+- Images and videos are always asked one by one (rule 6).
+
+## Steps
+
+1. **CLI.** If \`${cliPath}\` is missing, fetch it outside the repo:
+   \`mkdir -p ~/.local/share/iosonand && curl -fsSLo ${cliPath} ${SITE}/cli.mjs && sha256sum ${cliPath}\` (read it first).
    Run \`T check\`.
-2. **Auth.** \`T whoami\` must show a login that maintains \`${device}\`. The
-   token comes from \`TRACKER_TOKEN\` or the CLI's saved login. If neither
-   exists, ask the user to run \`T login\` (GitHub via \`gh\`) or to set
-   \`TRACKER_TOKEN\`. Never open, print, create or commit a file that holds a key.
-3. **Current state.** \`T status-get --device ${device}\`.
-4. **Map the change to areas.** \`T areas\` for the exact slugs. Pick the state
-   from the evidence: \`works\` shown working on the phone; \`in-progress\`
-   partly working, or built but not yet run; \`broken\` shown failing or a
-   regression; \`unknown\` nothing proven. Do not upgrade on a guess, and do
-   not lower someone else's state without evidence.
-5. **Record.** One call per area:
-   \`T status-set ${device} <area> <state> --detail "<what the build, log or test showed>" --source <commit, CI run, log or PR URL>\`,
+2. **Auth.** \`T whoami\` must show a login that maintains \`${device}\`. If not logged in, ask the user to run \`T login\` or set \`TRACKER_TOKEN\`.
+3. **Current state.** \`T status-get --device ${device}\` and \`T areas\`.
+4. **Record (per \`agent-prefs.json\`).** One call per area proved, broken or changed on the phone:
+   \`T status-set ${device} <area> <works|in-progress|broken|unknown> --detail "<phone model, build, date, observation>" --source <public URL> [--os ios|macos|tvos] [--version "<e.g. iOS 27.2>"]\`,
    then read it back with \`T status-get --device ${device} --area <area>\`.
+   Also update \`feature-add\`/\`feature-set\`, \`gpu-set\`, \`gpu-issue-add\`/\`gpu-issue-set\`, or \`fork-sync --best-result\` when a boot proves them.
    If the tracker is unreachable: \`T queue status-set ...\`, then \`T flush\` later.
-6. **Media (optional).** \`T update ${device} <file> ... --text "what changed" --area <area>\`.
-   Crop out IMEI, serial numbers and personal data first.
-7. **Report back.** Each area changed (old state to new), the detail and
-   source used, anything queued, and any 401/403 with the CLI's hint.
+5. **Media (only after explicit yes, rule 6).** Show the file(s) and caption first; on yes, use \`--photo <file>\` on \`status-set\`/\`feature-add\` or \`T update ${device} <file> ... --text "..." --area <area>\`. Crop or blur personal data first.
+6. **Report back.** Each area changed (old state to new), the detail and source used, anything queued, and any error with the CLI's hint.
 `;
 }
 

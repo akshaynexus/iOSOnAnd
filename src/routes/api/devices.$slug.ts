@@ -3,6 +3,7 @@
 // maintainer of $slug; base and image_* are admin-only; CLI device-set),
 // DELETE remove (admin).
 
+import { viewsOf } from '@/lib/stats';
 import { createFileRoute } from '@tanstack/react-router';
 import { queryAll, queryFirst, exec } from '@/lib/db';
 import { mediaBucket } from '@/lib/media';
@@ -33,7 +34,8 @@ async function loadDevice(slug: string): Promise<Device> {
 
 async function handleGet({ params }: ApiCtx): Promise<Response> {
   const [device] = await withDetails([await loadDevice(params.slug)], true);
-  return json({ device });
+  // Page views (migration 0021): the last 7 and 30 days and all time.
+  return json({ device: { ...device, views: await viewsOf('device_view', device.slug) } });
 }
 
 const PATCHABLE: Record<string, number> = {

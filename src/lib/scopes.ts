@@ -28,6 +28,7 @@ const RULES: Array<[RegExp, RegExp, Scope]> = [
   [/^PATCH$/, /^\/api\/devices\/[^/]+$/, 'status:write'],
   [/.*/, /^\/api\/devices\/[^/]+\/features(\/|$)/, 'status:write'],
   [/.*/, /^\/api\/devices\/[^/]+\/gpu(\/|$)/, 'status:write'],
+  [/^POST$/, /^\/api\/porting\/[^/]+\/apply$/, 'status:write'],
   [/.*/, /^\/api\/(forks|repos)(\/|$)/, 'fork:write'],
   [/.*/, /^\/api\/(posts(\/|$)|reddit\/)/, 'post:write'],
   [/.*/, /^\/api\/media(\/|$)/, 'media:write'],

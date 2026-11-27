@@ -17,7 +17,7 @@ import { FindReferences, ProjectsSection, StartCards, projectOfFamily } from "@/
 import { PROJECTS } from "@/lib/projects";
 import { ChangelogFeed, PostsFeed } from "@/components/UpdatesFeed";
 import { deviceMatches, forkMatches } from "@/lib/areas";
-import { forkKind, loadDashboard } from "@/lib/client";
+import { forkKind, loadDashboard, trackHit } from "@/lib/client";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, jsonLd, seo } from "@/lib/seo";
 
 const TABS = ["overview", "compatibility", "repos", "updates", "changelog"] as const;
@@ -120,6 +120,12 @@ function HomePage() {
   const navigate = useNavigate({ from: "/" });
   const { canEdit } = useAuth();
   const query = q.trim();
+  // A search that matches a phone counts toward the public statistics (after typing stops).
+  useEffect(() => {
+    if (query.length < 2) return;
+    const timer = setTimeout(() => trackHit("search", query), 1500);
+    return () => clearTimeout(timer);
+  }, [query]);
 
   const deviceNames = useMemo(
     () => Object.fromEntries(data.devices.map((d) => [d.slug, d.name])),

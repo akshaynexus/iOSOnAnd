@@ -1,3 +1,4 @@
+import { SkeletonFeedRows } from "@/components/motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { ArrowRight, X } from "lucide-react";
@@ -307,7 +308,9 @@ export function DeviceUpdates({ deviceSlug, editable, onPosted }: { deviceSlug: 
           }}
         />
       ) : null}
-      {!loaded ? null : entries.length === 0 ? (
+      {!loaded ? (
+        <SkeletonFeedRows count={3} label="Loading what changed" className="rounded-[14px] border bg-card" />
+      ) : entries.length === 0 ? (
         <p className="text-muted-foreground">
           Nothing yet. Status changes show here as they are made; post what changed with photos, or let your agent run node cli.mjs update.
         </p>

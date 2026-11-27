@@ -9,12 +9,13 @@
 // (`os_version`, alias `version`). Every write adds a status_history row with
 // the state before and after, and a changelog line. The device's version field
 // for that system (ios_version, macos_version, tvos_version) is filled from
-// `os_version` when it is still empty.
+// `os_version` when it is empty or names an older version (newerVersion).
 
 import { exec, queryFirst } from '@/lib/db';
 import { HttpError, OSES, OS_LABELS, OS_VERSION_FIELD, STATES, actorName, nowIso, oneOf, requireDeviceEditor, str, validSlug, type Os } from '@/lib/auth';
 import { appendChangelog } from '@/lib/changelog';
 import type { DeviceStatus } from '@/lib/types';
+import { newerVersion } from '@/lib/version';
 
 /** The system a request names: ios (default; ipados and iphoneos count as ios), macos or tvos. */
 export function osOf(raw: string | null | undefined): Os {
@@ -62,7 +63,10 @@ export async function upsertStatus(
   );
   if (osVersion) {
     const field = OS_VERSION_FIELD[os];
-    await exec(`UPDATE devices SET ${field} = ? WHERE slug = ? AND ${field} = ''`, [osVersion, device]);
+    const cur = await queryFirst<Record<string, string>>(`SELECT ${field} AS v FROM devices WHERE slug = ?`, [device]);
+    if (newerVersion(osVersion, cur?.v ?? '')) {
+      await exec(`UPDATE devices SET ${field} = ? WHERE slug = ?`, [osVersion, device]);
+    }
   }
   const tag = os === 'ios' ? (osVersion ? `[${osVersion}] ` : '') : `[${osVersion || OS_LABELS[os]}] `;
   await appendChangelog(actorName(user), `status ${device}/${area} -> ${state}${detail || tag ? `: ${tag}${detail.slice(0, 200)}` : ''}`);

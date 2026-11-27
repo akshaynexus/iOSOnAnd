@@ -521,9 +521,7 @@ function ClaimsSection() {
     <>
       <Panel title="My claims">
         {claims === null ? (
-          <p className="text-muted-foreground" role="status">
-            Loading claims
-          </p>
+          <Skeleton className="h-16" label="Loading claims" />
         ) : mine.length === 0 ? (
           <p className="text-muted-foreground">
             No claims yet. Open a{" "}

@@ -36,37 +36,42 @@ export function agentPrompt({ site, repo, device, newDevice }: AgentPromptInput)
     `I maintain an iOS-on-Android port and want to manage it on the iOSOnAnd tracker at ${SITE}.`,
     repo?.trim() || phone ? `Repo: ${REPO}${phone}` : `The port's repo is the one in this folder.`,
     ``,
-    `1. Get the tracker CLI (Node 18+, no install): curl -fsSLo cli.mjs ${SITE}/cli.mjs`,
-    `2. Sign in with my GitHub account (needs the gh CLI, logged in): TRACKER_URL=${SITE} node cli.mjs login`,
+    `1. Read the tracker skill first (${SITE}/SKILL.md) and follow its rules (ask me once how tracker updates and release posts should go — auto, ask or off, saved in ~/.config/iosonand/agent-prefs.json; always ask and show the file and caption before uploading any image or video; no personal data or vendor files).`,
+    `   Get the tracker CLI outside the repo (Node 18+, no install; read it and note its sha256 before running):`,
+    `   mkdir -p ~/.local/share/iosonand && curl -fsSLo ~/.local/share/iosonand/cli.mjs ${SITE}/cli.mjs && sha256sum ~/.local/share/iosonand/cli.mjs`,
+    `   Use CLI="node ~/.local/share/iosonand/cli.mjs" with TRACKER_URL=${SITE} (shown below as "node cli.mjs").`,
+    `2. Sign in with my GitHub account (needs the gh CLI, logged in; gist proof only): TRACKER_URL=${SITE} node cli.mjs login`,
     ...findRepo,
     ...findPhone,
     fresh
       ? `3. Claim the repo and add the phone, which the tracker does not list yet: node cli.mjs repo-add ${REPO} --new-device ${q(fresh.name.trim())}${fresh.model?.trim() ? ` --model ${q(fresh.model.trim())}` : ""}${fresh.soc?.trim() ? ` --soc ${q(fresh.soc.trim())}` : ""}. It prints the new phone's slug: use it as <device> below.`
       : `3. Claim the repo: node cli.mjs repo-claim ${REPO} --device ${DEVICE}`,
-    `   If it prints a verification code, write that code alone to .iosonand-verify on the repo's default branch, push, run node cli.mjs repo-verify <claim id>, then delete the file.`,
+    `   Repos under my own GitHub account are approved at once (the gist sign-in above proves the account). Only an organization's repo prints a verification code: never commit it to the main branch; push it on a throwaway branch instead: git switch --orphan iosonand-verify && printf '%s\n' '<code>' > .iosonand-verify && git add .iosonand-verify && git commit -m 'iOSOnAnd verification' && git push origin iosonand-verify && git switch -, then node cli.mjs repo-verify <claim id>, then delete the branch: git push origin --delete iosonand-verify && git branch -D iosonand-verify`,
     `4. Read the repo (README, issues, recent commits) and record what works on the phone, one area at a time:`,
     `   node cli.mjs areas`,
-    `   node cli.mjs status-set ${DEVICE} <area> works|in-progress|broken --detail "<what I can show>" --source "<link>"`,
+    `   node cli.mjs status-set ${DEVICE} <area> works|in-progress|broken --detail "<what I can show>" --source "<public link>"`,
     `   Say which system it is on: --os ios (the default; iPadOS too), --os macos or --os tvos, with --version "<e.g. iOS 27.2>".`,
-    `   Only claim what the repo or I can show. Ask me when unsure.`,
+    `   Only claim what a log, capture or pushed doc shows. Ask me when unsure, and before changing a state set by hand.`,
     `   Something the areas don't cover, or uncommon hardware that works (an IR blaster, a stylus, a second screen): node cli.mjs feature-add ${DEVICE} "<name>" works --detail "..." --source "<link>"`,
     `   A GPU problem you can name (white widgets, black blurs, GPU faults, out of memory): node cli.mjs gpu-issue-add ${DEVICE} "<symptom>" --kind white-widgets|black-ui|gpu-fault|out-of-memory|artifacts|slow|crash|other --cause "<what causes it>" [--fix "<what fixed it>" --state fixed] --source "<log or commit>"`,
-    `   How the GPU acceleration works and how fast, when the repo or I can show it: node cli.mjs gpu-set ${DEVICE} --method native-metal|metal-vulkan|metal-gl|gles|virtio-gpu|cpu --stack "<chain, e.g. AdrenoMetal -> metal2vulkan -> Turnip>" --fps 40-58 --fps-note "<what was measured>" --repos OWNER/REPO --source "<link>"`,
-    `5. Attach proof when I give you screenshots or clips: add --photo <file> (repeatable) to the status-set or feature-add it proves, so the photo is linked to that change; or node cli.mjs media-upload <file> --device ${DEVICE} --area <area> --caption "..."`,
+    `   How the GPU acceleration works and how fast, when the repo or I can show it: node cli.mjs gpu-set ${DEVICE} --method native-metal|metal-vulkan|metal-gl|gles|virtio-gpu|cpu|other --stack "<chain, e.g. AdrenoMetal -> metal2vulkan -> Turnip>" --fps 40-58 --fps-note "<what was measured>" --repos OWNER/REPO --source "<link>"`,
+    `5. Attach proof only after asking me (show me the exact file and caption first, even if updates are set to auto): add --photo <file> (repeatable) to the status-set or feature-add it proves, or node cli.mjs media-upload <file> --device ${DEVICE} --area <area> --caption "..."`,
     `6. Check the result: node cli.mjs whoami`,
-    `7. Set up tracker support in the repo, so its page stays current (what works, what doesn't) as we keep working:`,
+    `7. Set up tracker support and the skill in the repo, so its page stays current as we keep working:`,
+    `   - install the skill: mkdir -p .claude/skills/iosonand-tracker && curl -fsSLo .claude/skills/iosonand-tracker/SKILL.md ${SITE}/SKILL.md`,
     `   - .gitignore: add .env, .env.*, cli.mjs, TRACKER_QUEUE.md; the key stays in TRACKER_TOKEN or the CLI's saved login, never in a tracked file`,
-    `   - add an "## iOSOnAnd tracker" section to the repo's agent instructions (AGENTS.md, and CLAUDE.md / .cursorrules if the repo uses those): this port is at ${SITE}/device/${DEVICE}; when a change makes an area work or breaks it, record it in the same session with status-set ${DEVICE} <area> <state> --detail "<what the build, log or test showed>" --source "<commit or log link>", reading status-get first; only what was shown, unproven stays unknown`,
+    `   - add an "## iOSOnAnd tracker" section to the repo's agent instructions (AGENTS.md, and CLAUDE.md / .cursorrules if the repo uses those): this port is at ${SITE}/device/${DEVICE} (repo ${REPO}, phone ${DEVICE}); follow the iosonand-tracker skill (.claude/skills/iosonand-tracker/SKILL.md; latest at ${SITE}/SKILL.md) — ask the user once how tracker updates and release posts should go (auto, ask, off in ~/.config/iosonand/agent-prefs.json), update after a phone boot or release as they chose, always ask before uploading any image or video, and only claim what a log, capture or pushed doc shows`,
     `   - commit only those files (check git status: no key, no .env, no cli.mjs). The full version of this step is "Keep the tracker updated from your repo" on ${SITE}/docs/maintain-a-repo`,
   ].join("\n");
 }
 
 /**
- * The prompt that adds tracker support to a port's repo: the agent keeps the
- * key out of git, adds .gitignore lines, and writes a "Tracker" section into
- * the repo's agent instructions, so every later session records progress on
- * the tracker as it happens. Shown on the profile (My repos), after a claim is
- * approved, and on /docs/maintain-a-repo.
+ * The prompt that adds tracker support to a port's repo: installs the
+ * iosonand-tracker skill, keeps the key out of git, adds .gitignore lines, and
+ * writes a "Tracker" section into the repo's agent instructions, so every
+ * later session records progress on the tracker according to the maintainer's
+ * preferences. Shown on the profile (My repos), after a claim is approved, and
+ * on /docs/maintain-a-repo.
  */
 export function trackerSupportPrompt({ site, repo, device }: AgentPromptInput): string {
   const SITE = site.replace(/\/+$/, "");
@@ -74,30 +79,33 @@ export function trackerSupportPrompt({ site, repo, device }: AgentPromptInput): 
   const DEVICE = device?.trim() || "<device>";
   const CLI = `TRACKER_URL=${SITE} node ~/.local/share/iosonand/cli.mjs`;
   return [
-    `Add iOSOnAnd tracker support to this repo (${REPO}, phone: ${DEVICE}), so the tracker at ${SITE} stays up to date as we make progress.`,
+    `Add iOSOnAnd tracker support and the tracker skill to this repo (${REPO}, phone: ${DEVICE}), so the tracker at ${SITE} stays up to date as we make progress.`,
     ``,
-    `1. Get the tracker CLI outside the repo (Node 18+): mkdir -p ~/.local/share/iosonand && curl -fsSLo ~/.local/share/iosonand/cli.mjs ${SITE}/cli.mjs`,
-    `2. The key never goes into git. Either sign in once with my GitHub account (gh logged in): ${CLI} login`,
+    `1. Install the tracker skill into the repo and read it:`,
+    `   mkdir -p .claude/skills/iosonand-tracker && curl -fsSLo .claude/skills/iosonand-tracker/SKILL.md ${SITE}/SKILL.md`,
+    `2. Get the tracker CLI outside the repo (Node 18+; read it and note its sha256 before running):`,
+    `   mkdir -p ~/.local/share/iosonand && curl -fsSLo ~/.local/share/iosonand/cli.mjs ${SITE}/cli.mjs && sha256sum ~/.local/share/iosonand/cli.mjs`,
+    `3. The key never goes into git. Either sign in once with my GitHub account (gh logged in, gist proof): ${CLI} login`,
     `   or I make a key at ${SITE}/profile/keys (scopes status:write, fork:write, media:write) and put it in my shell profile as TRACKER_TOKEN, or in a .env file that git ignores.`,
-    `   Never write the key into a tracked file, a commit, a log, an issue or a PR.`,
-    `3. Add these lines to .gitignore (create it if missing): .env, .env.*, cli.mjs, TRACKER_QUEUE.md`,
-    `4. Add this section to the repo's agent instructions (AGENTS.md, or CLAUDE.md / .cursorrules if the repo uses those), so every future session follows it:`,
+    `   Never write the key into a tracked file, a commit, a log, an issue or a PR, and never ask me to paste a token into chat.`,
+    `4. Add these lines to .gitignore (create it if missing): .env, .env.*, cli.mjs, TRACKER_QUEUE.md`,
+    `5. Add this section to the repo's agent instructions (AGENTS.md, or CLAUDE.md / .cursorrules if the repo uses those), so every future session follows it:`,
     ``,
     `   ## iOSOnAnd tracker`,
-    `   This port is listed at ${SITE}/device/${DEVICE}. When a change makes an area of the phone work, or breaks it, update the tracker in the same session:`,
-    `   - CLI: ${CLI} (download it again with the curl line above if it is missing)`,
+    `   This port's per-phone status is on the iOSOnAnd tracker (${SITE}/device/${DEVICE}), repo ${REPO}, phone ${DEVICE}.`,
+    `   Follow the iosonand-tracker skill (.claude/skills/iosonand-tracker/SKILL.md; latest at ${SITE}/SKILL.md):`,
+    `   - CLI: ${CLI} (keep it outside the repo; read and check its sha256 when downloaded or updated)`,
+    `   - first use: ask the user once how tracker updates and release posts should go (auto, ask or off) and save the answers in ~/.config/iosonand/agent-prefs.json (never committed)`,
     `   - read first: <CLI> status-get --device ${DEVICE}; the area slugs: <CLI> areas`,
-    `   - record it: <CLI> status-set ${DEVICE} <area> works|in-progress|broken --detail "<what the build, log or test showed>" --source "<commit, log or PR link>"`,
-    `   - say which system it was on: --os ios (the default; iPadOS too), --os macos or --os tvos, and --version "<e.g. iOS 27.2 or macOS 27.2>"`,
-    `   - with screenshots or clips: add --photo <file> (repeatable) to the status-set or feature-add they prove, so they are linked to it; a general progress post: <CLI> update ${DEVICE} <files...> --text "<what changed>"`,
-    `   - a GPU issue (white widgets, black blurs, GPU faults ...): <CLI> gpu-issue-add ${DEVICE} "<symptom>" --kind white-widgets|black-ui|gpu-fault|out-of-memory|artifacts|slow|crash|other --cause "<what causes it>" [--fix "<what fixed it>" --state fixed] --source "<log or commit>"; mark it fixed with gpu-issue-set ${DEVICE} <id> --state fixed --fix "..."`,
-    `   - GPU acceleration: how it works and the frame rate measured, <CLI> gpu-set ${DEVICE} --method native-metal|metal-vulkan|metal-gl|gles|virtio-gpu|cpu --stack "<chain, e.g. AdrenoMetal -> metal2vulkan -> Turnip>" --fps 40-58 --fps-note "<what was measured>" --repos OWNER/REPO --source "<link>"`,
-    `   - only record what a build, log, test or capture shows; anything unproven stays unknown`,
-    `   - the key comes from TRACKER_TOKEN or the CLI's saved login, never from a file in this repo`,
+    `   - record after a phone boot: <CLI> status-set ${DEVICE} <area> works|in-progress|broken --detail "<phone model, build, date, log line>" --source "<public commit, doc or issue URL>" --os ios|macos|tvos --version "<e.g. iOS 27.2>"`,
+    `   - GPU acceleration and issues: <CLI> gpu-set ${DEVICE} ... and <CLI> gpu-issue-add ${DEVICE} ...; notable extra hardware: <CLI> feature-add ${DEVICE} ...`,
+    `   - release updates (per posts pref): <CLI> update ${DEVICE} --text "<release summary and URL>" (post-add is for Reddit links only)`,
+    `   - images and videos: always ask and show the exact file and caption before any --photo, media-upload or update with files, even when updates are set to auto`,
+    `   - no personal data, no vendor files, no keys in git; only claim what a log, capture or pushed doc shows; unproven stays unknown`,
     `   - tracker unreachable: <CLI> queue status-set ..., then <CLI> flush later`,
     ``,
-    `5. Commit only the instructions file and .gitignore. Check git status first: no key, no .env, no cli.mjs.`,
-    `6. First sync: read the README, issues and recent commits, compare with status-get, and record what they show (ask me when unsure).`,
+    `6. Commit only the skill file (.claude/skills/iosonand-tracker/SKILL.md), the instructions file and .gitignore. Check git status first: no key, no .env, no cli.mjs.`,
+    `7. Ask me my update preferences for ~/.config/iosonand/agent-prefs.json (auto, ask or off), then read the README, issues and recent commits, compare with status-get, and propose what to sync.`,
   ].join("\n");
 }
 
@@ -107,10 +115,10 @@ export function trackerSupportPrompt({ site, repo, device }: AgentPromptInput): 
  * phone or its chip and what works on them, find GPU acceleration and other
  * driver code that fits its specs, pick the base project, and plan the port
  * (Rust first, C/C++ only where needed) before changing anything. Then it puts
- * the new repo and phone on the tracker as soon as the repo exists, with
- * tracker support in the repo, so the directory grows as ports make progress.
- * Shown from the "Port iOS to your device" button, the Repos tab and each
- * device page (filled in with that phone).
+ * the new repo and phone on the tracker as soon as the repo exists, with the
+ * tracker skill and support in the repo, so the directory grows as ports make
+ * progress. Shown from the "Port iOS to your device" button, the Repos tab and
+ * each device page (filled in with that phone).
  */
 export interface PortPromptInput {
   site: string;
@@ -129,7 +137,7 @@ export function portPrompt({ site, device, deviceName, model, soc }: PortPromptI
   const name = deviceName?.trim();
   const slug = device?.trim();
   const PHONE = name ? `${name}${model?.trim() ? ` (${model.trim()})` : ""}${soc?.trim() ? `, ${soc.trim()}` : ""}` : "";
-  const CLI = `node cli.mjs`;
+  const CLI = `node ~/.local/share/iosonand/cli.mjs`;
   const addRepo = slug
     ? `${CLI} repo-add OWNER/REPO --device ${slug}`
     : name
@@ -142,7 +150,8 @@ export function portPrompt({ site, device, deviceName, model, soc }: PortPromptI
       : `I want to port Apple's iOS to my Android device. First ask me which device it is (brand and model). If it is plugged in with USB debugging on, read it yourself: adb shell getprop ro.product.model, ro.product.device (the codename) and ro.soc.model (the chip). Then help me research, plan and start the port with the iOSOnAnd tracker at ${SITE}. It lists every known iOS-on-Android port, its repos and branches, and what works or is broken on which phone, each with a source.`,
     ``,
     `Tools`,
-    `1. The tracker CLI (Node 18+, no install; reading needs no login): curl -fsSLo cli.mjs ${SITE}/cli.mjs && export TRACKER_URL=${SITE}`,
+    `1. Read the tracker skill (${SITE}/SKILL.md) and get the tracker CLI outside the repo (Node 18+, no install; reading needs no login; read cli.mjs and note its sha256 before running):`,
+    `   mkdir -p ~/.local/share/iosonand && curl -fsSLo ~/.local/share/iosonand/cli.mjs ${SITE}/cli.mjs && sha256sum ~/.local/share/iosonand/cli.mjs && export TRACKER_URL=${SITE}`,
     `   ${CLI} --help lists every command. The HTTP API is described at ${SITE}/api/openapi.json (OpenAPI 3.1) and ${SITE}/api/docs; every GET is public JSON, so use curl when the CLI has no command for something.`,
     ``,
     `Research`,
@@ -186,12 +195,69 @@ export function portPrompt({ site, device, deviceName, model, soc }: PortPromptI
     `   - add the repo and the device: ${addRepo}. My GitHub login owns the repo, so the claim is approved at once and I maintain the device.`,
     `   - record the base: ${CLI} repo-lineage OWNER/REPO --base <base OWNER/REPO> --relation fork-of (ported-from when it brings code from another port), and each repo it borrows parts from with --relation uses`,
     `   - mark the areas the plan starts on as in-progress: ${CLI} status-set ${DEV} <area> in-progress --detail "<the plan step>" --source "<repo link>"`,
-    `9. In the same first commit, set up tracker support in the repo so every later session keeps the page current:`,
+    `9. In the same first commit, install the tracker skill and set up tracker support in the repo so every later session keeps the page current:`,
+    `   - skill: mkdir -p .claude/skills/iosonand-tracker && curl -fsSLo .claude/skills/iosonand-tracker/SKILL.md ${SITE}/SKILL.md`,
     `   - .gitignore: .env, .env.*, cli.mjs, TRACKER_QUEUE.md (the key stays in TRACKER_TOKEN or the CLI's saved login, never in a tracked file)`,
-    `   - an "## iOSOnAnd tracker" section in AGENTS.md (and CLAUDE.md / .cursorrules if I use those): this port is at ${SITE}/device/${DEV}; when a change makes an area work or breaks it, read status-get, then record it in the same session with status-set ${DEV} <area> works|in-progress|broken --detail "<what the build, log or test showed>" --source "<commit or log link>", with --os ios|macos|tvos and --version, and --photo <file> for a screenshot or clip that proves it; progress posts with update ${DEV} <files> --text "..."; unproven stays unknown. Also write the language rule from step 7 there.`,
+    `   - an "## iOSOnAnd tracker" section in AGENTS.md (and CLAUDE.md / .cursorrules if I use those): this port is at ${SITE}/device/${DEV}; follow the iosonand-tracker skill (.claude/skills/iosonand-tracker/SKILL.md; latest at ${SITE}/SKILL.md) — ask once how tracker updates and release posts should go (auto, ask, off in ~/.config/iosonand/agent-prefs.json), update after a phone boot or release as chosen, always ask and show the file and caption before uploading any image or video, and only claim what a log, capture or pushed doc shows. Also write the language rule from step 7 there.`,
     `   The full version is "Keep the tracker updated from your repo" on ${SITE}/docs/maintain-a-repo.`,
-    `10. As the port progresses: each time a step boots or a part works, record it (works, or broken with what failed) in that session, with the commit as --source and --photo for a screenshot or clip I give you. Uncommon hardware that works: ${CLI} feature-add ${DEV} "<name>" works --detail "..." --source "<link>" [--photo <file>]. Once the GPU draws: ${CLI} gpu-set ${DEV} --method native-metal|metal-vulkan|metal-gl|gles|virtio-gpu|cpu --stack "<chain, e.g. AdrenoMetal -> metal2vulkan -> Turnip>" --fps 40-58 --fps-note "<what was measured>" --repos OWNER/REPO --source "<link>", and update the frame rate as it improves.`,
+    `10. As the port progresses: follow the iosonand-tracker skill and my preferences in ~/.config/iosonand/agent-prefs.json. After each boot that proves or breaks something, record it with a public --source (commit or pushed boot log); always ask me before uploading any screenshot or clip (--photo, media-upload, or update with files). Uncommon hardware that works: ${CLI} feature-add ${DEV} "<name>" works --detail "..." --source "<link>". Once the GPU draws: ${CLI} gpu-set ${DEV} --method native-metal|metal-vulkan|metal-gl|gles|virtio-gpu|cpu|other --stack "<chain, e.g. AdrenoMetal -> metal2vulkan -> Turnip>" --fps 40-58 --fps-note "<what was measured>" --repos OWNER/REPO --source "<link>", and update the frame rate as it improves.`,
     ``,
-    `Rules: only claim what a build, log, photo or video shows; anything unproven stays unknown. Never commit API keys. Ask me before anything that wipes or flashes the device.`,
+    `Rules: follow ${SITE}/SKILL.md — only claim what a build, log, photo or video shows; anything unproven stays unknown; no personal data or vendor files; never commit API keys; always ask before uploading any image or video, and before anything that wipes or flashes the device.`,
+  ].join("\n");
+}
+
+/**
+ * "Run or improve this port": for someone with this phone who wants to run the
+ * existing port, or fork it and keep it going. The agent reads the phone's
+ * page through the CLI (what works, history, GPU, issues, porting records),
+ * builds and runs the port by its README, and, to improve it, forks the repo,
+ * puts the fork on the tracker with the tracker skill and support in it, and
+ * records progress as it goes. Shown in the Repos section of a phone's page.
+ */
+export function continuePrompt({
+  site,
+  device,
+  deviceName,
+  repo,
+  soc,
+  gpu,
+}: {
+  site: string;
+  device: string;
+  deviceName: string;
+  repo?: string;
+  soc?: string;
+  gpu?: string;
+}): string {
+  const SITE = site.replace(/\/+$/, "");
+  const REPO = repo?.trim() || "<the port's repo>";
+  const CLI = "node ~/.local/share/iosonand/cli.mjs";
+  const hw = [soc, gpu].filter(Boolean).join(", ");
+  return [
+    `I have a ${deviceName}${hw ? ` (${hw})` : ""} and want to run the iOS port that exists for it, then help improve it. The port is ${REPO}; the iOSOnAnd tracker at ${SITE}/device/${device} lists what works on it, with sources.`,
+    ``,
+    `Tools`,
+    `1. Read the tracker skill (${SITE}/SKILL.md) and get the tracker CLI outside the repo (Node 18+, no install; reading needs no login; read cli.mjs and note its sha256 before running):`,
+    `   mkdir -p ~/.local/share/iosonand && curl -fsSLo ~/.local/share/iosonand/cli.mjs ${SITE}/cli.mjs && sha256sum ~/.local/share/iosonand/cli.mjs && export TRACKER_URL=${SITE}`,
+    `   The HTTP API is described at ${SITE}/api/openapi.json; every GET is public JSON.`,
+    ``,
+    `Know where the port stands`,
+    `2. Read the phone's page: ${CLI} status-get --device ${device} (every area: works, in progress, broken, unknown, with detail and source), ${CLI} history ${device} (what changed lately), ${CLI} gpu-get ${device} (how GPU acceleration works, the frame rate, known GPU issues), ${CLI} porting ${device} (porting records per repo: verified on device, implemented, planned, with build steps), ${CLI} features ${device}.`,
+    `   Then read ${REPO}: its README, docs, open issues and recent commits. Check the exact model: the port may need a specific variant, firmware or bootloader state.`,
+    `3. Tell me what works, what does not, what is risky (unlocking, erasing data, flashing) and what I need (a PC or Mac, tools, files), before changing anything.`,
+    ``,
+    `Run it`,
+    `4. Build and boot it exactly as the README says, step by step, asking me before anything that unlocks, erases or flashes the phone. Keep the logs.`,
+    `5. If it works or fails differently from what the tracker says, tell me; once I agree, record it (sign in first: ${CLI} login, a gist proves my GitHub account; or an API key in TRACKER_TOKEN). Always ask before uploading any screenshot or clip. If I am not a maintainer of this phone yet, the write answers 403: then open an issue on ${REPO} with the logs instead, or carry on with step 6.`,
+    ``,
+    `Improve it (when I want to work on it)`,
+    `6. Fork it under my account and keep the original as upstream: gh repo fork ${REPO} --clone && git remote -v. Sync with upstream before each piece of work.`,
+    `7. Put the fork on the tracker for this phone and say where it comes from: ${CLI} repo-add <MY_FORK> --device ${device}, then ${CLI} repo-lineage <MY_FORK> --base ${REPO} --relation fork-of. My GitHub login owns the fork, so the claim is approved at once; never commit a verification code to the main branch.`,
+    `8. In the first commit, install the tracker skill and set up tracker support in the fork: mkdir -p .claude/skills/iosonand-tracker && curl -fsSLo .claude/skills/iosonand-tracker/SKILL.md ${SITE}/SKILL.md; .gitignore (.env, .env.*, cli.mjs, TRACKER_QUEUE.md); and an "## iOSOnAnd tracker" section in AGENTS.md (and CLAUDE.md / .cursorrules if I use those) pointing to ${SITE}/device/${device} and the iosonand-tracker skill (.claude/skills/iosonand-tracker/SKILL.md; latest at ${SITE}/SKILL.md) — ask once how tracker updates and release posts should go (auto, ask, off in ~/.config/iosonand/agent-prefs.json), update after a phone boot or release as chosen, always ask before uploading any image or video, and only claim what a log, capture or pushed doc shows. Full version: ${SITE}/docs/maintain-a-repo.`,
+    `9. Pick what to improve from the tracker: areas that are broken, in progress or unknown, open GPU issues (${CLI} gpu-issues --device ${device}), and planned areas in the porting records. For each, look for working code first: ${CLI} references --area <area> and ${CLI} references --gpu "${gpu || "<GPU>"}" (same chip or GPU on other phones), ${CLI} components <words> (framework drivers and the boards using them). Reuse what fits, keep licenses and credit it.`,
+    `10. Write new code in Rust where it can go (tools, loaders, daemons, driver logic behind a thin C/C++ shim); C or C++ only for XNU, IOKit's C++ interfaces, existing C code and vendor ABIs; Python only for small dev scripts.`,
+    `11. Follow the iosonand-tracker skill and my ~/.config/iosonand/agent-prefs.json preferences: after each boot that shows a result, record it on the tracker with a public commit or doc as --source (always ask before uploading images or videos). When a fix works on the phone, offer to open a pull request back to ${REPO} (ask me first; follow its contributing rules).`,
+    ``,
+    `Rules: follow ${SITE}/SKILL.md — only claim what a build, log, photo or video shows; anything unproven stays unknown; no personal data or vendor files; never commit API keys; always ask before uploading any image or video, and before anything that wipes, unlocks or flashes the phone.`,
   ].join("\n");
 }

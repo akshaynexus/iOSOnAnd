@@ -1,5 +1,5 @@
+import { PrimaryAction } from "@/components/common";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 let enabledOnce: Promise<boolean> | null = null;
@@ -23,14 +23,11 @@ export function useGithubSignIn(): boolean {
 
 /** A full-page link to GitHub's sign-in (src/lib/githubOAuth.ts); `redirect` is where to land after. */
 export function GithubSignInButton({ redirect = "/", label = "Continue with GitHub", className }: { redirect?: string; label?: string; className?: string }) {
+  // The animated primary button (a <button>), going to GitHub's sign-in on click.
   return (
-    <Button
-      variant="outline"
-      size="lg"
-      className={cn("w-full", className)}
-      nativeButton={false}
-      render={<a href={`/api/auth/github/start?redirect=${encodeURIComponent(redirect)}`}>{label}</a>}
-    />
+    <PrimaryAction size="md" className={cn("w-full", className)} onClick={() => window.location.assign(`/api/auth/github/start?redirect=${encodeURIComponent(redirect)}`)}>
+      {label}
+    </PrimaryAction>
   );
 }
 

@@ -10,7 +10,8 @@ import { useEffect, useMemo, useState } from "react";
 import { GitBranch, GitFork, Package } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { ForkDialog } from "@/components/ForkDialog";
-import { AddRepoToPhone, ThisIsMine } from "@/components/RepoClaim";
+import { RepoPorting } from "@/components/PortingRecords";
+import { AddRepoToPhone, ContinuePortButton, ThisIsMine } from "@/components/RepoClaim";
 import { isDependency, isUnclaimed } from "@/components/ClaimCallout";
 import { VerifiedBadge } from "@/components/StatusBadge";
 import { forkBranches, branchHref, forkHref } from "@/components/ReposTable";
@@ -66,6 +67,7 @@ function maintainerOf(f: Fork | undefined) {
 }
 
 function PhoneRepoRow({ node, device, editable }: { node: Node; device: Device; editable: boolean }) {
+  const record = (device.porting ?? []).find((p) => p.repo && key(p.repo) === key(node.repo));
   const s = node.here!;
   const f = node.fork;
   const people = maintainerOf(f);
@@ -78,12 +80,12 @@ function PhoneRepoRow({ node, device, editable }: { node: Node; device: Device; 
         {s.kind === "upstream" ? <Package className="size-4 shrink-0 text-muted-foreground" aria-hidden /> : <GitFork className="size-4 shrink-0 text-muted-foreground" aria-hidden />}
         <RepoLinkText repo={s.repo} href={f ? forkHref(f) : undefined} strong />
         <span className={cn("inline-flex h-5 items-center rounded-full border px-2 text-[11px] font-medium", SUPPORT_TONE[s.support] ?? SUPPORT_TONE.claimed)}>
-          {supportPhrase(s.support, s.via)}
+          {s.support === "claimed" && f?.device_slug === device.slug ? (people ? "This phone's port" : "Port for this phone") : supportPhrase(s.support, s.via)}
         </span>
         {f ? <VerifiedBadge verified={f.verified} /> : null}
         <span className="ml-auto flex items-center gap-1.5">
           {f && isUnclaimed(f) && !isDependency(f) ? (
-            <ThisIsMine repo={s.repo} device={device.slug} devices={[{ slug: device.slug, name: device.name }]} compact label="Claim" />
+            <ThisIsMine repo={s.repo} device={device.slug} devices={[{ slug: device.slug, name: device.name }]} label="Claim" />
           ) : null}
           {editable && f && f.device_slug === device.slug ? <ForkDialog deviceSlug={device.slug} fork={f} /> : null}
         </span>
@@ -127,6 +129,7 @@ function PhoneRepoRow({ node, device, editable }: { node: Node; device: Device; 
         ) : null}
       </div>
       {f?.best_result ? <p className="line-clamp-2 text-sm break-words">{f.best_result}</p> : s.note ? <p className="text-sm break-words text-muted-foreground">{s.note}</p> : null}
+      {record ? <RepoPorting r={record} editable={editable} /> : null}
       {uses.length ? (
         <div className="flex flex-wrap items-center gap-1.5 text-xs">
           <span className="text-muted-foreground">Uses</span>
@@ -250,21 +253,28 @@ export function RepoNetwork({ device, editable }: { device: Device; editable: bo
     return order(top);
   }, [supporters, forks, device.forks, lineage]);
 
+  // Porting records of repos that are not in the tree (e.g. a framework's in-tree board).
+  const loose = (device.porting ?? []).filter((p) => !p.repo || !supporters.some((s) => key(s.repo) === key(p.repo)));
   const count = supporters.length;
   const upstream = supporters.filter((s) => s.kind === "upstream").length;
   return (
     <section aria-labelledby="repos-heading" className="flex scroll-mt-20 flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-3">
-        <h2 id="repos-heading" className="text-base font-semibold">
-          Repos <span className="font-normal text-muted-foreground tabular-nums">{count}</span>
-        </h2>
-        {count ? (
-          <span className="text-xs text-muted-foreground">
-            {roots.length === 1 ? "one family" : `${roots.length} families`}
-            {upstream ? `, ${upstream} main repo${upstream === 1 ? "" : "s"}` : ""}
-          </span>
-        ) : null}
-        <span className="ml-auto flex items-center gap-2">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex min-w-0 items-baseline gap-2">
+          <h2 id="repos-heading" className="text-base font-semibold">
+            Repos <span className="font-normal text-muted-foreground tabular-nums">{count}</span>
+          </h2>
+          {count ? (
+            <span className="truncate text-xs text-muted-foreground">
+              {roots.length === 1 ? "one family" : `${roots.length} families`}
+              {upstream ? `, ${upstream} main repo${upstream === 1 ? "" : "s"}` : ""}
+            </span>
+          ) : null}
+        </div>
+        <span className="flex flex-wrap items-center gap-2 sm:ml-auto">
+          {count ? (
+            <ContinuePortButton device={device.slug} deviceName={device.name} repo={(supporters.find((s) => s.support === "primary") ?? supporters[0])?.repo} soc={device.soc} gpu={device.gpu} />
+          ) : null}
           <AddRepoToPhone device={{ slug: device.slug, name: device.name }} />
           {editable ? <ForkDialog deviceSlug={device.slug} /> : null}
         </span>
@@ -272,8 +282,18 @@ export function RepoNetwork({ device, editable }: { device: Device; editable: bo
       {count === 0 ? (
         <p className="rounded-[14px] border border-dashed px-4 py-6 text-center text-sm text-muted-foreground">No repo for this phone yet.</p>
       ) : (
-        <div className="rounded-[14px] border bg-muted/20 p-3 sm:p-4">
+        <div className="flex flex-col gap-3 rounded-[14px] border bg-muted/20 p-3 sm:p-4">
           <Branch nodes={roots} device={device} editable={editable} depth={0} />
+          {loose.length ? (
+            <div className="flex flex-col gap-2 border-t pt-3">
+              {loose.map((r) => (
+                <div key={r.key} className="flex min-w-0 flex-col gap-1">
+                  <span className="font-mono text-xs text-muted-foreground">{r.repo || r.record}</span>
+                  <RepoPorting r={r} editable={editable} />
+                </div>
+              ))}
+            </div>
+          ) : null}
         </div>
       )}
     </section>

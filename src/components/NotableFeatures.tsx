@@ -5,10 +5,11 @@
  * maintainers add, change and remove them here; agents use the CLI
  * (feature-add, feature-set, feature-remove).
  */
+import { PrimaryAction } from "@/components/common";
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { useRouter } from "@tanstack/react-router";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -108,10 +109,7 @@ export function NotableFeatures({ deviceSlug, features, editable }: { deviceSlug
           Other notable features
         </h2>
         {editable && !adding ? (
-          <Button variant="outline" size="sm" onClick={() => setAdding(true)}>
-            <Plus aria-hidden />
-            Add a feature
-          </Button>
+          <PrimaryAction onClick={() => setAdding(true)}>Add a feature</PrimaryAction>
         ) : null}
       </div>
       {adding ? <FeatureForm deviceSlug={deviceSlug} onDone={() => setAdding(false)} /> : null}

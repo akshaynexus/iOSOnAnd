@@ -16,6 +16,8 @@ import { imageSize, sniff } from '../../src/lib/sniff';
 import { checkProofFile } from '../../src/lib/repoproof';
 import { BUCKETS, bucketFor } from '../../src/lib/ratebuckets';
 import { gpuFamily, gpuInfo, gpuMatches, gpuOfSoc } from '../../src/lib/gpu';
+import { newerVersion } from '../../src/lib/version';
+import { agentPrompt, continuePrompt, portPrompt, trackerSupportPrompt } from '../../src/lib/agentPrompt';
 
 describe('GPU from the chip', () => {
   test('chips map to their GPU by part number or name; unknown chips stay empty', () => {
@@ -222,6 +224,13 @@ describe('repo proof file (stubbed fetch)', () => {
     expect(seen.length).toBe(2);
   });
 
+  test('the file on a throwaway iosonand-verify branch proves the claim (nothing on the default branch)', async () => {
+    const { f, seen } = stub({ 'https://raw.githubusercontent.com/me/port/iosonand-verify/.iosonand-verify': () => new Response(`${NONCE}\n`) });
+    const r = await checkProofFile('me/port', NONCE, { fetch: f });
+    expect(r.ok).toBe(true);
+    expect(seen[seen.length - 1]).toBe('https://raw.githubusercontent.com/me/port/iosonand-verify/.iosonand-verify');
+  });
+
   test('a missing or wrong file is not a proof', async () => {
     expect((await checkProofFile('me/port', NONCE, { fetch: stub({}).f })).ok).toBe(false);
     const wrong = await checkProofFile('me/port', NONCE, { fetch: stub({ 'https://': () => new Response('someone-else') }).f });
@@ -232,5 +241,45 @@ describe('repo proof file (stubbed fetch)', () => {
 
   test('GitHub unreachable throws (the route answers 502)', async () => {
     await expect(checkProofFile('me/port', NONCE, { fetch: async () => { throw new Error('ECONNREFUSED'); } })).rejects.toThrow('ECONNREFUSED');
+  });
+});
+
+describe('device version from a status', () => {
+  test('a later version replaces an older one, never the reverse', () => {
+    expect(newerVersion('iOS 27.2.1 (24B156)', 'iOS 16.5')).toBe(true);
+    expect(newerVersion('iOS 16.5', 'iOS 27.2.1')).toBe(false);
+    expect(newerVersion('iOS 27.2', 'iOS 27.2')).toBe(false);
+    expect(newerVersion('iOS 27.2.1', 'iOS 27.2')).toBe(true);
+    expect(newerVersion('iOS 16.7.16 (20H392)', 'iOS 16.7.2')).toBe(true);
+    expect(newerVersion('iOS 16', '')).toBe(true);
+    expect(newerVersion('beta', 'iOS 16.5')).toBe(false);
+  });
+});
+
+describe('SKILL.md and agent prompts', () => {
+  test('SKILL.md has valid frontmatter, preferences, image consent rule, and accurate CLI usage', () => {
+    const skill = readFileSync(path.join(import.meta.dir, '..', '..', 'SKILL.md'), 'utf8');
+    expect(skill).toMatch(/^---\nname: iosonand-tracker\ndescription: /);
+    expect(skill).toContain('~/.config/iosonand/agent-prefs.json');
+    expect(skill).toContain('Ask before every image or video upload');
+    expect(skill).toContain('iosonand-verify');
+    expect(skill).toContain('--new-device');
+    expect(skill).toContain('Reddit links ONLY');
+  });
+
+  test('all four agent prompts reference /SKILL.md, agent-prefs.json, and asking before images', () => {
+    const site = 'https://hackios.appaiproxy.com';
+    const prompts = [
+      agentPrompt({ site, repo: 'me/port', device: 's24-ultra' }),
+      trackerSupportPrompt({ site, repo: 'me/port', device: 's24-ultra' }),
+      portPrompt({ site, device: 's24-ultra', deviceName: 'Galaxy S24 Ultra' }),
+      continuePrompt({ site, device: 's24-ultra', deviceName: 'Galaxy S24 Ultra', repo: 'me/port' }),
+    ];
+    for (const p of prompts) {
+      expect(p).toContain(`${site}/SKILL.md`);
+      expect(p).toContain('.claude/skills/iosonand-tracker/SKILL.md');
+      expect(p).toContain('agent-prefs.json');
+      expect(p).toMatch(/ask.*images? (?:or|and) videos?|images? (?:or|and) videos?.*ask/i);
+    }
   });
 });

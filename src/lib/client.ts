@@ -159,6 +159,15 @@ export interface PortingRecord extends PortingRecordSummary {
   components: string[];
 }
 
+/** POST /api/porting/:key/apply: write the record's areas to its phone (the phone's maintainers or an admin). */
+export function applyPortingRecord(
+  key: string,
+  input: { overwrite?: boolean; areas?: string[] } = {},
+  opts?: CallOptions,
+): Promise<{ device: string; applied: Array<{ area: string; state: string }>; kept: string[]; ios_version: string }> {
+  return req(`/api/porting/${encodeURIComponent(key)}/apply`, { method: "POST", body: JSON.stringify(input) }, opts);
+}
+
 export function getPortingRecord(key: string, opts?: CallOptions): Promise<{ record: PortingRecord }> {
   return req(`/api/porting/${encodeURIComponent(key)}`, undefined, opts);
 }
@@ -284,6 +293,8 @@ export interface DeviceRow {
   gpu_issues?: GpuIssue[];
   /** Porting records of its repos (UniXNU's device records), best-verified first. */
   porting?: PortingRecordSummary[];
+  /** Page views (GET /api/devices/:slug only). */
+  views?: Views;
   repo_kind: string;
   status: AreaState;
   best_result: string;
@@ -890,11 +901,73 @@ export interface UserProfile {
   repos: Array<{ id: number; repo: string; device_slug: string | null; kind: string; base_project: string; best_result: string; since: string }>;
   recent: StatusChange[];
   features: number;
+  views?: Views;
 }
 
 /** The /u/<param> of a profile: the GitHub login when linked, else the user id. */
 export function profileParam(u: { id: number; github_login?: string | null }): string {
   return u.github_login || String(u.id);
+}
+
+/** Page views of a phone or profile (migration 0021). */
+export interface Views {
+  d7: number;
+  d30: number;
+  total: number;
+}
+
+/** GET /api/stats: what the Statistics page shows. */
+export interface PublicStats {
+  range: "7" | "30" | "all";
+  since: string;
+  totals: {
+    devices: number;
+    repos: number;
+    maintainers: number;
+    working_areas: number;
+    gpu_accelerated: number;
+    device_views: number;
+    profile_views: number;
+    searches: number;
+    status_changes: number;
+  };
+  most_viewed: Array<{ slug: string; name: string; image_url: string; views: number }>;
+  most_searched: Array<{ slug: string; name: string; image_url: string; searches: number }>;
+  search_terms: Array<{ term: string; searches: number }>;
+  most_viewed_profiles: Array<{ id: number; label: string; github_login: string | null; views: number }>;
+  most_updated: Array<{ slug: string; name: string; image_url: string; changes: number }>;
+  top_contributors: Array<{ id: number | null; label: string; github_login: string | null; changes: number; phones: number }>;
+  daily: Array<{ day: string; views: number; searches: number; status_changes: number }>;
+}
+
+export const loadStats = createServerFn({ method: "GET" })
+  .validator((range: unknown) => (range === "7" || range === "all" ? range : "30") as "7" | "30" | "all")
+  .handler(async ({ data: range }): Promise<PublicStats | null> => {
+    const res = await serverGet<{ stats: PublicStats }>(import("@/routes/api/stats"), `/api/stats?range=${range}`);
+    return res.ok ? res.data.stats : null;
+  });
+
+/**
+ * Count one page view or search for the public statistics: once per page and
+ * day in this browser, sent as a beacon so it never slows the page. Counts
+ * only; nothing about the viewer is sent or stored.
+ */
+export function trackHit(kind: "device_view" | "profile_view" | "search", key: string): void {
+  if (typeof window === "undefined" || !key) return;
+  const mark = `iosonand.hit.${kind}.${key.toLowerCase()}.${new Date().toISOString().slice(0, 10)}`;
+  try {
+    if (window.localStorage.getItem(mark)) return;
+    window.localStorage.setItem(mark, "1");
+  } catch {
+    /* storage blocked: count anyway, the server only keeps daily totals */
+  }
+  const body = JSON.stringify({ kind, key });
+  try {
+    if (navigator.sendBeacon?.("/api/stats/hit", new Blob([body], { type: "application/json" }))) return;
+  } catch {
+    /* fall through to fetch */
+  }
+  void fetch("/api/stats/hit", { method: "POST", body, keepalive: true, headers: { "content-type": "application/json" } }).catch(() => {});
 }
 
 export const loadUserProfile = createServerFn({ method: "GET" })

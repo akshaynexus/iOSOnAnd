@@ -170,6 +170,26 @@ describe('devices, areas and the not-applicable rule', () => {
     expect((await call('GET', `/api/devices/${DEV}`)).body.device.gpu_accel).toBeNull();
   });
 
+  test('statistics: views and searches count as daily totals; unknown keys and non-matching searches are dropped', async () => {
+    const before = (await call('GET', `/api/devices/${DEV}`)).body.device.views;
+    const d7 = Number(before.d7);
+    expect(typeof before.d30).toBe('number');
+    expect((await call('POST', '/api/stats/hit', { body: { kind: 'device_view', key: DEV } })).status).toBe(204);
+    expect((await call('GET', `/api/devices/${DEV}`)).body.device.views.d7).toBe(d7 + 1);
+    expect((await call('POST', '/api/stats/hit', { body: { kind: 'device_view', key: 'no-such-phone-xyz' } })).status).toBe(204);
+    expect((await call('POST', '/api/stats/hit', { body: { kind: 'bogus', key: DEV } })).status).toBe(400);
+    expect((await call('POST', '/api/stats/hit', { body: { kind: 'profile_view', key: String(alice.id) } })).status).toBe(204);
+    expect((await call('GET', `/api/users/${alice.id}`)).body.user.views.d7).toBeGreaterThanOrEqual(1);
+    // A search is kept only when it names a phone.
+    expect((await call('POST', '/api/stats/hit', { body: { kind: 'search', key: `Test ${DEV}` } })).status).toBe(204);
+    expect((await call('POST', '/api/stats/hit', { body: { kind: 'search', key: `zz nothing ${RUN}` } })).status).toBe(204);
+    const s = (await call('GET', '/api/stats?range=7')).body.stats;
+    expect(s.range).toBe('7');
+    expect(s.daily.length).toBe(7);
+    expect(s.most_searched.map((r: any) => r.slug)).toContain(DEV);
+    expect(s.search_terms.map((r: any) => r.term)).not.toContain(`zz nothing ${RUN}`);
+  });
+
   test('GPU issues: log, find across phones, mark fixed, remove; maintainers write', async () => {
     const add = await call('POST', `/api/devices/${DEV}/gpu/issues`, {
       who: admin,
@@ -218,6 +238,15 @@ describe('devices, areas and the not-applicable rule', () => {
     expect(comps.body.components[0].used_by[0]).toMatchObject({ repo: `test-owner/rec-${RUN}`, area: 'gpu', status: 'device-verified' });
     expect((await call('GET', `/api/devices/${DEV}`)).body.device.porting.map((p: any) => p.record)).toContain(`rec-${RUN}`);
     expect((await call('GET', '/api/porting/nope-nope')).status).toBe(404);
+    // Apply it to the phone: gpu (device-verified) -> works; network (planned) is skipped; bob may not.
+    expect((await call('POST', `/api/porting/testfw:rec-${RUN}/apply`, { who: bob.who, body: {} })).status).toBe(403);
+    const applied = await call('POST', `/api/porting/testfw:rec-${RUN}/apply`, { who: admin, body: { overwrite: true } });
+    expect(applied.status).toBe(200);
+    expect(applied.body.applied).toEqual([{ area: 'gpu', state: 'works' }]);
+    const gpuRow = (await call('GET', `/api/devices/${DEV}`)).body.device.statuses.find((s: any) => s.area_slug === 'gpu');
+    expect(gpuRow).toMatchObject({ state: 'works', os_version: 'iPadOS 27.0.1 (24A446)' });
+    // A second apply without overwrite keeps the row.
+    expect((await call('POST', `/api/porting/testfw:rec-${RUN}/apply`, { who: admin, body: {} })).body.kept).toContain('gpu');
     if (LOCAL) localSql(`DELETE FROM porting_records WHERE framework = 'TestFW'; DELETE FROM porting_components WHERE framework = 'TestFW';`);
   });
 
@@ -915,7 +944,7 @@ describe('post thumbnails', () => {
   });
 });
 
-describe('static CLI download', () => {
+describe('static CLI and skill downloads', () => {
   test('GET /cli.mjs serves cli.mjs as JavaScript', async () => {
     const r = await fetch(`${BASE}/cli.mjs`);
     expect(r.status).toBe(200);
@@ -923,5 +952,14 @@ describe('static CLI download', () => {
     const text = await r.text();
     expect(text.startsWith('#!/usr/bin/env node')).toBe(true);
     if (LOCAL) expect(text).toBe(readFileSync(path.join(ROOT, 'cli.mjs'), 'utf8'));
+  });
+
+  test('GET /SKILL.md serves SKILL.md as Markdown', async () => {
+    const r = await fetch(`${BASE}/SKILL.md`);
+    expect(r.status).toBe(200);
+    expect(r.headers.get('content-type')).toContain('text/markdown');
+    const text = await r.text();
+    expect(text).toContain('name: iosonand-tracker');
+    if (LOCAL) expect(text).toBe(readFileSync(path.join(ROOT, 'SKILL.md'), 'utf8'));
   });
 });

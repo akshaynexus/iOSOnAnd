@@ -1,3 +1,4 @@
+import { PrimaryAction } from "@/components/common";
 import { forwardRef, useEffect, useRef, useState } from "react";
 import type { AnchorHTMLAttributes, ReactNode } from "react";
 import { Link, useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
@@ -21,6 +22,7 @@ const NAV_ITEMS: PillNavItem[] = [
   { label: "Repos", href: "/?tab=repos" },
   { label: "Updates", href: "/?tab=updates" },
   { label: "Changelog", href: "/?tab=changelog" },
+  { label: "Statistics", href: "/stats" },
   { label: "Docs", href: "/docs" },
   { label: "API", href: "/api-reference", ariaLabel: "API reference" },
 ];
@@ -206,7 +208,7 @@ function SiteSearch({ className, autoFocus }: { className?: string; autoFocus?: 
 }
 
 function Account({ compact }: { compact?: boolean }) {
-  const { user, loading, refresh, isAdmin } = useAuth();
+  const { user, loading, refresh } = useAuth();
   const navigate = useNavigate();
   const router = useRouter();
   const [onLogout, loggingOut] = useAction(async () => {
@@ -231,15 +233,6 @@ function Account({ compact }: { compact?: boolean }) {
             </Link>
           }
         />
-        {isAdmin ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            className={cn("rounded-full", compact && "justify-start")}
-            nativeButton={false}
-            render={<Link to="/profile" search={{ tab: "admin" }}>Admin</Link>}
-          />
-        ) : null}
         <Button
           variant="ghost"
           size="sm"
@@ -261,12 +254,9 @@ function Account({ compact }: { compact?: boolean }) {
         nativeButton={false}
         render={<Link to="/login">Log in</Link>}
       />
-      <Button
-        size="sm"
-        className={cn("rounded-full px-4", compact && "w-full")}
-        nativeButton={false}
-        render={<Link to="/signup">Sign up</Link>}
-      />
+      <PrimaryAction className={cn(compact && "w-full")} onClick={() => void navigate({ to: "/signup" })}>
+        Sign up
+      </PrimaryAction>
     </div>
   );
 }
@@ -373,8 +363,14 @@ export function RouteError({ error, reset }: ErrorComponentProps) {
 /** Pending view while a page's loader runs on client navigation. */
 export function RoutePending() {
   return (
-    <p className="text-muted-foreground" role="status">
-      Loading
-    </p>
+    <div role="status" aria-label="Loading" className="flex flex-col gap-5">
+      <span className="sr-only">Loading</span>
+      <span aria-hidden className="skeleton h-7 w-48 rounded-lg" />
+      <span aria-hidden className="skeleton h-24 rounded-[14px]" />
+      <div aria-hidden className="grid gap-4 md:grid-cols-2">
+        <span className="skeleton h-40 rounded-[14px]" />
+        <span className="skeleton h-40 rounded-[14px]" />
+      </div>
+    </div>
   );
 }

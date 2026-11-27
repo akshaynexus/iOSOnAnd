@@ -1,3 +1,4 @@
+import { PrimaryAction } from "@/components/common";
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { useRouter } from "@tanstack/react-router";
@@ -9,7 +10,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -61,14 +61,11 @@ export function ForkDialog({ deviceSlug, fork }: { deviceSlug: string; fork?: Fo
   }
 
   return (
+    <>
+    <PrimaryAction onClick={() => setOpen(true)} aria-label={editing ? `Edit ${fork.repo}` : undefined}>
+      {editing ? "Edit" : "Add fork"}
+    </PrimaryAction>
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        render={
-          <Button variant="outline" size="sm" aria-label={editing ? `Edit ${fork.repo}` : undefined}>
-            {editing ? "Edit" : "Add fork"}
-          </Button>
-        }
-      />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{editing ? `Edit ${fork.repo}` : "Add fork"}</DialogTitle>
@@ -134,5 +131,6 @@ export function ForkDialog({ deviceSlug, fork }: { deviceSlug: string; fork?: Fo
         </form>
       </DialogContent>
     </Dialog>
+    </>
   );
 }

@@ -4,10 +4,11 @@
  * frames per second, the repos and the source (migration 0018). Maintainers
  * record or change it here; agents use `gpu-set` (cli.mjs).
  */
+import { PrimaryAction } from "@/components/common";
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { useRouter } from "@tanstack/react-router";
-import { ChevronRight, Pencil } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -158,10 +159,7 @@ export function GpuAccelSection({ device, editable }: { device: Device; editable
           GPU acceleration
         </h2>
         {editable && !editing ? (
-          <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
-            <Pencil aria-hidden />
-            {a ? "Change" : "Record it"}
-          </Button>
+          <PrimaryAction onClick={() => setEditing(true)}>{a ? "Change" : "Record it"}</PrimaryAction>
         ) : null}
       </div>
       {editing ? <AccelForm deviceSlug={device.slug} accel={a} onDone={() => setEditing(false)} /> : null}

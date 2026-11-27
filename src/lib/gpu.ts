@@ -103,6 +103,8 @@ const SOC_GPU: Array<[RegExp, string]> = [
   // Unisoc
   [/\bUMS512\b|Unisoc T618/i, 'Mali-G52 MP2'],
   [/\bUMS9230\b|Unisoc T606/i, 'Mali-G57 MP1'],
+  // NVIDIA Tegra (the Nintendo Switch)
+  [/\bT210(B01)?\b|Tegra X1/i, 'Maxwell GM20B'],
   // Others
   [/S905X5/i, 'Mali-G310 V2'],
 ];
@@ -151,6 +153,7 @@ export function gpuFamily(gpu: string): { family: string; driver: string } {
   }
   if (/PowerVR\s*(GE|GX|GT|GM|AXE|BXM|BXE)/i.test(g)) return { family: 'PowerVR Rogue', driver: 'Mesa powervr (imagination; Rogue support is partial)' };
   if (/PowerVR\s*DXT/i.test(g)) return { family: 'PowerVR D-Series', driver: 'Mesa powervr (imagination)' };
+  if (/Maxwell|GM20B/i.test(g)) return { family: 'NVIDIA Maxwell', driver: 'nouveau / NVK (Mesa)' };
   if (/Xclipse/i.test(g)) return { family: 'Xclipse (AMD RDNA)', driver: 'RADV / amdgpu (reference only)' };
   return { family: '', driver: '' };
 }

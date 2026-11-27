@@ -1,3 +1,4 @@
+import { SkeletonFeedRows } from "@/components/motion";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import { Link, useMatch, useRouter } from "@tanstack/react-router";
@@ -179,11 +180,7 @@ function FeedEnd({ feed, total, paused, onResume }: { feed: Feed; total?: number
   }
   return (
     <div className="flex flex-col items-center">
-      {feed.loading ? (
-        <p className="pt-2 text-xs text-muted-foreground" aria-live="polite">
-          Loading more
-        </p>
-      ) : null}
+      {feed.loading ? <SkeletonFeedRows count={3} label="Loading more" className="w-full" /> : null}
       <InfiniteSentinel
         count={count}
         total={total ?? count}
@@ -508,7 +505,11 @@ interface LogRow {
   entry: ChangelogEntry;
   /** Status writes merged into this row (one phone, one person, within minutes). */
   batch?: { device: string; items: Array<{ area: string; state: string; detail: string }> };
+  /** The same change repeated back to back (a script importing one at a time): shown once with ×N. */
+  repeat?: number;
 }
+
+const REPEAT_WINDOW_MS = 30 * 60 * 1000;
 
 const BATCH_WINDOW_MS = 10 * 60 * 1000;
 const ms = (iso: string) => Date.parse(/[zZ]|[+-]\d\d:?\d\d$/.test(iso) ? iso : `${iso}Z`) || 0;
@@ -520,6 +521,17 @@ function toRows(entries: ChangelogEntry[]): LogRow[] {
     const kind = classifyChange(e.summary);
     const st = kind === "status" ? parseStatusChange(e.summary) : null;
     const last = rows[rows.length - 1];
+    if (
+      !st &&
+      last &&
+      !last.batch &&
+      last.who === e.who &&
+      last.entry.summary === e.summary &&
+      Math.abs(ms(last.created) - ms(e.created)) <= REPEAT_WINDOW_MS
+    ) {
+      last.repeat = (last.repeat ?? 1) + 1;
+      continue;
+    }
     if (
       st &&
       last?.batch &&
@@ -604,7 +616,16 @@ function ChangeRow({ row, look }: { row: LogRow; look: Lookups }) {
         <span className="sr-only">{KIND_LABEL[row.kind]}</span>
       </span>
       <div className="flex min-w-0 flex-col gap-1 pt-0.5">
-        <RowBody row={row} look={look} />
+        <div className="flex min-w-0 items-start gap-2">
+          <div className="min-w-0 flex-1">
+            <RowBody row={row} look={look} />
+          </div>
+          {row.repeat && row.repeat > 1 ? (
+            <span className="mt-0.5 shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground tabular-nums" title={`${row.repeat} times in a row`}>
+              ×{row.repeat}
+            </span>
+          ) : null}
+        </div>
         <p className="text-xs text-muted-foreground sm:hidden">
           {row.who ? `${row.who} · ` : null}
           <When value={row.created} />

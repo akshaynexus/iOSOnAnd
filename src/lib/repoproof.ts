@@ -6,13 +6,19 @@
 // and, when that is missing or different (raw.githubusercontent.com caches
 // for up to 5 minutes, so a file pushed a moment ago can still read as the
 // old answer), the GitHub contents API for the same path (not cached that
-// way; 60 requests an hour without GITHUB_TOKEN). The claim is proven when
-// the trimmed content equals the nonce. At most 4 KB of either answer is read.
+// way; 60 requests an hour without GITHUB_TOKEN). The same file on a branch
+// named `iosonand-verify` counts too (checked after the default branch), so a
+// claimant can prove write access without committing to their main branch:
+// push a throwaway branch holding only the file, verify, delete the branch.
+// The claim is proven when the trimmed content equals the nonce. At most 4 KB
+// of any answer is read.
 //
 // Dependency-free: tests/api/repo-proof.test.ts runs it under bun with a
 // stubbed fetch.
 
 export const PROOF_PATH = '.iosonand-verify';
+/** A throwaway branch that may hold the proof file instead of the default branch. */
+export const PROOF_BRANCH = 'iosonand-verify';
 const MAX_BYTES = 4096;
 
 export type FetchLike = (url: string, init?: RequestInit) => Promise<Response>;
@@ -67,6 +73,11 @@ export async function checkProofFile(
     [`https://raw.githubusercontent.com/${path}/HEAD/${PROOF_PATH}`, { headers: { 'cache-control': 'no-cache', 'user-agent': 'iOSOnAnd-tracker/1.0' } }],
     [
       `https://api.github.com/repos/${path}/contents/${PROOF_PATH}`,
+      { headers: { accept: 'application/vnd.github.raw', 'user-agent': 'iOSOnAnd-tracker/1.0', ...(opts.apiHeaders ?? {}) } },
+    ],
+    [`https://raw.githubusercontent.com/${path}/${PROOF_BRANCH}/${PROOF_PATH}`, { headers: { 'cache-control': 'no-cache', 'user-agent': 'iOSOnAnd-tracker/1.0' } }],
+    [
+      `https://api.github.com/repos/${path}/contents/${PROOF_PATH}?ref=${PROOF_BRANCH}`,
       { headers: { accept: 'application/vnd.github.raw', 'user-agent': 'iOSOnAnd-tracker/1.0', ...(opts.apiHeaders ?? {}) } },
     ],
   ];

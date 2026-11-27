@@ -6,6 +6,7 @@
 // it as a repo maintainer; changelog lines stay). An admin
 // cannot delete their own account (there must always be one way back in).
 
+import { viewsOf } from '@/lib/stats';
 import { createFileRoute } from '@tanstack/react-router';
 import { exec, queryAll, queryFirst } from '@/lib/db';
 import { mediaBucket } from '@/lib/media';
@@ -50,7 +51,8 @@ async function handleGet({ params }: ApiCtx): Promise<Response> {
         maintains,
       )
     : [];
-  return json({ user: { ...toPublicUser(u), maintains, devices, repos, recent, features: Number(features?.n ?? 0) } });
+  const views = await viewsOf('profile_view', String(u.id));
+  return json({ user: { ...toPublicUser(u), maintains, devices, repos, recent, features: Number(features?.n ?? 0), views } });
 }
 
 async function handleDelete({ request, params }: ApiCtx): Promise<Response> {

@@ -9,7 +9,7 @@ import { Field } from "@/components/Field";
 import { useAuth } from "@/components/auth";
 import { useAction } from "@/components/useAction";
 import { CopyButton, PrimaryAction } from "@/components/common";
-import { agentPrompt, portPrompt, trackerSupportPrompt } from "@/lib/agentPrompt";
+import { agentPrompt, continuePrompt, portPrompt, trackerSupportPrompt } from "@/lib/agentPrompt";
 import { claimRepo, getForkByRepo, listDeviceNames, searchCatalog, verifyRepoClaim, type CatalogEntry, type Fork, type RepoClaim } from "@/lib/client";
 import { cn, formatDate, relativeTime } from "@/lib/utils";
 import { LinkGithubCallout } from "@/components/LinkGithub";
@@ -89,7 +89,7 @@ export function TrackerSupportBox({ repo, device, open = false }: { repo?: strin
   return (
     <PromptDetails
       summary="Add tracker support to your repo"
-      intro="Paste this into your coding agent in the repo. It keeps your key out of git and adds a short Tracker section to the repo's agent instructions, so every later session updates the tracker as you make progress."
+      intro="Paste this into your coding agent in the repo. It installs the tracker skill, keeps your key out of git and adds a short Tracker section to the repo's agent instructions, so every later session follows your update rules."
       text={trackerSupportPrompt({ site: site || "https://<this site>", repo, device: device ?? undefined })}
       open={open}
     />
@@ -163,12 +163,14 @@ export function ClaimNextStep({ claim, onDone }: { claim: RepoClaim; onDone?: ()
   }
   const path = current.path || ".iosonand-verify";
   const nonce = current.nonce ?? "";
-  const cmd = `printf '%s\\n' '${nonce}' > ${path} && git add ${path} && git commit -m "iOSOnAnd verification" && git push`;
+  // A throwaway branch, so nothing lands on the main branch (the server reads the file there too).
+  const cmd = `git switch --orphan iosonand-verify && printf '%s\\n' '${nonce}' > ${path} && git add ${path} && git commit -m "iOSOnAnd verification" && git push origin iosonand-verify && git switch -`;
   return (
     <div className="flex flex-col gap-3" role="status">
       <p>
         Prove you control <span className="font-medium">{current.repo}</span>: put this code alone in{" "}
-        <code className="font-mono text-xs">{path}</code> on the default branch, push, then verify.
+        <code className="font-mono text-xs">{path}</code> on a throwaway <code className="font-mono text-xs">iosonand-verify</code> branch
+        (never your main branch), push the branch, then verify and delete the branch.
         {current.expires ? (
           <>
             {" "}
@@ -196,7 +198,7 @@ export function ClaimNextStep({ claim, onDone }: { claim: RepoClaim; onDone?: ()
         <Button onClick={() => void verify()} disabled={verifying}>
           {verifying ? "Checking the file" : "Verify"}
         </Button>
-        <span className="text-xs text-muted-foreground">Delete the file after the claim is approved.</span>
+        <span className="text-xs text-muted-foreground">Delete the iosonand-verify branch after the claim is approved.</span>
       </div>
     </div>
   );
@@ -607,6 +609,52 @@ export function AddPhoneOrRepo({ devices }: { devices: { slug: string; name: str
  * "Port iOS to your device": copy the port prompt. The agent asks which
  * device it is (or reads it over adb), so the dialog asks nothing.
  */
+/** "Run or improve it" on a phone with a port: the continue prompt for that phone and its main repo. */
+export function ContinuePortButton({ device, deviceName, repo, soc, gpu }: { device: string; deviceName: string; repo?: string; soc?: string; gpu?: string }) {
+  const [open, setOpen] = useState(false);
+  const site = useSite();
+  const text = continuePrompt({ site: site || "https://<this site>", device, deviceName, repo, soc, gpu });
+  const [copied, setCopied] = useState(false);
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      toast.success("Prompt copied", { description: "Paste it into Claude Code, Codex, Cursor or your agent of choice." });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Copy failed: select the prompt and copy it");
+    }
+  }
+  return (
+    <>
+      <PrimaryAction onClick={() => setOpen(true)}>Run or improve it</PrimaryAction>
+      {open ? (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Run or improve this port</DialogTitle>
+              <DialogDescription>
+                Paste this into your coding agent. It reads where the port stands on the tracker, helps you build and run it, and when you want
+                to work on it, forks the repo, puts your fork on the tracker with tracker support in it, and records progress as you go.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-4">
+              <div className="overflow-hidden rounded-lg border bg-muted/40">
+                <pre suppressHydrationWarning className="max-h-[50dvh] overflow-auto p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap [overflow-wrap:anywhere]">
+                  {text}
+                </pre>
+              </div>
+              <PrimaryAction size="md" className="w-full" onClick={() => void copy()}>
+                {copied ? "Copied" : "Copy prompt"}
+              </PrimaryAction>
+            </div>
+          </DialogContent>
+        </Dialog>
+      ) : null}
+    </>
+  );
+}
+
 export function PortIosButton() {
   const [open, setOpen] = useState(false);
   return (

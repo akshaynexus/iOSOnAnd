@@ -166,3 +166,39 @@ export function Skeleton({ className, label = "Loading" }: { className?: string;
     </div>
   );
 }
+
+/**
+ * Shimmer placeholders shaped like the content they stand in for (the
+ * `skeleton` class: a moving gradient, still under reduced motion).
+ */
+export function SkeletonFeedRows({ count = 3, label = "Loading", className }: { count?: number; label?: string; className?: string }) {
+  return (
+    <div role="status" aria-label={label} className={cn("flex flex-col divide-y", className)}>
+      <span className="sr-only">{label}</span>
+      {Array.from({ length: count }, (_, i) => (
+        <div key={i} aria-hidden className="grid grid-cols-[1.75rem_minmax(0,1fr)] items-start gap-x-3 px-4 py-3 sm:grid-cols-[1.75rem_minmax(0,1fr)_9rem] sm:px-5">
+          <span className="skeleton size-7 rounded-md" />
+          <span className="flex flex-col gap-2 pt-1">
+            <span className="skeleton h-3.5 rounded" style={{ width: `${[78, 62, 70, 55][i % 4]}%` }} />
+            <span className="skeleton h-3 w-1/3 rounded" />
+          </span>
+          <span className="hidden flex-col items-end gap-2 pt-1 sm:flex">
+            <span className="skeleton h-3 w-16 rounded" />
+            <span className="skeleton h-3 w-20 rounded" />
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function SkeletonLines({ lines = 3, label = "Loading", className }: { lines?: number; label?: string; className?: string }) {
+  return (
+    <div role="status" aria-label={label} className={cn("flex flex-col gap-2", className)}>
+      <span className="sr-only">{label}</span>
+      {Array.from({ length: lines }, (_, i) => (
+        <span key={i} aria-hidden className="skeleton h-3 rounded" style={{ width: `${[92, 76, 84, 60][i % 4]}%` }} />
+      ))}
+    </div>
+  );
+}

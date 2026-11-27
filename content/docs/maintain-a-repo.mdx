@@ -16,52 +16,63 @@ The text is:
 I maintain an iOS-on-Android port and want to manage it on the iOSOnAnd tracker at {SITE}.
 Repo: {REPO or "<OWNER/REPO>"}{, phone: DEVICE}
 
-1. Get the tracker CLI (Node 18+, no install): curl -fsSLo cli.mjs {SITE}/cli.mjs
-2. Sign in with my GitHub account (needs the gh CLI, logged in): TRACKER_URL={SITE} node cli.mjs login
+1. Read the tracker skill first ({SITE}/SKILL.md) and follow its rules (ask me once how tracker updates and release posts should go — auto, ask or off, saved in ~/.config/iosonand/agent-prefs.json; always ask and show the file and caption before uploading any image or video; no personal data or vendor files).
+   Get the tracker CLI outside the repo (Node 18+, no install; read it and note its sha256 before running):
+   mkdir -p ~/.local/share/iosonand && curl -fsSLo ~/.local/share/iosonand/cli.mjs {SITE}/cli.mjs && sha256sum ~/.local/share/iosonand/cli.mjs
+   Use CLI="node ~/.local/share/iosonand/cli.mjs" with TRACKER_URL={SITE} (shown below as "node cli.mjs").
+2. Sign in with my GitHub account (needs the gh CLI, logged in; gist proof only): TRACKER_URL={SITE} node cli.mjs login
 3. Claim the repo: node cli.mjs repo-claim {REPO} --device {DEVICE}
-   If it prints a verification code, write that code alone to .iosonand-verify on the repo's default branch, push, run node cli.mjs repo-verify <claim id>, then delete the file.
+   Repos under my own GitHub account are approved at once (the gist sign-in above proves the account). Only an organization's repo prints a verification code: never commit it to the main branch; push it on a throwaway branch instead: git switch --orphan iosonand-verify && printf '%s\n' '<code>' > .iosonand-verify && git add .iosonand-verify && git commit -m 'iOSOnAnd verification' && git push origin iosonand-verify && git switch -, then node cli.mjs repo-verify <claim id>, then delete the branch: git push origin --delete iosonand-verify && git branch -D iosonand-verify
 4. Read the repo (README, issues, recent commits) and record what works on the phone, one area at a time:
    node cli.mjs areas
-   node cli.mjs status-set {DEVICE} <area> works|in-progress|broken --detail "<what I can show>" --source "<link>"
-   Only claim what the repo or I can show. Ask me when unsure.
-5. Attach proof when I give you screenshots or clips: add --photo <file> (repeatable) to the status-set or feature-add it proves, so the photo is linked to that change; or node cli.mjs media-upload <file> --device {DEVICE} --area <area> --caption "..."
+   node cli.mjs status-set {DEVICE} <area> works|in-progress|broken --detail "<what I can show>" --source "<public link>"
+   Only claim what a log, capture or pushed doc shows. Ask me when unsure, and before changing a state set by hand.
+5. Attach proof only after asking me (show me the exact file and caption first, even if updates are set to auto): add --photo <file> (repeatable) to the status-set or feature-add it proves, or node cli.mjs media-upload <file> --device {DEVICE} --area <area> --caption "..."
 6. Check the result: node cli.mjs whoami
+7. Set up tracker support and the skill (.claude/skills/iosonand-tracker/SKILL.md from {SITE}/SKILL.md) in the repo.
 ```
 
 [Agent system](/docs/agents) explains what the agent does with it and the rules it follows.
 
 ## Keep the tracker updated from your repo
 
-Once you maintain a repo, a second prompt makes your coding agent keep the tracker current by
-itself. It runs once in your repo: the key stays out of git (`TRACKER_TOKEN` in your shell, or the
-CLI's saved login, plus `.gitignore` lines for `.env` and `cli.mjs`), and a short Tracker section
-goes into the repo's agent instructions (`AGENTS.md`, `CLAUDE.md` or `.cursorrules`). Every later
-session reads that section, so when a change makes an area work, or breaks it, the agent records it
-with its source, and posts photo updates. The profile (My repos) and an approved claim show it
-filled in for your repo and phone:
+Once you maintain a repo, a second prompt installs the `iosonand-tracker` skill (`GET /SKILL.md`)
+and sets up your coding agent to keep the tracker current according to your preferences. It runs
+once in your repo: the key stays out of git (`TRACKER_TOKEN` in your shell, or the CLI's saved
+login, plus `.gitignore` lines for `.env` and `cli.mjs`), the skill is saved to
+`.claude/skills/iosonand-tracker/SKILL.md`, and a short Tracker section goes into the repo's agent
+instructions (`AGENTS.md`, `CLAUDE.md` or `.cursorrules`). On first use, the agent asks once how
+tracker updates and release posts should go (`auto`, `ask` or `off`, stored locally in
+`~/.config/iosonand/agent-prefs.json`), and always asks before uploading any image or video. The
+profile (My repos) and an approved claim show it filled in for your repo and phone:
 
 ```text
-Add iOSOnAnd tracker support to this repo ({REPO}, phone: {DEVICE}), so the tracker at {SITE} stays up to date as we make progress.
+Add iOSOnAnd tracker support and the tracker skill to this repo ({REPO}, phone: {DEVICE}), so the tracker at {SITE} stays up to date as we make progress.
 
-1. Get the tracker CLI outside the repo (Node 18+): mkdir -p ~/.local/share/iosonand && curl -fsSLo ~/.local/share/iosonand/cli.mjs {SITE}/cli.mjs
-2. The key never goes into git. Either sign in once with my GitHub account (gh logged in): TRACKER_URL={SITE} node ~/.local/share/iosonand/cli.mjs login
+1. Install the tracker skill into the repo and read it:
+   mkdir -p .claude/skills/iosonand-tracker && curl -fsSLo .claude/skills/iosonand-tracker/SKILL.md {SITE}/SKILL.md
+2. Get the tracker CLI outside the repo (Node 18+; read it and note its sha256 before running):
+   mkdir -p ~/.local/share/iosonand && curl -fsSLo ~/.local/share/iosonand/cli.mjs {SITE}/cli.mjs && sha256sum ~/.local/share/iosonand/cli.mjs
+3. The key never goes into git. Either sign in once with my GitHub account (gh logged in, gist proof): TRACKER_URL={SITE} node ~/.local/share/iosonand/cli.mjs login
    or I make a key at {SITE}/profile/keys (scopes status:write, fork:write, media:write) and put it in my shell profile as TRACKER_TOKEN, or in a .env file that git ignores.
-   Never write the key into a tracked file, a commit, a log, an issue or a PR.
-3. Add these lines to .gitignore (create it if missing): .env, .env.*, cli.mjs, TRACKER_QUEUE.md
-4. Add this section to the repo's agent instructions (AGENTS.md, or CLAUDE.md / .cursorrules if the repo uses those), so every future session follows it:
+   Never write the key into a tracked file, a commit, a log, an issue or a PR, and never ask me to paste a token into chat.
+4. Add these lines to .gitignore (create it if missing): .env, .env.*, cli.mjs, TRACKER_QUEUE.md
+5. Add this section to the repo's agent instructions (AGENTS.md, or CLAUDE.md / .cursorrules if the repo uses those), so every future session follows it:
 
    ## iOSOnAnd tracker
-   This port is listed at {SITE}/device/{DEVICE}. When a change makes an area of the phone work, or breaks it, update the tracker in the same session:
-   - CLI: TRACKER_URL={SITE} node ~/.local/share/iosonand/cli.mjs (download it again with the curl line above if it is missing)
+   This port's per-phone status is on the iOSOnAnd tracker ({SITE}/device/{DEVICE}), repo {REPO}, phone {DEVICE}.
+   Follow the iosonand-tracker skill (.claude/skills/iosonand-tracker/SKILL.md; latest at {SITE}/SKILL.md):
+   - CLI: TRACKER_URL={SITE} node ~/.local/share/iosonand/cli.mjs (keep it outside the repo; read and check its sha256 when downloaded or updated)
+   - first use: ask the user once how tracker updates and release posts should go (auto, ask or off) and save the answers in ~/.config/iosonand/agent-prefs.json (never committed)
    - read first: <CLI> status-get --device {DEVICE}; the area slugs: <CLI> areas
-   - record it: <CLI> status-set {DEVICE} <area> works|in-progress|broken --detail "<what the build, log or test showed>" --source "<commit, log or PR link>"
-   - with screenshots or clips: <CLI> update {DEVICE} <files...> --text "<what changed>"
-   - only record what a build, log, test or capture shows; anything unproven stays unknown
-   - the key comes from TRACKER_TOKEN or the CLI's saved login, never from a file in this repo
+   - record after a phone boot: <CLI> status-set {DEVICE} <area> works|in-progress|broken --detail "<phone model, build, date, log line>" --source "<public commit, doc or issue URL>" --os ios|macos|tvos --version "<e.g. iOS 27.2>"
+   - release updates (per posts pref): <CLI> update {DEVICE} --text "<release summary and URL>" (post-add is for Reddit links only)
+   - images and videos: always ask and show the exact file and caption before any --photo, media-upload or update with files, even when updates are set to auto
+   - no personal data, no vendor files, no keys in git; only claim what a log, capture or pushed doc shows; unproven stays unknown
    - tracker unreachable: <CLI> queue status-set ..., then <CLI> flush later
 
-5. Commit only the instructions file and .gitignore. Check git status first: no key, no .env, no cli.mjs.
-6. First sync: read the README, issues and recent commits, compare with status-get, and record what they show (ask me when unsure).
+6. Commit only the skill file (.claude/skills/iosonand-tracker/SKILL.md), the instructions file and .gitignore. Check git status first: no key, no .env, no cli.mjs.
+7. Ask me my update preferences for ~/.config/iosonand/agent-prefs.json (auto, ask or off), then read the README, issues and recent commits, compare with status-get, and propose what to sync.
 ```
 
 The tracker may also offer it to you as a pull request. `scripts/tracker-prs.mjs` (run by the
@@ -129,18 +140,24 @@ repo's GitHub owner or an admin.
 | review | `OWNER` is another person's login and yours has commits in the repo | 202 with a pending claim (no code); a maintainer of the repo or an admin approves it |
 | refused | no GitHub account linked, or another person's repo you have no commits in | 403; the hint says why. A maintainer can add you by your GitHub login |
 
-The proof file:
+The proof file goes on a throwaway branch, so nothing lands on your main branch or its history:
 
 ```sh
 node cli.mjs repo-claim OrgName/port --device s25        # prints claim #17 and its code
-printf '%s\n' 'iosonand-verify-...' > .iosonand-verify    # the code alone, on the default branch
-git add .iosonand-verify && git commit -m "iOSOnAnd verification" && git push
+git switch --orphan iosonand-verify                      # an empty branch of its own
+printf '%s\n' 'iosonand-verify-...' > .iosonand-verify    # the code alone
+git add .iosonand-verify && git commit -m "iOSOnAnd verification"
+git push origin iosonand-verify && git switch -
 node cli.mjs repo-verify 17                              # POST /api/repos/claim/17/verify
-git rm .iosonand-verify && git commit -m "remove verification" && git push
+git push origin --delete iosonand-verify && git branch -D iosonand-verify
 ```
 
-`repo-verify` reads `https://raw.githubusercontent.com/OWNER/REPO/HEAD/.iosonand-verify` and,
-when that is missing or different, the GitHub contents API for the same path
+The code is single-use and only proves push access for that one claim; it is not a secret. A repo
+under your own GitHub login needs no code at all: sign in with `node cli.mjs login` (a gist proves
+the account) and the claim is approved at once.
+
+`repo-verify` reads `.iosonand-verify` from the default branch (`https://raw.githubusercontent.com/OWNER/REPO/HEAD/.iosonand-verify`,
+then the GitHub contents API) and from the `iosonand-verify` branch
 (raw.githubusercontent.com caches for up to five minutes). The trimmed content must equal the
 code. A claim lasts 24 hours; asking again within that time returns the same claim and code.
 

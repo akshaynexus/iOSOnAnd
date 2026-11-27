@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { Link, createFileRoute, notFound } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
@@ -12,7 +12,6 @@ import { ClaimThisPhone } from "@/components/ClaimCallout";
 import { DeviceUpdates } from "@/components/DeviceUpdates";
 import { NotableFeatures } from "@/components/NotableFeatures";
 import { GpuAccelSection } from "@/components/GpuAccel";
-import { PortingRecords } from "@/components/PortingRecords";
 import { RepoNetwork } from "@/components/RepoNetwork";
 import { MediaGallery, UploadButton } from "@/components/Media";
 import { devicePhoto } from "@/components/DeviceCard";
@@ -20,7 +19,7 @@ import { PhoneOutline } from "@/components/common";
 import { familiesOfDevice } from "@/components/repoInfo";
 import { FamilyChip } from "@/components/DeviceCard";
 import { applicableAreas, applies, entryFor, stateCounts } from "@/lib/areas";
-import { OS_LABELS, loadDevice, maintainersOf, type Os, type Area, type Device } from "@/lib/client";
+import { OS_LABELS, loadDevice, trackHit, maintainersOf, type Os, type Area, type Device } from "@/lib/client";
 import { LinkedText } from "@/components/SourceLink";
 import { cn, formatDate, relativeTime, vtName } from "@/lib/utils";
 import { SITE_URL, absoluteUrl, jsonLd, seo } from "@/lib/seo";
@@ -124,6 +123,8 @@ function DevicePage() {
   const { canEdit } = useAuth();
   const editable = canEdit(device.slug);
   const [uploads, setUploads] = useState(0);
+  // One count per phone and day for the public statistics (no data about the viewer).
+  useEffect(() => trackHit("device_view", device.slug), [device.slug]);
   // The area table shows one system at a time: iOS (and iPadOS), or macOS / tvOS when the phone has rows or a version for them.
   const [os, setOs] = useState<Os>("ios");
   const systems = (["ios", "macos", "tvos"] as const).filter(
@@ -218,6 +219,13 @@ function DevicePage() {
                   <span className="text-muted-foreground">Never</span>
                 )}
               </Fact>
+              {device.views ? (
+                <Fact label="Views">
+                  <span className="tabular-nums" title={`${device.views.d30} in 30 days, ${device.views.total} in all`}>
+                    {device.views.d7} this week
+                  </span>
+                </Fact>
+              ) : null}
               <div className="col-span-2 flex flex-col gap-1.5">
                 <dt className="text-xs text-muted-foreground">
                   {applicable.length} iOS areas
@@ -284,8 +292,6 @@ function DevicePage() {
       </section>
 
       <GpuAccelSection device={device} editable={editable} />
-
-      <PortingRecords records={device.porting ?? []} />
 
       <NotableFeatures deviceSlug={device.slug} features={device.features ?? []} editable={editable} />
 

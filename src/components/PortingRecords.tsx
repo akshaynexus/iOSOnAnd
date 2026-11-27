@@ -5,9 +5,12 @@
  * host, implemented, planned). Opening one loads the full record: per area
  * the components, what it achieved, limits, next step and build commands.
  */
+import { SkeletonLines } from "@/components/motion";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { getPortingRecord, type PortingRecord, type PortingRecordSummary } from "@/lib/client";
+import { useRouter } from "@tanstack/react-router";
+import { toast } from "sonner";
+import { applyPortingRecord, getPortingRecord, type PortingRecord, type PortingRecordSummary } from "@/lib/client";
 import { cn } from "@/lib/utils";
 
 const STATUS: Record<string, { label: string; cls: string }> = {
@@ -113,8 +116,89 @@ function RecordCard({ r }: { r: PortingRecordSummary }) {
           </a>
         ) : null}
       </div>
-      {open ? loading ? <p className="text-xs text-muted-foreground">Loading</p> : full ? <RecordDetail record={full} /> : null : null}
+      {open ? loading ? <SkeletonLines lines={4} label="Loading the record" /> : full ? <RecordDetail record={full} /> : null : null}
     </li>
+  );
+}
+
+/**
+ * A repo's porting record inside its row in the repo network: the framework,
+ * OS profile and counts, each area's status, the details on demand, and for
+ * the phone's maintainers "Apply to this phone" (fills its statuses from the
+ * record; rows that already have a state stay unless they choose to replace them).
+ */
+export function RepoPorting({ r, editable }: { r: PortingRecordSummary; editable: boolean }) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [full, setFull] = useState<PortingRecord | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [applying, setApplying] = useState(false);
+  async function toggle() {
+    const next = !open;
+    setOpen(next);
+    if (next && !full && !loading) {
+      setLoading(true);
+      try {
+        setFull((await getPortingRecord(r.key)).record);
+      } finally {
+        setLoading(false);
+      }
+    }
+  }
+  async function apply(overwrite: boolean) {
+    setApplying(true);
+    try {
+      const res = await applyPortingRecord(r.key, { overwrite });
+      toast.success(
+        res.applied.length ? `${res.applied.length} area${res.applied.length === 1 ? "" : "s"} updated from the record` : "Nothing new to apply",
+        { description: res.kept.length && !overwrite ? `${res.kept.length} already had a state and were kept.` : undefined },
+      );
+      await router.invalidate();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not apply the record");
+    } finally {
+      setApplying(false);
+    }
+  }
+  const areas = orderAreas(r.area_status);
+  return (
+    <div className="flex min-w-0 flex-col gap-1.5 rounded-md border border-dashed px-2.5 py-2">
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+        <span className="font-medium text-foreground">{r.framework} record</span>
+        {r.os_profile ? <span>{r.os_profile}</span> : null}
+        <span>
+          {r.counts.device_verified} on device, {r.counts.implemented + r.counts.host_verified} in progress
+        </span>
+        {r.page_url ? (
+          <a href={r.page_url} target="_blank" rel="noopener noreferrer" className="underline-offset-4 hover:text-foreground hover:underline">
+            on {r.framework}
+          </a>
+        ) : null}
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {areas.slice(0, open ? areas.length : 8).map(([id, s]) => (
+          <AreaChip key={id} id={id} status={s} />
+        ))}
+        {!open && areas.length > 8 ? <span className="self-center text-xs text-muted-foreground">+{areas.length - 8}</span> : null}
+      </div>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+        <button type="button" onClick={() => void toggle()} aria-expanded={open} className="inline-flex items-center gap-1 font-medium underline-offset-4 hover:underline">
+          <ChevronDown className={cn("size-3.5 transition-transform", open && "rotate-180")} aria-hidden />
+          {open ? "Hide details" : "Components, limits and build steps"}
+        </button>
+        {editable ? (
+          <>
+            <button type="button" disabled={applying} onClick={() => void apply(false)} className="font-medium underline-offset-4 hover:underline disabled:opacity-50">
+              {applying ? "Applying" : "Apply to this phone"}
+            </button>
+            <button type="button" disabled={applying} onClick={() => void apply(true)} className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline disabled:opacity-50">
+              Replace existing states
+            </button>
+          </>
+        ) : null}
+      </div>
+      {open ? loading ? <SkeletonLines lines={4} label="Loading the record" /> : full ? <RecordDetail record={full} /> : null : null}
+    </div>
   );
 }
 

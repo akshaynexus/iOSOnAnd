@@ -1,5 +1,6 @@
 // /u/$id — a public profile: who they are on GitHub, the phones and repos
 // they maintain at a glance, and their recent status changes. Never the email.
+import { useEffect } from "react";
 import { createFileRoute, Link, notFound, redirect } from "@tanstack/react-router";
 import { ArrowRight, ExternalLink } from "lucide-react";
 import { RouteError, RoutePending } from "@/components/Page";
@@ -7,7 +8,7 @@ import { PhoneOutline } from "@/components/common";
 import { StateLabel } from "@/components/StatusBadge";
 import { LinkedText } from "@/components/SourceLink";
 import { CountUp } from "@/components/motion";
-import { OS_LABELS, loadUserProfile, profileParam, type AreaState, type Os, type UserProfile } from "@/lib/client";
+import { OS_LABELS, loadUserProfile, profileParam, trackHit, type AreaState, type Os, type UserProfile } from "@/lib/client";
 import { formatDate, relativeTime } from "@/lib/utils";
 import { seo } from "@/lib/seo";
 
@@ -66,12 +67,14 @@ function Avatar({ u }: { u: UserProfile }) {
 
 function ProfileView() {
   const u = Route.useLoaderData();
+  useEffect(() => trackHit("profile_view", String(u.id)), [u.id]);
   const joined = u.created ? new Date(u.created.replace(" ", "T")).toLocaleDateString("en", { month: "long", year: "numeric", timeZone: "UTC" }) : "";
   const stats: Array<[string, number]> = [
     ["Phones", u.devices.length],
     ["Repos", u.repos.length],
     ["Status changes", u.recent.length >= 20 ? 20 : u.recent.length],
     ["Features", u.features],
+    ...(u.views ? ([["Views this month", u.views.d30]] as Array<[string, number]>) : []),
   ];
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-8">
@@ -93,7 +96,7 @@ function ProfileView() {
         </div>
       </header>
 
-      <dl className={`${CARD} grid grid-cols-2 divide-x divide-y sm:grid-cols-4 sm:divide-y-0`}>
+      <dl className={`${CARD} grid grid-cols-2 divide-x divide-y sm:divide-y-0 ${stats.length > 4 ? "sm:grid-cols-5" : "sm:grid-cols-4"}`}>
         {stats.map(([label, value]) => (
           <div key={label} className="flex flex-col gap-0.5 px-4 py-3">
             <dt className="text-xs text-muted-foreground">{label === "Status changes" && u.recent.length >= 20 ? "Recent changes" : label}</dt>

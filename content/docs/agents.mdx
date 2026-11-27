@@ -16,7 +16,7 @@ works, one area at a time, with a source for each claim. This page is that syste
 | Auth | a GitHub gist-proof login, or an API key with scopes in `TRACKER_TOKEN` |
 | Repo claim | makes the agent's user the maintainer of the repo and its phone |
 | The rules | what an agent may claim, and what it must never overwrite |
-| [`SKILL.md`](https://github.com/akshaynexus/iOSOnAnd/blob/main/SKILL.md) | the same flow as a drop-in skill file for agents that load skills |
+| [`SKILL.md`](/SKILL.md) | the same flow and rules as a drop-in skill file (`GET /SKILL.md` serves it alongside `GET /cli.mjs`) |
 
 ## The prompt
 
@@ -27,16 +27,20 @@ The site shows this text with the tracker URL, the repo and the phone filled in
 I maintain an iOS-on-Android port and want to manage it on the iOSOnAnd tracker at {SITE}.
 Repo: {REPO or "<OWNER/REPO>"}{, phone: DEVICE}
 
-1. Get the tracker CLI (Node 18+, no install): curl -fsSLo cli.mjs {SITE}/cli.mjs
-2. Sign in with my GitHub account (needs the gh CLI, logged in): TRACKER_URL={SITE} node cli.mjs login
+1. Read the tracker skill first ({SITE}/SKILL.md) and follow its rules (ask me once how tracker updates and release posts should go — auto, ask or off, saved in ~/.config/iosonand/agent-prefs.json; always ask and show the file and caption before uploading any image or video; no personal data or vendor files).
+   Get the tracker CLI outside the repo (Node 18+, no install; read it and note its sha256 before running):
+   mkdir -p ~/.local/share/iosonand && curl -fsSLo ~/.local/share/iosonand/cli.mjs {SITE}/cli.mjs && sha256sum ~/.local/share/iosonand/cli.mjs
+   Use CLI="node ~/.local/share/iosonand/cli.mjs" with TRACKER_URL={SITE} (shown below as "node cli.mjs").
+2. Sign in with my GitHub account (needs the gh CLI, logged in; gist proof only): TRACKER_URL={SITE} node cli.mjs login
 3. Claim the repo: node cli.mjs repo-claim {REPO} --device {DEVICE}
-   If it prints a verification code, write that code alone to .iosonand-verify on the repo's default branch, push, run node cli.mjs repo-verify <claim id>, then delete the file.
+   Repos under my own GitHub account are approved at once. Only an organization's repo prints a verification code: push it alone in .iosonand-verify on a throwaway iosonand-verify branch (never the main branch), run node cli.mjs repo-verify <claim id>, then delete the branch.
 4. Read the repo (README, issues, recent commits) and record what works on the phone, one area at a time:
    node cli.mjs areas
-   node cli.mjs status-set {DEVICE} <area> works|in-progress|broken --detail "<what I can show>" --source "<link>"
-   Only claim what the repo or I can show. Ask me when unsure.
-5. Attach proof when I give you screenshots or clips: add --photo <file> (repeatable) to the status-set or feature-add it proves, so the photo is linked to that change; or node cli.mjs media-upload <file> --device {DEVICE} --area <area> --caption "..."
+   node cli.mjs status-set {DEVICE} <area> works|in-progress|broken --detail "<what I can show>" --source "<public link>"
+   Only claim what a log, capture or pushed doc shows. Ask me when unsure, and before changing a state set by hand.
+5. Attach proof only after asking me (show me the exact file and caption first, even if updates are set to auto): add --photo <file> (repeatable) to the status-set or feature-add it proves, or node cli.mjs media-upload <file> --device {DEVICE} --area <area> --caption "..."
 6. Check the result: node cli.mjs whoami
+7. Set up tracker support and the skill (.claude/skills/iosonand-tracker/SKILL.md from {SITE}/SKILL.md) in the repo.
 ```
 
 ## The CLI is the tool surface
@@ -66,6 +70,11 @@ in order, `--token ion_...`, `TRACKER_TOKEN`, then the file the CLI saved at log
 
 ## Starting a new port
 
+Every phone with a port also has "Run or improve it" in its Repos section: a prompt that reads where
+the port stands (statuses, history, GPU, issues, porting records), builds and runs it by its README,
+and, to improve it, forks the repo, puts the fork on the tracker (`repo-add`, `repo-lineage --relation
+fork-of`), adds tracker support to the fork, and records progress as it goes.
+
 The "Port iOS to your device" button on the home page (the agent asks which device, or reads it over `adb`),
 the [Repos](/?tab=repos) tab and every phone's page carry a second prompt. It gives the agent the CLI
 and the API description (`/api/openapi.json`; every read is public), and has it look up the
@@ -80,6 +89,7 @@ pick the project to start from. It uses `references`, which needs no login:
 | `references --gpu "Adreno 619"` | the phones on that GPU or GPU family (`"Adreno 6xx"`, `"Mali Valhall"`), GPU work first: their `metal`, `gles` and `gpu` states with sources, the open driver to read, and their repos |
 | `references --device <slug>` | a tracked phone, plus the phones on its chip and on its GPU family |
 | `references --area gpu` | where an area works (gpu, wifi, audio ...), with the repo, branch and source to read |
+| `porting-apply <record> [--overwrite]` | a phone's maintainers: fill its statuses from a porting record (verified on device -> works, host-tested or implemented -> in progress); rows with a state stay unless `--overwrite`. The same is "Apply to this phone" on the record in the phone's Repos section |
 | `porting --codename <codename>`, `porting-get <record>`, `components <words>` | UniXNU's porting records (as on unixnu.com/devices): per port repo and area, verified on the device, host-tested, implemented or planned, with the components, limits, next step and build commands; and its drivers with the boards that run them |
 | `catalog "<name or codename>"` | the phone in Google Play's device list: codenames and model numbers |
 
@@ -133,7 +143,8 @@ Two ways, both ending in a bearer token the CLI sends:
 `repo-claim` makes the agent's user the maintainer of the repo and of its phone. When the user's
 GitHub login is the repo's owner, it is approved at once. For a repo owned by a GitHub
 organization the user is a member of, the tracker hands out a code; the agent writes it alone to
-`.iosonand-verify` on the default branch, pushes, runs `repo-verify`, and deletes the file again.
+`.iosonand-verify` on a throwaway `iosonand-verify` branch (never the main branch), pushes the
+branch, runs `repo-verify`, and deletes the branch again.
 A personal repo of another GitHub login cannot be claimed (403). A repo the tracker does not list yet needs `--device`; `repo-add`
 also sets its branch and best result. [Maintain a repo](/docs/maintain-a-repo) has the details.
 
@@ -142,19 +153,26 @@ also sets its branch and best result. [Maintain a repo](/docs/maintain-a-repo) h
 These are the rules an agent must follow. The server enforces the ones it can; the rest are on the
 agent.
 
-- **Claim only what the repo or the maintainer can show.** Every `status-set` gives `--detail`
-  (what was seen) and `--source` (a file, log, commit, issue or post). Ask the maintainer when
-  unsure. `unknown` is the right state when nothing is proven.
+- **Ask before every image or video upload.** Before any `--photo`, `media-upload` or `update` with
+  files, show the user the exact file(s) and caption/text and upload only after a yes — even when
+  automatic tracker updates are enabled in `~/.config/iosonand/agent-prefs.json`.
+- **No personal data or vendor files.** Never include emails, serial numbers, IMEIs, accounts,
+  locations, IPSWs, firmware, kernelcaches or device trees in any detail, note, caption or upload.
+- **Claim only what a log, capture or the repo shows.** Every `status-set` gives `--detail`
+  (what was seen, phone model, build/version, date and log line) and `--source` (a public pushed
+  commit, doc, issue or post — never a local path). Ask the maintainer when unsure. `unknown` is the
+  right state when nothing is proven.
 - **Claims are not verification.** A fork's own statement is `fork-claim`. `reproduced`
   (someone reproduced it on hardware) and `merged` (the code is in OneiOS `main`) are set by an
   admin only; the server refuses them from a maintainer with 403.
-- **Never overwrite an authoritative row.** Read before writing: a row whose detail comes from the
-  port's maintainer (for OneiOS, rows marked `(OneiOS maintainer, ...)`) or from a newer, better
-  source stays as it is. A Reddit claim does not replace a maintainer's row.
+- **Never overwrite an authoritative row.** Read before writing: ask before changing a row whose
+  detail was set by hand by the port's maintainer (for example `(maintainer, DATE)` or
+  `(OneiOS maintainer, ...)`) or from a newer, better source. A Reddit claim does not replace a
+  maintainer's row.
 - **Stay in scope.** Write only the devices and repos you maintain (`whoami`). Areas marked
   `oneios` (`return-to-oneui`, `ipc`, `kernel-mem`) apply only to OneiOS-based ports; for any other
   port the server answers 400 `area not applicable` and the site shows N/A.
-- **Proof files are temporary.** Delete `.iosonand-verify` after `repo-verify`.
+- **Proof files are temporary.** Delete the `iosonand-verify` branch (and `.iosonand-verify`) after `repo-verify`.
 
 ## Check before you write (idempotency)
 
@@ -266,8 +284,17 @@ The test rows were removed afterwards.
 
 ## SKILL.md, the drop-in skill
 
-[`SKILL.md`](https://github.com/akshaynexus/iOSOnAnd/blob/main/SKILL.md) holds this flow as a skill
-file (front matter `name: iosonand-tracker`). Copy it into the agent's skills folder of a port's
-repo, or paste it into the agent's instructions; the agent then knows the commands and the rules
-without this page. Keep it and `cli.mjs` from the same tracker version (`GET /cli.mjs` serves the
-matching CLI).
+[`SKILL.md`](/SKILL.md) (`GET /SKILL.md`) holds this flow and all eight agent rules as a drop-in
+skill file (front matter `name: iosonand-tracker`). Download it directly from the tracker into a
+port's repo:
+
+```sh
+mkdir -p .claude/skills/iosonand-tracker
+curl -fsSLo .claude/skills/iosonand-tracker/SKILL.md https://hackios.appaiproxy.com/SKILL.md
+```
+
+On first use in a repo, the skill asks the maintainer once how tracker updates and release updates
+should run (`auto`, `ask`, or `off`) and saves the choice locally in
+`~/.config/iosonand/agent-prefs.json` (never committed). Images and videos are always confirmed one
+by one before upload, even when updates are set to `auto`. Keep `SKILL.md` and `cli.mjs` from the
+same tracker version (`GET /SKILL.md` and `GET /cli.mjs`).

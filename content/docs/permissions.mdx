@@ -47,6 +47,16 @@ A signed-in account without GitHub sees a "Link your GitHub account" bar: one cl
 the GitHub sign-in, which links GitHub to that account and comes back to the same page, so the
 tracker can match the repos it owns.
 
+## Statistics
+
+[Statistics](/stats) (`GET /api/stats`) is public: the most viewed and most searched phones, the top
+searches, the most viewed profiles, the most updated phones, the most active maintainers and daily
+activity, for 7 days, 30 days or all time. Phone pages and profiles show their own view counts.
+
+Only daily totals are stored. The site counts a phone or profile once per browser and day, and a
+search only when it matches a phone (so no other text people type is kept). No IP address, user id or
+anything else about who viewed or searched is recorded.
+
 ## Passwords
 
 - Stored as PBKDF2-SHA256 with a per-user salt, plus a server-side secret that never enters the
